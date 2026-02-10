@@ -1,40 +1,23 @@
-// src/repositories/user.repository.ts
 import { User, IUser } from "../models/user.model";
 import mongoose from "mongoose";
 
-export class UserRepository {
-    async createUser(data: Partial<IUser>): Promise<IUser> {
-        const user = new User(data);
-        return user.save();
-    }
+export const findUserByEmail = async (email: string): Promise<IUser | null> => {
+  return await User.findOne({ email });
+};
 
-    async findByEmail(email: string): Promise<IUser | null> {
-        return User.findOne({ email });
-    }
+export const findUserById = async (id: string | mongoose.Types.ObjectId): Promise<IUser | null> => {
+  return await User.findById(id);
+};
 
-    async findById(id: string): Promise<IUser | null> {
-        if (!mongoose.Types.ObjectId.isValid(id)) return null;
-        return User.findById(id).populate("savedUniversities");
-    }
+export const createUser = async (data: Partial<IUser>): Promise<IUser> => {
+  const user = new User(data);
+  return await user.save();
+};
 
-    async updateProfile(id: string, data: Partial<IUser>): Promise<IUser | null> {
-        if (!mongoose.Types.ObjectId.isValid(id)) return null;
-        return User.findByIdAndUpdate(id, data, { new: true });
-    }
+export const updateUser = async (id: string, data: Partial<IUser>): Promise<IUser | null> => {
+  return await User.findByIdAndUpdate(id, data, { new: true });
+};
 
-    async addSavedUniversity(userId: string, universityId: string) {
-        return User.findByIdAndUpdate(
-            userId,
-            { $addToSet: { savedUniversities: universityId } },
-            { new: true }
-        ).populate("savedUniversities");
-    }
-
-    async removeSavedUniversity(userId: string, universityId: string) {
-        return User.findByIdAndUpdate(
-            userId,
-            { $pull: { savedUniversities: universityId } },
-            { new: true }
-        ).populate("savedUniversities");
-    }
-}
+export const deleteUser = async (id: string): Promise<IUser | null> => {
+  return await User.findByIdAndDelete(id);
+};

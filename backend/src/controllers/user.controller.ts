@@ -1,59 +1,78 @@
-// src/controllers/user.controller.ts
-import { Request, Response } from "express";
-import { 
-  registerUserService,
-  loginUserService,
-  logoutUserService,
-  getUserProfileService,
-  updateProfileService,
-  changePasswordService,
-  deleteUserService
-} from "@/services/user.service";
-import bcrypt from "bcryptjs";
-import jwt from "jsonwebtoken";
-import { JWT_SECRET } from "@/config";
+import { Response } from "express";
+import bcrypt from "bcrypt";
+import { AuthRequest } from "../types/express";
+import { User } from "../models/user.model";
 
-// ----- AUTH -----
-export const registerUser = async (req: Request, res: Response) => {
-  const user = await registerUserService(req.body);
-  res.status(201).json({ success: true, data: user });
+// Get user profile
+export const getProfile = async (req: AuthRequest, res: Response) => {
+  try {
+    const userId = req.user?.id;
+    if (!userId) throw new Error("Unauthorized");
+
+    const user = await User.findById(userId).select("-password"); // exclude password
+    if (!user) return res.status(404).json({ success: false, message: "User not found" });
+
+    res.status(200).json({ success: true, data: user });
+  } catch (error: any) {
+    res.status(400).json({ success: false, message: error.message });
+  }
 };
 
-export const loginUser = async (req: Request, res: Response) => {
-  const { email, password } = req.body;
-  const token = await loginUserService(email, password); 
-  res.status(200).json({ success: true, token });
+// Edit user profile
+export const editProfile = async (req: AuthRequest, res: Response) => {
+  try {
+    const userId = req.user?.id;
+    if (!userId) throw new Error("Unauthorized");
+
+    const updates: any = { ...req.body };
+
+    // If password is being updated, hash it
+    if (updates.password) {
+      updates.password = await bcrypt.hash(updates.password, 10);
+    }
+
+    const updatedUser = await User.findByIdAndUpdate(userId, updates, { new: true }).select("-password");
+    if (!updatedUser) return res.status(404).json({ success: false, message: "User not found" });
+
+    res.status(200).json({ success: true, data: updatedUser });
+  } catch (error: any) {
+    res.status(400).json({ success: false, message: error.message });
+  }
 };
 
-export const logoutUser = async (_req: Request, res: Response) => {
-  await logoutUserService(); // optional: clear token/cookies
-  res.status(200).json({ success: true, message: "Logged out successfully" });
+// Change password
+export const changePassword = async (req: AuthRequest, res: Response) => {
+  try {
+    const userId = req.user?.id;
+    const { oldPassword, newPassword } = req.body;
+
+    if (!userId) throw new Error("Unauthorized");
+    if (!oldPassword || !newPassword) throw new Error("Old and new passwords required");
+
+    const user = await User.findById(userId);
+    if (!user) return res.status(404).json({ success: false, message: "User not found" });
+
+    const isMatch = await bcrypt.compare(oldPassword, user.password);
+    if (!isMatch) return res.status(400).json({ success: false, message: "Old password incorrect" });
+
+    user.password = await bcrypt.hash(newPassword, 10);
+    await user.save();
+
+    res.status(200).json({ success: true, message: "Password changed successfully" });
+  } catch (error: any) {
+    res.status(400).json({ success: false, message: error.message });
+  }
 };
 
-// ----- PROFILE -----
-export const getProfile = async (req: Request, res: Response) => {
-  const user = await getUserProfileService(req.user.id);
-  res.status(200).json({ success: true, data: user });
-};
+// Delete user account
+export const removeAccount = async (req: AuthRequest, res: Response) => {
+  try {
+    const userId = req.user?.id;
+    if (!userId) throw new Error("Unauthorized");
 
-export const updateProfile = async (req: Request, res: Response) => {
-  const updated = await updateProfileService(req.user.id, req.body);
-  res.status(200).json({ success: true, data: updated });
-};
-
-export const changePassword = async (req: Request, res: Response) => {
-  await changePasswordService(req.user.id, req.body);
-  res.status(200).json({ success: true, message: "Password updated" });
-};
-
-// ----- PROFILE PIC -----
-export const uploadProfilePic = async (req: Request, res: Response) => {
-  const url = req.file?.path;
-  res.status(200).json({ success: true, url });
-};
-
-// ----- DELETE USER -----
-export const deleteUser = async (req: Request, res: Response) => {
-  await deleteUserService(req.user.id);
-  res.status(200).json({ success: true, message: "User deleted" });
+    await User.findByIdAndDelete(userId);
+    res.status(200).json({ success: true, message: "Account deleted successfully" });
+  } catch (error: any) {
+    res.status(400).json({ success: false, message: error.message });
+  }
 };

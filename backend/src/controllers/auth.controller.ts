@@ -1,45 +1,57 @@
 import { Request, Response } from "express";
-import User from "../models/user.model";
-import bcrypt from "bcrypt";
-import jwt from "jsonwebtoken";
-import { RegisterDTO, LoginDTO } from "../dtos/user.dto";
+import { registerUser, loginUser } from "../services/auth.service";
+import { registerSchema, loginSchema } from "../dtos/user.dto";
 
-const SECRET = "your_secret_key";
-
+// Register controller
 export const register = async (req: Request, res: Response) => {
-  const { firstName, lastName, email, password, confirmPassword, phoneNo }: RegisterDTO = req.body;
-
-  if (password !== confirmPassword) {
-    return res.status(400).json({ message: "Passwords do not match" });
-  }
-
   try {
-    const hash = await bcrypt.hash(password, 10);
-    const user = await User.create({
-      firstName,
-      lastName,
-      email,
-      password: hash,
-      phoneNo,
+    // Validate input using Zod
+    const parsed = registerSchema.parse(req.body);
+
+    const { user, token } = await registerUser(parsed);
+
+    // Return user data (without password) and token
+    res.status(201).json({
+      success: true,
+      data: {
+        user: {
+          id: user._id,
+          firstName: user.firstName,
+          lastName: user.lastName,
+          email: user.email,
+          phone: user.phone
+        },
+        token
+      }
     });
-    res.json({ message: "User registered successfully", userId: user._id });
-  } catch (err: any) {
-    res.status(400).json({ message: err.message });
+  } catch (error: any) {
+    res.status(400).json({ success: false, message: error.message });
   }
 };
 
+// Login controller
 export const login = async (req: Request, res: Response) => {
-  const { email, password }: LoginDTO = req.body;
   try {
-    const user = await User.findOne({ email });
-    if (!user) return res.status(400).json({ message: "User not found" });
+    // Validate input using Zod
+    const parsed = loginSchema.parse(req.body);
 
-    const valid = await bcrypt.compare(password, user.password);
-    if (!valid) return res.status(400).json({ message: "Incorrect password" });
+    const { user, token } = await loginUser(parsed);
 
-    const token = jwt.sign({ id: user._id, email: user.email }, SECRET, { expiresIn: "7d" });
-    res.json({ token });
-  } catch (err: any) {
-    res.status(500).json({ message: err.message });
+    // Return user data (without password) and token
+    res.status(200).json({
+      success: true,
+      data: {
+        user: {
+          id: user._id,
+          firstName: user.firstName,
+          lastName: user.lastName,
+          email: user.email,
+          phone: user.phone
+        },
+        token
+      }
+    });
+  } catch (error: any) {
+    res.status(400).json({ success: false, message: error.message });
   }
 };
