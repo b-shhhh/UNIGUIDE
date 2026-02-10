@@ -1,14 +1,15 @@
-// src/routes/course.route.ts
 import { Router } from "express";
-import { CourseController } from "../controllers/course.controller";
+import { listCourses, coursesByCountry, courseDetails } from "../controllers/course.controller";
 
 const router = Router();
-const courseController = new CourseController();
 
 // Get all courses
-router.get("/", courseController.getAllCourses);
+router.get("/", listCourses);
 
-// Get course by name
-router.get("/:name", courseController.getCourseByName);
+// Get courses available in a specific country
+router.get("/country/:country", coursesByCountry);
+
+// Get course details by ID
+router.get("/:id", courseDetails);
 
 export default router;
