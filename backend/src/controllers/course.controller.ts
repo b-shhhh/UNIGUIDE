@@ -1,38 +1,34 @@
 import { Request, Response } from "express";
-import {
-  getAllCoursesService,
-  getCountriesByCourseService,
-  getUniversitiesByCourseService
-} from "@/services/course.service";
+import { getAllCourses, getCoursesByCountry, getCourseById } from "../services/course.service";
 
-// Get all courses
-export const getAllCourses = async (_req: Request, res: Response) => {
+// List all courses
+export const listCourses = async (req: Request, res: Response) => {
   try {
-    const courses = await getAllCoursesService();
+    const courses = await getAllCourses();
     res.status(200).json({ success: true, data: courses });
   } catch (error: any) {
-    res.status(500).json({ success: false, message: error.message });
+    res.status(400).json({ success: false, message: error.message });
   }
 };
 
-// Get all countries offering a specific course
-export const getCountriesByCourse = async (req: Request, res: Response) => {
+// List courses available in a country
+export const coursesByCountry = async (req: Request, res: Response) => {
   try {
-    const { courseId } = req.params;
-    const countries = await getCountriesByCourseService(courseId);
-    res.status(200).json({ success: true, data: countries });
+    const country = Array.isArray(req.params.country) ? req.params.country[0] : req.params.country;
+    const courses = await getCoursesByCountry(country);
+    res.status(200).json({ success: true, data: courses });
   } catch (error: any) {
-    res.status(500).json({ success: false, message: error.message });
+    res.status(400).json({ success: false, message: error.message });
   }
 };
 
-// Get all universities offering a specific course
-export const getUniversitiesByCourse = async (req: Request, res: Response) => {
+// Get course details by ID
+export const courseDetails = async (req: Request, res: Response) => {
   try {
-    const { courseId } = req.params;
-    const universities = await getUniversitiesByCourseService(courseId);
-    res.status(200).json({ success: true, data: universities });
+    const id = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id;
+    const course = await getCourseById(id);
+    res.status(200).json({ success: true, data: course });
   } catch (error: any) {
-    res.status(500).json({ success: false, message: error.message });
+    res.status(404).json({ success: false, message: error.message });
   }
 };

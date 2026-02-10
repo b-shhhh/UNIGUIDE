@@ -1,28 +1,25 @@
-// src/routes/university.route.ts
 import { Router } from "express";
 import {
   getCountries,
   getUniversities,
   getUniversityDetail,
   getCourses,
-  getCoursesByCountry,
+  getCoursesByCountry
 } from "../controllers/university.controller";
 
 const router = Router();
 
-// Get all countries
+// Countries
 router.get("/countries", getCountries);
 
-// Get universities by country
-router.get("/universities/:country", getUniversities);
+// Universities by country
+router.get("/country/:country", getUniversities);
 
-// Get university detail by ID
-router.get("/university/:universityId", getUniversityDetail);
+// University details
+router.get("/:universityId", getUniversityDetail);
 
-// Get all courses
+// Courses
 router.get("/courses", getCourses);
-
-// Get courses by country
 router.get("/courses/:course", getCoursesByCountry);
 
 export default router;
