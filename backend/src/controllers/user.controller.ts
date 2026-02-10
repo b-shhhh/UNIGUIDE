@@ -1,6 +1,6 @@
 import { Response } from "express";
 import bcrypt from "bcrypt";
-import { AuthRequest } from "../types/express";
+import { AuthRequest } from "../types/user.type";
 import { User } from "../models/user.model";
 
 // Get user profile
