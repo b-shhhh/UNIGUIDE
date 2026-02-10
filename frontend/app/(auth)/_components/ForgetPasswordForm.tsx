@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { handleRequestPasswordReset } from "@/lib/actions/auth-action";
+import { handleRequestPasswordReset } from "@/lib/actions/auth-action"; // <-- import your server-side password reset handler
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 

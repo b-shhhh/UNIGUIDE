@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { getAuthToken } from '../api/cookie';
+import { getAuthToken } from './cookie';
 
 const BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:5050';
 
