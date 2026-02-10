@@ -1,28 +1,27 @@
 // src/middlewares/upload.middleware.ts
-import multer from "multer";
+import multer, { FileFilterCallback } from "multer";
+import { Request } from "express";
 import path from "path";
 
-// Storage config
+// Configure storage
 const storage = multer.diskStorage({
-    destination: (req, file, cb) => {
-        cb(null, "uploads/");
-    },
-    filename: (req, file, cb) => {
-        cb(null, Date.now() + path.extname(file.originalname));
-    },
+  destination: function (_req, _file, cb) {
+    cb(null, "src/uploads/"); // Make sure this folder exists
+  },
+  filename: function (_req, file, cb) {
+    const ext = path.extname(file.originalname);
+    const name = file.fieldname + "-" + Date.now() + ext;
+    cb(null, name);
+  },
 });
 
-// File filter for images
-const fileFilter = (req: any, file: any, cb: any) => {
-    if (file.mimetype.startsWith("image/")) {
-        cb(null, true);
-    } else {
-        cb(new Error("Only image files are allowed"), false);
-    }
+// Optional: filter by file type (e.g., only images)
+const fileFilter = (_req: Request, file: Express.Multer.File, cb: FileFilterCallback) => {
+  if (file.mimetype.startsWith("image/")) {
+    cb(null, true);
+  } else {
+    cb(new Error("Only image files are allowed"));
+  }
 };
 
-export const upload = multer({
-    storage,
-    fileFilter,
-    limits: { fileSize: 2 * 1024 * 1024 }, // 2MB max
-});
+export const upload = multer({ storage, fileFilter });
