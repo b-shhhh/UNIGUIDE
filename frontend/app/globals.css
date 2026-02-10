@@ -1,0 +1,101 @@
+@import "tailwindcss";
+
+/* =========================
+   Design Tokens
+========================= */
+:root {
+  --background: #f8fafc; /* soft app background (NOT pure white) */
+  --foreground: #171717;
+  --primary: #6d28d9; /* purple */
+  --radius: 16px;
+  --font-sans: system-ui, -apple-system, BlinkMacSystemFont,
+    "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell,
+    "Helvetica Neue", sans-serif;
+}
+
+/* =========================
+   Dark Mode
+========================= */
+@media (prefers-color-scheme: dark) {
+  :root {
+    --background: #0a0a0a;
+    --foreground: #ededed;
+  }
+}
+
+/* =========================
+   Reset (important for app look)
+========================= */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+/* Remove blue tap highlight (mobile app feel) */
+* {
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* =========================
+   Base Layout
+========================= */
+html,
+body {
+  height: 100%;
+  font-family: var(--font-sans);
+  background: var(--background);
+  color: var(--foreground);
+  scroll-behavior: smooth;
+}
+
+/* Make Next.js app full height */
+#__next {
+  height: 100%;
+}
+
+/* =========================
+   Inputs (Flutter style)
+========================= */
+input,
+select,
+textarea {
+  font-family: inherit;
+  border: none;
+  outline: none;
+  background: #f1f5f9; /* soft gray */
+  border-radius: var(--radius);
+  transition: 0.2s ease;
+}
+
+input:focus,
+select:focus,
+textarea:focus {
+  box-shadow: 0 0 0 2px var(--primary);
+}
+
+/* =========================
+   Buttons
+========================= */
+button {
+  font-family: inherit;
+  border-radius: var(--radius);
+  cursor: pointer;
+  transition: 0.15s ease;
+}
+
+button:active {
+  transform: scale(0.97); /* Flutter tap effect */
+}
+
+/* =========================
+   Scrollbar (clean look)
+========================= */
+::-webkit-scrollbar {
+  width: 6px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 999px;
+}
