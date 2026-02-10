@@ -4,7 +4,7 @@ import morgan from 'morgan';
 import dotenv from 'dotenv';
 import { connectDatabase } from './database/mongodb';
 
-// Routes
+// Routescd..
 import authRoutes from './routes/auth.route';
 import userRoutes from './routes/user.route';
 import universityRoutes from './routes/university.route';
