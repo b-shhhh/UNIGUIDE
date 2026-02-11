@@ -1,18 +1,18 @@
-import { Course } from "../models/course.model";
+import { getCsvCourseByName, getCsvCourses, getCsvCoursesByCountry } from "./csv-data.service";
 
 // Get all courses
 export const getAllCourses = async () => {
-  return await Course.find();
+  return getCsvCourses();
 };
 
 // Get courses available in a specific country
 export const getCoursesByCountry = async (country: string) => {
-  return await Course.find({ countries: country });
+  return getCsvCoursesByCountry(country);
 };
 
 // Get course details by ID
 export const getCourseById = async (id: string) => {
-  const course = await Course.findById(id);
+  const course = await getCsvCourseByName(id);
   if (!course) throw new Error("Course not found");
   return course;
 };

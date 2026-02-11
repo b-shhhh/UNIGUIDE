@@ -1,27 +1,30 @@
-import { University } from "../models/university.model";
-import { Course } from "../models/course.model";
+import {
+  getCsvCountries,
+  getCsvCourseByName,
+  getCsvCourses,
+  getCsvUniversitiesByCountry,
+  getCsvUniversityById
+} from "./csv-data.service";
 
 /**
  * Get all distinct countries
  */
 export const getCountriesService = async (): Promise<string[]> => {
-  const countries = await University.distinct("country");
-  return countries;
+  return getCsvCountries();
 };
 
 /**
  * Get universities by country
  */
 export const getUniversitiesService = async (country: string) => {
-  const universities = await University.find({ country });
-  return universities;
+  return getCsvUniversitiesByCountry(country);
 };
 
 /**
  * Get university details by ID
  */
 export const getUniversityDetailService = async (universityId: string) => {
-  const uni = await University.findById(universityId);
+  const uni = await getCsvUniversityById(universityId);
   if (!uni) throw new Error("University not found");
   return uni;
 };
@@ -31,10 +34,10 @@ export const getUniversityDetailService = async (universityId: string) => {
  */
 export const getCoursesService = async (courseName?: string) => {
   if (courseName) {
-    const course = await Course.findOne({ name: courseName });
+    const course = await getCsvCourseByName(courseName);
     if (!course) throw new Error("Course not found");
     return course;
   } else {
-    return await Course.find();
+    return getCsvCourses();
   }
 };
