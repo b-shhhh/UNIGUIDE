@@ -1,4 +1,4 @@
-import { Request, Response } from "express";
+import { Response } from "express";
 import { AuthRequest } from "../../types/user.type";
 import {
   createAdminUniversityService,
@@ -9,6 +9,7 @@ import {
 } from "../../services/admin/university.service";
 
 const isAdmin = (req: AuthRequest) => req.user?.role === "admin";
+const getParamId = (req: AuthRequest) => (Array.isArray(req.params.id) ? req.params.id[0] : req.params.id);
 
 export const adminListUniversities = async (req: AuthRequest, res: Response) => {
   try {
@@ -30,7 +31,8 @@ export const adminListUniversities = async (req: AuthRequest, res: Response) => 
 export const adminGetUniversity = async (req: AuthRequest, res: Response) => {
   try {
     if (!isAdmin(req)) return res.status(403).json({ success: false, message: "Admin access required" });
-    const data = await getAdminUniversityByIdService(req.params.id);
+    const id = getParamId(req);
+    const data = await getAdminUniversityByIdService(id);
     res.status(200).json({ success: true, data });
   } catch (error: any) {
     res.status(404).json({ success: false, message: error.message });
@@ -61,7 +63,8 @@ export const adminCreateUniversity = async (req: AuthRequest, res: Response) => 
 export const adminUpdateUniversity = async (req: AuthRequest, res: Response) => {
   try {
     if (!isAdmin(req)) return res.status(403).json({ success: false, message: "Admin access required" });
-    const data = await updateAdminUniversityService(req.params.id, req.body || {});
+    const id = getParamId(req);
+    const data = await updateAdminUniversityService(id, req.body || {});
     res.status(200).json({ success: true, data });
   } catch (error: any) {
     res.status(400).json({ success: false, message: error.message });
@@ -71,10 +74,10 @@ export const adminUpdateUniversity = async (req: AuthRequest, res: Response) => 
 export const adminDeleteUniversity = async (req: AuthRequest, res: Response) => {
   try {
     if (!isAdmin(req)) return res.status(403).json({ success: false, message: "Admin access required" });
-    await deleteAdminUniversityService(req.params.id);
+    const id = getParamId(req);
+    await deleteAdminUniversityService(id);
     res.status(200).json({ success: true, message: "University deleted successfully" });
   } catch (error: any) {
     res.status(400).json({ success: false, message: error.message });
   }
 };
-

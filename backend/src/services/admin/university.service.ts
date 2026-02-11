@@ -1,4 +1,3 @@
-import { FilterQuery } from "mongoose";
 import { University, IUniversity } from "../../models/university.model";
 import { buildSearchRegex, toPagination } from "../../utils/helpers";
 
@@ -9,7 +8,7 @@ export const listAdminUniversitiesService = async (query: {
   country?: string;
 }) => {
   const { page, limit, skip } = toPagination(query.page, query.limit);
-  const filter: FilterQuery<IUniversity> = {};
+  const filter: Record<string, unknown> = {};
 
   if (query.country?.trim()) {
     filter.country = query.country.trim();
@@ -86,4 +85,3 @@ export const deleteAdminUniversityService = async (id: string) => {
   if (!deleted) throw new Error("University not found");
   return deleted;
 };
-
