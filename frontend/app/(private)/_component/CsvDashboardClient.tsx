@@ -21,6 +21,7 @@ export default function CsvDashboardClient({ universities, countries, courses }:
   const [query, setQuery] = useState("");
   const [chatInput, setChatInput] = useState("");
   const [chatLoading, setChatLoading] = useState(false);
+  const [chatOpen, setChatOpen] = useState(false);
   const [chatMessages, setChatMessages] = useState<ChatMessage[]>([
     {
       role: "assistant",
@@ -147,67 +148,6 @@ export default function CsvDashboardClient({ universities, countries, courses }:
         </div>
       </section>
 
-      <section className="rounded-2xl border border-[#d8e5f8] bg-white p-4">
-        <h3 className="text-lg font-bold text-[#1a2b44]">AI Chatbot (CSV)</h3>
-        <p className="mt-1 text-xs text-[#5f7590]">Ask naturally: best country to study CS, best among these, affordable options under budget, etc.</p>
-
-        <div className="mt-3 max-h-72 space-y-2 overflow-y-auto rounded-lg border border-[#d8e5f8] bg-[#f8fbff] p-3">
-          {chatMessages.map((message, index) => (
-            <div key={`chat-msg-${index}`} className={message.role === "user" ? "text-right" : "text-left"}>
-              <div
-                className={`inline-block max-w-[90%] rounded-lg px-3 py-2 text-xs ${
-                  message.role === "user" ? "bg-[#4A90E2] text-white" : "border border-[#d8e5f8] bg-white text-[#1a2b44]"
-                }`}
-              >
-                {message.text}
-              </div>
-              {message.role === "assistant" && message.results?.length ? (
-                <div className="mt-2 grid gap-2 sm:grid-cols-2">
-                  {message.results.map((uni) => (
-                    <Link
-                      key={`chat-${uni.id}`}
-                      href={`/homepage/universities/${uni.id}`}
-                      className="rounded-md border border-[#d8e5f8] bg-white px-3 py-2 text-left hover:bg-[#f5f9ff]"
-                    >
-                      <p className="text-xs font-semibold text-[#1a2b44]">{uni.name}</p>
-                      <p className="text-[11px] text-[#5f7590]">
-                        {uni.countryName} - {uni.course}
-                      </p>
-                      <p className="text-[11px] text-[#5f7590]">{uni.tuition}</p>
-                    </Link>
-                  ))}
-                </div>
-              ) : null}
-            </div>
-          ))}
-          {chatLoading ? <p className="text-xs text-[#5f7590]">Assistant is thinking...</p> : null}
-        </div>
-
-        <div className="mt-3 flex flex-col gap-2 sm:flex-row">
-          <input
-            value={chatInput}
-            onChange={(event) => setChatInput(event.target.value)}
-            onKeyDown={(event) => {
-              if (event.key === "Enter") {
-                void handleChatAsk();
-              }
-            }}
-            placeholder="Ask your query..."
-            className="h-10 w-full rounded-md border border-[#d8e5f8] px-3 text-sm outline-none"
-          />
-          <button
-            type="button"
-            disabled={chatLoading}
-            onClick={() => {
-              void handleChatAsk();
-            }}
-            className="h-10 rounded-md bg-[#4A90E2] px-4 text-xs font-bold uppercase tracking-[0.08em] text-white disabled:opacity-50"
-          >
-            Ask
-          </button>
-        </div>
-      </section>
-
       <section className="grid gap-4 lg:grid-cols-2">
         <article className="h-fit self-start rounded-2xl border border-[#d8e5f8] bg-white p-4">
           <div className="mb-3 flex items-center justify-between">
@@ -245,7 +185,7 @@ export default function CsvDashboardClient({ universities, countries, courses }:
             <p className="text-xs font-bold uppercase tracking-[0.08em] text-[#5f7590]">{courses.length} total</p>
           </div>
           <div className="flex gap-1 overflow-x-auto pb-1">
-            {courses.slice(0, 12).map((course) => (
+            {courses.map((course) => (
               <Link
                 key={course.slug}
                 href={`/homepage/courses/${course.slug}`}
@@ -313,6 +253,79 @@ export default function CsvDashboardClient({ universities, countries, courses }:
           })}
         </div>
       </section>
+
+      <button
+        type="button"
+        onClick={() => setChatOpen((prev) => !prev)}
+        className="fixed bottom-5 right-5 z-40 rounded-full bg-[#4A90E2] px-4 py-3 text-xs font-bold uppercase tracking-[0.08em] text-white shadow-lg hover:bg-[#357ABD]"
+      >
+        {chatOpen ? "Close Bot" : "AI Bot"}
+      </button>
+
+      {chatOpen ? (
+        <section className="fixed bottom-20 right-5 z-40 w-[min(92vw,390px)] rounded-2xl border border-[#d8e5f8] bg-white p-4 shadow-2xl">
+          <h3 className="text-lg font-bold text-[#1a2b44]">AI Chatbot (CSV)</h3>
+          <p className="mt-1 text-xs text-[#5f7590]">
+            Ask naturally: best country to study CS, best among these, affordable options under budget.
+          </p>
+
+          <div className="mt-3 max-h-72 space-y-2 overflow-y-auto rounded-lg border border-[#d8e5f8] bg-[#f8fbff] p-3">
+            {chatMessages.map((message, index) => (
+              <div key={`chat-msg-${index}`} className={message.role === "user" ? "text-right" : "text-left"}>
+                <div
+                  className={`inline-block max-w-[90%] rounded-lg px-3 py-2 text-xs ${
+                    message.role === "user" ? "bg-[#4A90E2] text-white" : "border border-[#d8e5f8] bg-white text-[#1a2b44]"
+                  }`}
+                >
+                  {message.text}
+                </div>
+                {message.role === "assistant" && message.results?.length ? (
+                  <div className="mt-2 grid gap-2">
+                    {message.results.map((uni) => (
+                      <Link
+                        key={`chat-${uni.id}`}
+                        href={`/homepage/universities/${uni.id}`}
+                        className="rounded-md border border-[#d8e5f8] bg-white px-3 py-2 text-left hover:bg-[#f5f9ff]"
+                      >
+                        <p className="text-xs font-semibold text-[#1a2b44]">{uni.name}</p>
+                        <p className="text-[11px] text-[#5f7590]">
+                          {uni.countryName} - {uni.course}
+                        </p>
+                        <p className="text-[11px] text-[#5f7590]">{uni.tuition}</p>
+                      </Link>
+                    ))}
+                  </div>
+                ) : null}
+              </div>
+            ))}
+            {chatLoading ? <p className="text-xs text-[#5f7590]">Assistant is thinking...</p> : null}
+          </div>
+
+          <div className="mt-3 flex flex-col gap-2 sm:flex-row">
+            <input
+              value={chatInput}
+              onChange={(event) => setChatInput(event.target.value)}
+              onKeyDown={(event) => {
+                if (event.key === "Enter") {
+                  void handleChatAsk();
+                }
+              }}
+              placeholder="Ask your query..."
+              className="h-10 w-full rounded-md border border-[#d8e5f8] px-3 text-sm outline-none"
+            />
+            <button
+              type="button"
+              disabled={chatLoading}
+              onClick={() => {
+                void handleChatAsk();
+              }}
+              className="h-10 rounded-md bg-[#4A90E2] px-4 text-xs font-bold uppercase tracking-[0.08em] text-white disabled:opacity-50"
+            >
+              Ask
+            </button>
+          </div>
+        </section>
+      ) : null}
     </div>
   );
 }
