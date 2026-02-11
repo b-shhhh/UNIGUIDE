@@ -38,7 +38,8 @@ const getUserDisplayName = (user: UserRecord) => {
 
 const getUserEmail = (user: UserRecord) => asString(user?.email);
 const getUserPhone = (user: UserRecord) => asString(user?.phone);
-const getUserCountry = (user: UserRecord) => asString(user?.country);
+const getUserFirstName = (user: UserRecord) => asString(user?.firstName);
+const getUserLastName = (user: UserRecord) => asString(user?.lastName);
 const getUserBio = (user: UserRecord) => asString(user?.bio);
 const getAvatar = (user: UserRecord) =>
   asString(user?.profilePic) ||
@@ -122,7 +123,8 @@ export default function ProfilePageClient({ user }: { user: UserRecord }) {
   const displayName = useMemo(() => getUserDisplayName(user), [user]);
   const email = useMemo(() => getUserEmail(user), [user]);
   const phone = useMemo(() => getUserPhone(user), [user]);
-  const country = useMemo(() => getUserCountry(user), [user]);
+  const firstName = useMemo(() => getUserFirstName(user), [user]);
+  const lastName = useMemo(() => getUserLastName(user), [user]);
   const bio = useMemo(() => getUserBio(user), [user]);
   const avatar = useMemo(() => getAvatar(user), [user]);
   const avatarUrl = useMemo(() => getAvatarUrl(avatar), [avatar]);
@@ -153,7 +155,6 @@ export default function ProfilePageClient({ user }: { user: UserRecord }) {
           </div>
           <div className="mt-4 space-y-1 text-sm text-[#666666]">
             <p>Phone: {phone || "Not set"}</p>
-            <p>Country: {country || "Not set"}</p>
           </div>
           {bio ? <p className="mt-4 text-sm text-[#666666]">{bio}</p> : null}
         </article>
@@ -167,12 +168,16 @@ export default function ProfilePageClient({ user }: { user: UserRecord }) {
           </div>
           <form action={profileFormAction} className="grid gap-3 sm:grid-cols-2">
             <label className="text-sm font-semibold text-[#1a2b44]">
-              Full Name
+              First Name
               <input
-                name="fullName"
-                defaultValue={displayName === "User" ? "" : displayName}
+                name="firstName"
+                defaultValue={firstName}
                 className="mt-1 w-full rounded-lg border border-[#1a2b44]/20 px-3 py-2 text-sm"
               />
+            </label>
+            <label className="text-sm font-semibold text-[#1a2b44]">
+              Last Name
+              <input name="lastName" defaultValue={lastName} className="mt-1 w-full rounded-lg border border-[#1a2b44]/20 px-3 py-2 text-sm" />
             </label>
             <label className="text-sm font-semibold text-[#1a2b44]">
               Email
@@ -181,10 +186,6 @@ export default function ProfilePageClient({ user }: { user: UserRecord }) {
             <label className="text-sm font-semibold text-[#1a2b44]">
               Phone
               <input name="phone" defaultValue={phone} className="mt-1 w-full rounded-lg border border-[#1a2b44]/20 px-3 py-2 text-sm" />
-            </label>
-            <label className="text-sm font-semibold text-[#1a2b44]">
-              Country
-              <input name="country" defaultValue={country} className="mt-1 w-full rounded-lg border border-[#1a2b44]/20 px-3 py-2 text-sm" />
             </label>
             <label className="text-sm font-semibold text-[#1a2b44] sm:col-span-2">
               Bio
