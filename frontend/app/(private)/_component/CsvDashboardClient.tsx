@@ -141,20 +141,20 @@ export default function CsvDashboardClient({ universities, countries, courses }:
           </div>
         </article>
 
-        <article className="rounded-2xl border border-[#d8e5f8] bg-white p-5">
+        <article className="h-fit self-start rounded-2xl border border-[#d8e5f8] bg-white p-4">
           <div className="mb-3 flex items-center justify-between">
             <h3 className="text-lg font-bold text-[#1a2b44]">Courses</h3>
             <p className="text-xs font-bold uppercase tracking-[0.08em] text-[#5f7590]">{courses.length} total</p>
           </div>
-          <div className="grid gap-2 sm:grid-cols-2">
+          <div className="flex gap-1 overflow-x-auto pb-1">
             {courses.slice(0, 12).map((course) => (
               <Link
                 key={course.slug}
                 href={`/homepage/courses/${course.slug}`}
-                className="rounded-xl border border-[#d8e5f8] p-3 hover:bg-[#f5f9ff]"
+                className="min-w-[150px] rounded-md border border-[#d8e5f8] px-2 py-1 hover:bg-[#f5f9ff]"
               >
-                <p className="text-sm font-semibold text-[#1a2b44]">{course.name}</p>
-                <p className="text-xs text-[#5f7590]">{course.count} universities</p>
+                <p className="truncate text-[11px] font-semibold text-[#1a2b44]">{course.name}</p>
+                <p className="text-[10px] text-[#5f7590]">{course.count} unis</p>
               </Link>
             ))}
           </div>
