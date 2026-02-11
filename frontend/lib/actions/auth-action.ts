@@ -3,7 +3,7 @@
 
 import { redirect } from "next/navigation";
 import { registerUser, loginUser, updateUserProfile, changePassword, deleteAccount, requestPasswordReset, resetPassword } from "../api/auth";
-import { setUserData, setAuthToken, clearAuthCookies } from "../api/cookie";
+import { setUserData, setAuthToken, clearAuthCookies, getAuthToken } from "../api/cookie";
 import { revalidatePath } from "next/cache";
 
 const getErrorMessage = (error: unknown, fallback: string) => {
@@ -130,7 +130,8 @@ export const handleChangePassword = async (formData: Record<string, unknown>) =>
 
 export const handleDeleteAccount = async (payload: Record<string, unknown>) => {
   try {
-    const result = await deleteAccount(payload);
+    const token = await getAuthToken();
+    const result = await deleteAccount(payload, token);
     if (result.success) {
       await clearAuthCookies();
       redirect("/register");

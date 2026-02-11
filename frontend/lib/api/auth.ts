@@ -75,10 +75,13 @@ export const changePassword = async (passwordData: Record<string, unknown>) => {
   }
 };
 
-export const deleteAccount = async (payload: Record<string, unknown> = {}) => {
+export const deleteAccount = async (payload: Record<string, unknown> = {}, token?: string | null) => {
   try {
     const endpoint = process.env.NEXT_PUBLIC_DELETE_ACCOUNT_ENDPOINT || API.AUTH.DELETE_ACCOUNT;
-    const response = await axios.delete(endpoint, { data: payload });
+    const response = await axios.delete(endpoint, {
+      data: payload,
+      headers: token ? { Authorization: `Bearer ${token}` } : undefined,
+    });
     return response.data as ApiResult;
   } catch (error: unknown) {
     throw new Error(getErrorMessage(error, "Delete account failed"));
