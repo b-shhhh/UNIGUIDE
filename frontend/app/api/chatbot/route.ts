@@ -25,6 +25,11 @@ const tokenize = (text: string) =>
     .split(/\s+/)
     .filter((token) => token.length > 1);
 
+const isGreetingOnly = (text: string) =>
+  /^(hi|hello|hey|good morning|goodmorning|good afternoon|goodafternoon|good evening|goodevening)[!. ]*$/i.test(
+    text.trim(),
+  );
+
 const rankFromText = (ranking: string) => {
   const match = ranking.match(/\d+/);
   return match ? Number(match[0]) : 9999;
@@ -227,10 +232,100 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ answer: "Ask a question first.", recommendations: [], filters: {} });
   }
 
+  if (isGreetingOnly(message)) {
+    const normalizedMessage = normalize(message);
+    if (normalizedMessage.startsWith("good morning") || normalizedMessage.startsWith("goodmorning")) {
+      return NextResponse.json({ answer: "Good morning!", recommendations: [], filters: {} });
+    }
+    if (normalizedMessage.startsWith("good afternoon") || normalizedMessage.startsWith("goodafternoon")) {
+      return NextResponse.json({ answer: "Good afternoon!", recommendations: [], filters: {} });
+    }
+    if (normalizedMessage.startsWith("good evening") || normalizedMessage.startsWith("goodevening")) {
+      return NextResponse.json({ answer: "Good evening!", recommendations: [], filters: {} });
+    }
+    return NextResponse.json({ answer: "Hi!", recommendations: [], filters: {} });
+  }
+
   const universities = await getUniversities();
   const countryNames = Array.from(new Set(universities.map((uni) => uni.countryName)));
   const knownCourses = Array.from(new Set(universities.flatMap((uni) => uni.courses)));
   const filters = extractFilters(message, countryNames, knownCourses);
+  const normalizedMessage = normalize(message);
+  const countryOnlyIntent =
+    (/\bcountry\b/.test(normalizedMessage) || Boolean(filters.country)) &&
+    !filters.course &&
+    !filters.budget &&
+    filters.min_ielts === undefined &&
+    filters.min_gpa === undefined &&
+    !filters.intake &&
+    !filters.mode &&
+    !/\b(university|universities|college|colleges)\b/.test(normalizedMessage);
+
+  if (countryOnlyIntent) {
+    if (filters.country) {
+      return NextResponse.json({
+        answer: `Country: ${filters.country}`,
+        recommendations: [],
+        filters,
+      });
+    }
+
+    const topCountries = Array.from(
+      universities.reduce<Map<string, number>>((acc, uni) => {
+        acc.set(uni.countryName, (acc.get(uni.countryName) || 0) + 1);
+        return acc;
+      }, new Map()),
+    )
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, 12)
+      .map(([name, count], index) => `${index + 1}. ${name} (${count})`)
+      .join("\n");
+
+    return NextResponse.json({
+      answer: `Countries:\n${topCountries}`,
+      recommendations: [],
+      filters,
+    });
+  }
+
+  const courseOnlyIntent =
+    (/\bcourse\b|\bcourses\b|\bsubject\b|\bsubjects\b/.test(normalizedMessage) || Boolean(filters.course)) &&
+    !filters.country &&
+    !filters.budget &&
+    filters.min_ielts === undefined &&
+    filters.min_gpa === undefined &&
+    !filters.intake &&
+    !filters.mode &&
+    !/\b(university|universities|college|colleges)\b/.test(normalizedMessage);
+
+  if (courseOnlyIntent) {
+    if (filters.course) {
+      return NextResponse.json({
+        answer: `Course: ${filters.course}`,
+        recommendations: [],
+        filters,
+      });
+    }
+
+    const topCourses = Array.from(
+      universities.reduce<Map<string, number>>((acc, uni) => {
+        for (const course of uni.courses) {
+          acc.set(course, (acc.get(course) || 0) + 1);
+        }
+        return acc;
+      }, new Map()),
+    )
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, 20)
+      .map(([name]) => name)
+      .join(", ");
+
+    return NextResponse.json({
+      answer: `Courses: ${topCourses}`,
+      recommendations: [],
+      filters,
+    });
+  }
   const universityIntent =
     /(university|universities|college|study|course|program|tuition|ielts|gpa|intake|admission|scholarship|major|best country|which country|cs|mba|engineering|medicine|law)/i.test(
       message,
@@ -348,7 +443,7 @@ export async function POST(req: NextRequest) {
       universityMode: true,
     });
 
-    return NextResponse.json({ answer: openAiAnswer || answer, recommendations, filters });
+    return NextResponse.json({ answer: openAiAnswer || answer, recommendations: [], filters });
   }
 
   const fallbackAnswer = `I found ${scored.length} matches. Here are the best options for your query.`;
