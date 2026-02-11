@@ -17,6 +17,14 @@ const storage = multer.diskStorage({
 
 // Optional: filter by file type (e.g., only images)
 const fileFilter = (_req: Request, file: Express.Multer.File, cb: FileFilterCallback) => {
+  const originalName = String(file.originalname || "").trim();
+  // Some clients can send an empty file part for optional file inputs.
+  // Ignore it instead of failing the whole request.
+  if (!originalName || file.size === 0) {
+    cb(null, false);
+    return;
+  }
+
   const ext = path.extname(file.originalname || "").toLowerCase();
   const allowedExt = new Set([".jpg", ".jpeg", ".png", ".gif", ".webp", ".bmp", ".svg", ".avif", ".jfif"]);
   const isImageMime = typeof file.mimetype === "string" && file.mimetype.startsWith("image/");
