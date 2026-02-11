@@ -134,6 +134,30 @@ User message: ${message}
   }
 };
 
+const extractFiltersFallback = (message: string, rows: BackendUniversity[]): ParsedFilters => {
+  const text = normalize(message);
+  const countries = Array.from(new Set(rows.map((row) => row.country)));
+  const courses = Array.from(new Set(rows.flatMap((row) => row.courses)));
+
+  const country = countries.find((name) => text.includes(normalize(name)));
+  const course = courses.find((name) => text.includes(normalize(name)));
+
+  const under = text.match(/(?:under|below|less than|max|upto|up to)\s*\$?\s*(\d+(?:[.,]\d+)?)\s*(k)?/i);
+  let budget: ParsedFilters["budget"] = undefined;
+  if (under) {
+    const val = Number(under[1].replace(/,/g, "")) * (under[2] ? 1000 : 1);
+    if (Number.isFinite(val)) budget = `<${val}`;
+  } else if (/(affordable|cheap|low budget|low tuition)/i.test(text)) {
+    budget = "low";
+  }
+
+  return {
+    country,
+    course,
+    budget,
+  };
+};
+
 const fetchAllUniversitiesFromBackend = async (): Promise<BackendUniversity[]> => {
   const response = await fetch(`${API_BASE_URL}/api/universities`, { cache: "no-store" });
   if (!response.ok) {
@@ -206,8 +230,9 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ answer: "Please enter a message.", filters: {}, results: [] });
   }
 
-  const filters = await extractFiltersWithOpenAI(message);
   const backendRows = await fetchAllUniversitiesFromBackend();
+  const aiFilters = await extractFiltersWithOpenAI(message);
+  const filters = Object.keys(aiFilters).length ? aiFilters : extractFiltersFallback(message, backendRows);
   const filtered = applyFilters(backendRows, filters);
   const ranked = scoreRows(filtered, message, filters).slice(0, 8);
 

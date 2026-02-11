@@ -284,26 +284,33 @@ export default function CsvDashboardClient({ universities, countries, courses }:
             {chatMessages.map((message, index) => (
               <div key={`chat-${index}`} className={message.role === "user" ? "text-right" : "text-left"}>
                 <div
-                  className={`inline-block max-w-[90%] rounded-lg px-3 py-2 text-xs ${
-                    message.role === "user" ? "bg-[#4A90E2] text-white" : "border border-[#d8e5f8] bg-white text-[#1a2b44]"
+                  className={`inline-block max-w-[90%] rounded-lg text-xs ${
+                    message.role === "assistant" ? "bg-[#4A90E2] text-white" : "bg-[#E5E5EA] text-black"
                   }`}
+                  style={{ padding: "12px", margin: "8px 0" }}
                 >
                   {message.text}
                 </div>
                 {message.role === "assistant" && message.results?.length ? (
                   <div className="mt-2 grid gap-2">
-                    {message.results.map((uni) => (
-                      <Link
-                        key={`chat-result-${uni.id}`}
-                        href={`/homepage/universities/${uni.id}`}
-                        className="rounded-md border border-[#d8e5f8] bg-white px-3 py-2 text-left hover:bg-[#f5f9ff]"
+                    {message.results.map((result) => (
+                      <article
+                        key={`chat-result-${result.id}`}
+                        className="rounded-md border border-[#d8e5f8] bg-white px-3 py-2 text-left"
                       >
-                        <p className="text-xs font-semibold text-[#1a2b44]">{uni.name}</p>
+                        <p className="text-xs font-semibold text-[#1a2b44]">{result.name}</p>
+                        <p className="text-[11px] text-[#5f7590]">Country: {result.country}</p>
+                        <p className="text-[11px] text-[#5f7590]">Tuition: {result.tuition}</p>
                         <p className="text-[11px] text-[#5f7590]">
-                          {uni.countryName} - {uni.course}
+                          Courses: {result.courses.slice(0, 3).join(", ")}
                         </p>
-                        <p className="text-[11px] text-[#5f7590]">{uni.tuition}</p>
-                      </Link>
+                        <Link
+                          href={result.viewDetailsUrl}
+                          className="mt-2 inline-block rounded bg-[#4A90E2] px-2 py-1 text-[10px] font-bold uppercase tracking-[0.06em] text-white"
+                        >
+                          View Details
+                        </Link>
+                      </article>
                     ))}
                   </div>
                 ) : null}
