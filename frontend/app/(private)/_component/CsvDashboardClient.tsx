@@ -116,26 +116,26 @@ export default function CsvDashboardClient({ universities, countries, courses }:
             <h3 className="text-lg font-bold text-[#1a2b44]">Countries</h3>
             <p className="text-xs font-bold uppercase tracking-[0.08em] text-[#5f7590]">{countries.length} total</p>
           </div>
-          <div className="flex gap-2 overflow-x-auto pb-2">
+          <div className="flex gap-1.5 overflow-x-auto pb-2">
             {countries.slice(0, 12).map((country) => (
               <Link
                 key={country.code}
                 href={`/homepage/countries/${country.code}`}
-                className="flex min-w-[160px] items-center justify-between rounded-lg border border-[#d8e5f8] px-2.5 py-2 hover:bg-[#f5f9ff]"
+                className="flex min-w-[125px] items-center justify-between rounded-md border border-[#d8e5f8] px-2 py-1.5 hover:bg-[#f5f9ff]"
               >
-                <span className="truncate text-sm font-semibold text-[#1a2b44]">
+                <span className="truncate text-xs font-semibold text-[#1a2b44]">
                   {country.flagImageUrl ? (
                     <img
                       src={country.flagImageUrl}
                       alt={`${country.name} flag`}
-                      width={16}
-                      height={12}
+                      width={14}
+                      height={10}
                       className="mr-1 inline rounded-[2px] align-[-2px]"
                     />
                   ) : null}
                   {country.name}
                 </span>
-                <span className="text-xs font-bold text-[#5f7590]">{country.count}</span>
+                <span className="text-[10px] font-bold text-[#5f7590]">{country.count}</span>
               </Link>
             ))}
           </div>
