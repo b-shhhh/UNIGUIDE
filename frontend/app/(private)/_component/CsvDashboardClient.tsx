@@ -14,7 +14,14 @@ type Props = {
 type ChatMessage = {
   role: "user" | "assistant";
   text: string;
-  results?: CsvUniversity[];
+  results?: Array<{
+    id: string;
+    name: string;
+    country: string;
+    courses: string[];
+    tuition: string;
+    viewDetailsUrl: string;
+  }>;
 };
 
 export default function CsvDashboardClient({ universities, countries, courses }: Props) {
@@ -105,19 +112,22 @@ export default function CsvDashboardClient({ universities, countries, courses }:
 
       const payload = (await response.json()) as {
         answer?: string;
-        recommendations?: string[];
+        results?: Array<{
+          id: string;
+          name: string;
+          country: string;
+          courses: string[];
+          tuition: string;
+          viewDetailsUrl: string;
+        }>;
       };
-
-      const recommended = (payload.recommendations || [])
-        .map((id) => universities.find((uni) => uni.id === id))
-        .filter((uni): uni is CsvUniversity => Boolean(uni));
 
       setChatMessages((prev) => [
         ...prev,
         {
           role: "assistant",
           text: payload.answer || "I found some matching universities for you.",
-          results: recommended.length ? recommended : undefined,
+          results: payload.results?.length ? payload.results : undefined,
         },
       ]);
     } catch {

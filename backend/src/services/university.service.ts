@@ -1,10 +1,15 @@
 import {
+  getCsvUniversities,
   getCsvCountries,
   getCsvCourseByName,
   getCsvCourses,
   getCsvUniversitiesByCountry,
   getCsvUniversityById
 } from "./csv-data.service";
+
+export const getAllUniversitiesService = async () => {
+  return getCsvUniversities();
+};
 
 /**
  * Get all distinct countries

@@ -1,5 +1,6 @@
 import { Router } from "express";
 import {
+  getAllUniversities,
   getCountries,
   getUniversities,
   getUniversityDetail,
@@ -8,6 +9,8 @@ import {
 } from "../controllers/university.controller";
 
 const router = Router();
+
+router.get("/", getAllUniversities);
 
 // Countries
 router.get("/countries", getCountries);

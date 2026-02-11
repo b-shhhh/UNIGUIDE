@@ -1,10 +1,20 @@
 import { Request, Response } from "express";
 import {
+  getAllUniversitiesService,
   getCountriesService,
   getUniversitiesService,
   getUniversityDetailService,
   getCoursesService
 } from "../services/university.service";
+
+export const getAllUniversities = async (_req: Request, res: Response) => {
+  try {
+    const universities = await getAllUniversitiesService();
+    res.status(200).json({ success: true, data: universities });
+  } catch (error: any) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
 
 // Get all countries
 export const getCountries = async (_req: Request, res: Response) => {
