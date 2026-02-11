@@ -146,7 +146,10 @@ export const handleAdminLogin = async (
       };
     }
 
-    const result = await loginUser(formData);
+    const result = await loginUser({
+      ...formData,
+      email,
+    });
     if (!result.success) {
       return {
         success: false,
