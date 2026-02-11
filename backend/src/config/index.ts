@@ -22,7 +22,7 @@ export const NODE_ENV = process.env.NODE_ENV || "development";
 export const IS_PRODUCTION = NODE_ENV === "production";
 export const PORT = parsePort(process.env.PORT, 5050);
 export const MONGODB_URI = process.env.MONGODB_URI || "mongodb://127.0.0.1:27017/university_guide";
-export const JWT_SECRET = process.env.JWT_SECRET || "";
+export const JWT_SECRET = process.env.JWT_SECRET || (IS_PRODUCTION ? "" : "development_only_secret_change_me");
 export const ALLOWED_ORIGINS = parseOrigins(process.env.ALLOWED_ORIGINS);
 export const RATE_LIMIT_WINDOW_MS = parsePort(process.env.RATE_LIMIT_WINDOW_MS, 15 * 60 * 1000);
 export const RATE_LIMIT_MAX = parsePort(process.env.RATE_LIMIT_MAX, 250);
