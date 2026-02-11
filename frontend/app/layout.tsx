@@ -2,14 +2,14 @@
 import "./globals.css";
 
 export const metadata = {
-  title: "UniGuide",
-  description: "UniGuide - Register/Login",
+  title: "AI University Finder - UniGuide",
+  description: "Find your ideal university with modern search, filters, and personalized recommendations.",
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en">
-      <body className="bg-white">
+      <body className="bg-white text-[#333333] antialiased">
         {children}
       </body>
     </html>
