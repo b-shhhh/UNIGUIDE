@@ -15,6 +15,9 @@ import universityRoutes from "./routes/university.route";
 import courseRoutes from "./routes/course.route";
 import savedRoutes from "./routes/saved.routes";
 import recommendationRoutes from "./routes/recommendation.route";
+import adminRoutes from "./routes/admin/admin.route";
+import adminUniversityRoutes from "./routes/admin/university.route";
+import adminUserRoutes from "./routes/admin/user.route";
 
 // Middlewares
 import { errorMiddleware } from "./middlewares/error.middleware";
@@ -69,6 +72,9 @@ app.use("/api/universities", universityRoutes);
 app.use("/api/courses", courseRoutes);
 app.use("/api/saved-universities", savedRoutes);
 app.use("/api/recommendations", recommendationRoutes);
+app.use("/api/admin", adminRoutes);
+app.use("/api/admin/universities", adminUniversityRoutes);
+app.use("/api/admin/users", adminUserRoutes);
 
 // 404 handler
 app.use((_req, res) => {
