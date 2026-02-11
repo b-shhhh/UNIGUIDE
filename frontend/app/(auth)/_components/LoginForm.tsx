@@ -3,9 +3,8 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { AcademicCapIcon } from "@heroicons/react/24/solid";
 import { useAuth } from "@/context/AuthContext";
-import { handleLogin } from "@/lib/actions/auth-action"; // <-- import your server-side login handler
+import { handleLogin } from "@/lib/actions/auth-action";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -36,76 +35,58 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-b from-purple-600 via-purple-500 to-indigo-500 relative overflow-hidden">
-      {/* Header Curve */}
-      <div className="absolute top-0 left-0 w-full h-64 bg-gradient-to-r from-purple-700 to-indigo-600 rounded-b-[50%] flex items-center justify-center">
-        <div className="flex items-center space-x-2">
-          <div className="w-12 h-12 flex items-center justify-center rounded-full bg-white">
-            <AcademicCapIcon className="h-6 w-6 text-purple-700" />
-          </div>
-          <h1 className="text-white text-2xl font-bold tracking-wide">UniGuide</h1>
-        </div>
-      </div>
+    <div className="rounded-[16px] border border-[#dbe8fb] bg-white p-8 shadow-[0_14px_34px_rgba(74,144,226,0.18)]">
+      <h2 className="text-center text-3xl font-bold text-[#333333]">Welcome Back</h2>
+      <p className="mt-2 text-center text-sm text-[#666666]">Sign in to continue your university search</p>
 
-      {/* Login Card */}
-      <div className="relative z-10 w-full max-w-md bg-white p-10 rounded-3xl shadow-xl space-y-5">
-        <h2 className="text-center text-2xl font-bold text-gray-800">Welcome Back</h2>
-        <p className="text-center text-gray-500 text-sm">Sign in to your account</p>
-
-        <form onSubmit={handleSubmit} className="flex flex-col gap-4">
-          {/* Email */}
+      <form onSubmit={handleSubmit} className="mt-6 flex flex-col gap-4">
           <div className="flex flex-col gap-1">
-            <label className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Email Address</label>
+            <label className="text-[11px] font-semibold uppercase tracking-[0.12em] text-[#666666]">Email Address</label>
             <input
               type="email"
               placeholder="name@university.edu"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
-              className="w-full h-10 px-3 border border-slate-200 rounded-lg text-sm text-slate-700 placeholder:text-slate-300 outline-none focus:ring-1 focus:ring-purple-500"
+              className="h-11 w-full rounded-[8px] border border-[#c7d9f5] px-3 text-sm text-[#333333] outline-none focus:ring-2 focus:ring-[#4A90E2]/40"
             />
           </div>
 
-          {/* Password */}
           <div className="flex flex-col gap-1">
-            <label className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Password</label>
+            <label className="text-[11px] font-semibold uppercase tracking-[0.12em] text-[#666666]">Password</label>
             <input
               type="password"
               placeholder="********"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               required
-              className="w-full h-10 px-3 border border-slate-200 rounded-lg text-sm text-slate-700 placeholder:text-slate-300 outline-none focus:ring-1 focus:ring-purple-500"
+              className="h-11 w-full rounded-[8px] border border-[#c7d9f5] px-3 text-sm text-[#333333] outline-none focus:ring-2 focus:ring-[#4A90E2]/40"
             />
           </div>
 
-          {/* General Error */}
-          {error && <p className="text-red-500 text-[9px]">{error}</p>}
+          {error && <p className="text-xs font-medium text-red-600">{error}</p>}
 
-          {/* Submit Button */}
           <button
             type="submit"
             disabled={loading}
-            className="w-full h-10 mt-4 bg-gradient-to-r from-purple-600 to-indigo-600 text-white font-bold rounded-lg text-[10px] uppercase tracking-[0.1em] hover:from-purple-700 hover:to-indigo-700 transition-all active:scale-[0.98] disabled:opacity-50"
+            className="mt-2 h-11 w-full rounded-[8px] bg-[#4A90E2] text-sm font-semibold uppercase tracking-[0.1em] text-white transition hover:bg-[#357ABD] disabled:opacity-50"
           >
             {loading ? "Signing In..." : "Sign In"}
           </button>
 
-          {/* Footer Links */}
-          <div className="text-center mt-3 text-[10px] text-slate-400">
-            <Link href="/forget-password" className="font-bold text-purple-700 hover:underline uppercase">
+          <div className="mt-1 text-center text-xs text-[#666666]">
+            <Link href="/forget-password" className="font-semibold uppercase text-[#4A90E2] hover:text-[#F5A623]">
               Forgot password?
             </Link>
           </div>
 
-          <div className="text-center mt-3 text-[10px] text-slate-400">
+          <div className="mt-1 text-center text-xs text-[#666666]">
             Don&apos;t have an account?{" "}
-            <Link href="/register" className="font-bold text-purple-700 hover:underline uppercase">
+            <Link href="/register" className="font-semibold uppercase text-[#4A90E2] hover:text-[#F5A623]">
               Sign up
             </Link>
           </div>
         </form>
-      </div>
     </div>
   );
 }
