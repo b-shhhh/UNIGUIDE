@@ -100,8 +100,8 @@ export const updateProfile = async (req: AuthRequest, res: Response) => {
 
     const fileMap = (req.files as Record<string, Express.Multer.File[] | undefined>) || {};
     const uploadedProfilePic = fileMap.profilePic?.[0] || fileMap.profileImage?.[0];
-    if (uploadedProfilePic?.path) {
-      updates.profilePic = uploadedProfilePic.path.replace(/\\/g, "/");
+    if (uploadedProfilePic?.filename) {
+      updates.profilePic = `/uploads/${uploadedProfilePic.filename}`;
     }
 
     // Do not overwrite persisted values with blank strings from optional form fields.
