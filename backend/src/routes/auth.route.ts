@@ -19,7 +19,15 @@ router.post("/login", login);
 
 router.get("/whoami", authMiddleware, whoAmI);
 router.get("/me", authMiddleware, whoAmI);
-router.put("/update-profile", authMiddleware, upload.single("profilePic"), updateProfile);
+router.put(
+  "/update-profile",
+  authMiddleware,
+  upload.fields([
+    { name: "profilePic", maxCount: 1 },
+    { name: "profileImage", maxCount: 1 },
+  ]),
+  updateProfile,
+);
 router.put("/change-password", authMiddleware, changePassword);
 router.delete("/delete-account", authMiddleware, removeAccount);
 
