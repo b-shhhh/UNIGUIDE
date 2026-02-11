@@ -1,4 +1,4 @@
-import { readFile } from "node:fs/promises";
+import { readFile, stat } from "node:fs/promises";
 import path from "node:path";
 
 export type CsvUniversity = {
@@ -12,6 +12,7 @@ export type CsvUniversity = {
   logoUrl: string;
   course: string;
   courseSlug: string;
+  courses: string[];
   score: number;
   tuition: string;
   ranking: string;
@@ -32,6 +33,9 @@ export type CourseSummary = {
   name: string;
   slug: string;
   count: number;
+  sampleCountry: string;
+  sampleUniversity: string;
+  countryCount: number;
 };
 
 type CsvRow = {
@@ -46,6 +50,7 @@ const DURATION_POOL = ["1 year", "1.5 years", "2 years", "3 years"] as const;
 const INTAKE_POOL = ["January", "February", "September", "October"] as const;
 
 let cachedUniversities: CsvUniversity[] | null = null;
+let cachedMtimeMs = 0;
 
 const csvCandidates = () => [
   path.resolve(process.cwd(), "../backend/src/uploads/universities.csv"),
@@ -124,7 +129,7 @@ const isLikelyFlagUrl = (value?: string) => {
 
 const splitCourses = (raw: string): string[] =>
   raw
-    .split(/[|;/]/)
+    .split(/[|;/,]/)
     .map((value) => value.trim())
     .filter(Boolean);
 
@@ -241,6 +246,7 @@ const buildUniversity = (row: CsvRow, id: string): CsvUniversity => {
     logoUrl: getLogoFromWebsite(row.website),
     course: primaryCourse,
     courseSlug: primaryCourse === "N/A" ? "" : slugify(primaryCourse),
+    courses: row.courses,
     score: 70 + (hash % 30),
     tuition: `$${tuitionValue.toLocaleString()}/year`,
     ranking: `Top ${10 + (hash % 250)}`,
@@ -250,10 +256,12 @@ const buildUniversity = (row: CsvRow, id: string): CsvUniversity => {
   };
 };
 
-const readCsvText = async (): Promise<string> => {
+const readCsvText = async (): Promise<{ text: string; mtimeMs: number }> => {
   for (const candidate of csvCandidates()) {
     try {
-      return await readFile(candidate, "utf8");
+      const fileStat = await stat(candidate);
+      const text = await readFile(candidate, "utf8");
+      return { text, mtimeMs: fileStat.mtimeMs };
     } catch {
       continue;
     }
@@ -262,11 +270,11 @@ const readCsvText = async (): Promise<string> => {
 };
 
 export const getUniversities = async (): Promise<CsvUniversity[]> => {
-  if (cachedUniversities) {
+  const { text, mtimeMs } = await readCsvText();
+  if (cachedUniversities && cachedMtimeMs === mtimeMs) {
     return cachedUniversities;
   }
 
-  const text = await readCsvText();
   const parsed = parseCsv(text);
   const idCounts = new Map<string, number>();
   cachedUniversities = parsed.map((row) => {
@@ -276,6 +284,7 @@ export const getUniversities = async (): Promise<CsvUniversity[]> => {
     const uniqueId = seen === 0 ? baseId : `${baseId}-${seen + 1}`;
     return buildUniversity(row, uniqueId);
   });
+  cachedMtimeMs = mtimeMs;
   return cachedUniversities;
 };
 
@@ -303,25 +312,41 @@ export const getCountries = async (): Promise<CountrySummary[]> => {
 
 export const getCourses = async (): Promise<CourseSummary[]> => {
   const universities = await getUniversities();
-  const map = new Map<string, CourseSummary>();
+  const map = new Map<
+    string,
+    CourseSummary & { countrySet: Set<string> }
+  >();
 
   for (const uni of universities) {
-    if (!uni.courseSlug || uni.course === "N/A") {
-      continue;
+    for (const courseName of uni.courses) {
+      const courseSlug = slugify(courseName);
+      if (!courseSlug) {
+        continue;
+      }
+      const current = map.get(courseSlug);
+      if (current) {
+        current.count += 1;
+        current.countrySet.add(uni.countryName);
+        continue;
+      }
+      map.set(courseSlug, {
+        slug: courseSlug,
+        name: courseName,
+        count: 1,
+        sampleCountry: uni.countryName,
+        sampleUniversity: uni.name,
+        countryCount: 1,
+        countrySet: new Set([uni.countryName]),
+      });
     }
-    const current = map.get(uni.courseSlug);
-    if (current) {
-      current.count += 1;
-      continue;
-    }
-    map.set(uni.courseSlug, {
-      slug: uni.courseSlug,
-      name: uni.course,
-      count: 1,
-    });
   }
 
-  return Array.from(map.values()).sort((a, b) => b.count - a.count);
+  return Array.from(map.values())
+    .map(({ countrySet, ...course }) => ({
+      ...course,
+      countryCount: countrySet.size,
+    }))
+    .sort((a, b) => b.count - a.count);
 };
 
 export const getUniversitiesByCountry = async (countryCode: string) => {

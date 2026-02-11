@@ -189,7 +189,7 @@ export default function CsvDashboardClient({ universities, countries, courses }:
               <Link
                 key={course.slug}
                 href={`/homepage/courses/${course.slug}`}
-                className="min-w-[150px] rounded-md border border-[#d8e5f8] px-2 py-1 hover:bg-[#f5f9ff]"
+                className="min-w-[220px] rounded-md border border-[#d8e5f8] px-2 py-1.5 hover:bg-[#f5f9ff]"
               >
                 <p className="truncate text-[11px] font-semibold text-[#1a2b44]">{course.name}</p>
                 <p className="text-[10px] text-[#5f7590]">{course.count} unis</p>
@@ -227,7 +227,6 @@ export default function CsvDashboardClient({ universities, countries, courses }:
                   ) : null}
                   {uni.countryName}
                 </p>
-                <p className="mt-1 text-xs text-[#5f7590]">{uni.course}</p>
                 <p className="mt-1 text-xs text-[#5f7590]">{uni.ranking}</p>
                 <p className="mt-1 text-xs text-[#0f766e]">AI score: {uni.score}%</p>
                 <div className="mt-3 flex items-center gap-2">
