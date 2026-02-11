@@ -48,6 +48,9 @@ export default async function CourseDetailPage({ params }: Props) {
       <section className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
         {universities.map((uni) => (
           <article key={uni.id} className="rounded-xl border border-[#d8e5f8] bg-white p-4">
+            {uni.logoUrl ? (
+              <img src={uni.logoUrl} alt={`${uni.name} logo`} width={32} height={32} className="mb-2 rounded" />
+            ) : null}
             <p className="text-base font-bold text-[#1a2b44]">{uni.name}</p>
             <p className="mt-1 text-xs text-[#5f7590]">
               {uni.flag} {uni.countryName}
@@ -64,4 +67,3 @@ export default async function CourseDetailPage({ params }: Props) {
     </div>
   );
 }
-
