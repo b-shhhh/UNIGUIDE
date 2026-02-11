@@ -1,8 +1,12 @@
 "use client";
 
 import Link from "next/link";
+import { useSearchParams } from "next/navigation";
 
 export default function LandingPage() {
+  const searchParams = useSearchParams();
+  const accountDeleted = searchParams.get("accountDeleted") === "1";
+
   return (
     <main
       className="relative flex min-h-screen items-center justify-center overflow-hidden bg-[linear-gradient(130deg,#e0f2fe_0%,#dbeafe_40%,#bfdbfe_100%)] px-4 py-10 text-slate-900"
@@ -12,6 +16,12 @@ export default function LandingPage() {
       <div className="pointer-events-none absolute -right-24 bottom-0 h-72 w-72 rounded-full bg-sky-300/40 blur-3xl" />
 
       <section className="relative w-full max-w-3xl rounded-3xl border border-blue-200/80 bg-white/90 p-8 text-center shadow-[0_20px_70px_rgba(37,99,235,0.22)] backdrop-blur-sm sm:p-12">
+        {accountDeleted ? (
+          <div className="mb-5 rounded-xl border border-blue-200 bg-blue-50 px-4 py-3 text-sm font-semibold text-blue-900">
+            Account has been deleted successfully.
+          </div>
+        ) : null}
+
         <div className="mx-auto mb-4 grid h-20 w-20 place-items-center rounded-2xl bg-blue-600/95 shadow-lg shadow-blue-700/30 cap-float">
           <svg viewBox="0 0 64 64" className="h-11 w-11" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
             <path d="M4 24L32 12L60 24L32 36L4 24Z" fill="#EFF6FF" />

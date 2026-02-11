@@ -143,16 +143,10 @@ export const handleDeleteAccount = async (payload: Record<string, unknown>) => {
         ? (userData as { token?: unknown }).token
         : undefined;
     const token = authToken || (typeof tokenFromUserData === "string" ? tokenFromUserData : null);
-    if (!token) {
-      return {
-        success: false,
-        message: "No auth token found. Please login again.",
-      };
-    }
-    const result = await deleteAccount(payload, token);
+    const result = await deleteAccount(payload, token ?? undefined);
     if (result.success) {
       await clearAuthCookies();
-      redirect("/register");
+      redirect("/?accountDeleted=1");
     }
     return {
       success: false,

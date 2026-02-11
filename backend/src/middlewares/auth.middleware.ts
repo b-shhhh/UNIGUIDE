@@ -5,11 +5,18 @@ import { AuthRequest } from "../types/user.type";
 
 export const authMiddleware = (req: AuthRequest, res: Response, next: NextFunction) => {
   const authHeader = req.headers.authorization;
-  if (!authHeader || !authHeader.startsWith("Bearer ")) {
+  const tokenFromHeader = authHeader?.startsWith("Bearer ") ? authHeader.split(" ")[1] : null;
+  const cookieHeader = req.headers.cookie || "";
+  const tokenFromCookie =
+    cookieHeader
+      .split(";")
+      .map((part) => part.trim())
+      .find((part) => part.startsWith("auth_token="))
+      ?.split("=")[1] || null;
+  const token = tokenFromHeader || tokenFromCookie;
+  if (!token) {
     return res.status(401).json({ success: false, message: "No token provided" });
   }
-
-  const token = authHeader.split(" ")[1];
 
   try {
     const decoded = jwt.verify(token, JWT_SECRET) as { id: string; role?: "user" | "admin" };
