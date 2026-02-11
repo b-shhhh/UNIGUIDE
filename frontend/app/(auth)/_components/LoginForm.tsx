@@ -26,11 +26,10 @@ export default function LoginPage() {
       if (!response.success) throw new Error(response.message);
 
       // Set user in context
-      setUser(typeof response.data === "object" && response.data !== null ? (response.data as Record<string, unknown>) : null);
+      setUser(response.data);
       router.push("/private/homepage");
-    } catch (err: unknown) {
-      const message = err instanceof Error ? err.message : "Login failed. Please check your credentials.";
-      setError(message);
+    } catch (err: any) {
+      setError(err.message || "Login failed. Please check your credentials.");
     } finally {
       setLoading(false);
     }

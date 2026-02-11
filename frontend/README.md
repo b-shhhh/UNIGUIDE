@@ -1,5 +1,22 @@
 This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
 
+
+## Backend connection
+
+Set the frontend API base URL before starting the app:
+
+```bash
+# frontend/.env.local
+NEXT_PUBLIC_API_BASE_URL=http://localhost:5000
+```
+
+Then run backend and frontend:
+
+```bash
+cd ../backend && npm run dev
+cd ../frontend && npm run dev
+```
+
 ## Getting Started
 
 First, run the development server:
