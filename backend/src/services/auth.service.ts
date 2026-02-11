@@ -5,28 +5,13 @@ import crypto from "crypto";
 import { JWT_SECRET } from "../config";
 import { RegisterInput, LoginInput } from "../dtos/user.dto";
 
-const formatNameParts = (data: RegisterInput) => {
+const formatFullName = (data: RegisterInput) => {
+  const fullName = data.fullName?.trim();
   const username = data.username?.trim();
-  const firstName = data.firstName?.trim();
-  const lastName = data.lastName?.trim();
-   const phone = formatPhone(data);
 
-  if (firstName) {
-    return {
-      firstName,
-      lastName: lastName || "-"
-    };
-  }
-
-  if (username) {
-    const [first, ...rest] = username.split(/\s+/).filter(Boolean);
-    return {
-      firstName: first || username,
-      lastName: rest.join(" ") || "-"
-    };
-  }
-
-  throw new Error("Name is required");
+  if (fullName) return fullName;
+  if (username) return username;
+  throw new Error("Full name is required");
 };
 
 const formatPhone = (data: RegisterInput) => {
@@ -41,7 +26,7 @@ const formatPhone = (data: RegisterInput) => {
 export const registerUser = async (data: RegisterInput) => {
   const { email, password } = data;
 
-  const { firstName, lastName } = formatNameParts(data);
+  const fullName = formatFullName(data);
   const phone = formatPhone(data);
 
   const existingUser = await User.findOne({ email });
@@ -50,8 +35,7 @@ export const registerUser = async (data: RegisterInput) => {
   const hashedPassword = await bcrypt.hash(password, 10);
 
   const user = new User({
-    firstName,
-    lastName,
+    fullName,
     email,
     phone,
     password: hashedPassword,
@@ -89,8 +73,7 @@ export const whoAmIService = async (userId: string) => {
 export const updateProfileService = async (
   userId: string,
   updates: Partial<{
-    firstName: string;
-    lastName: string;
+    fullName: string;
     email: string;
     phone: string;
     country: string;

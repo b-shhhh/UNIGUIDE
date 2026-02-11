@@ -29,8 +29,7 @@ const run = async () => {
   const password = await bcrypt.hash(ADMIN_PASSWORD, 10);
 
   await User.create({
-    firstName: ADMIN_FIRST_NAME,
-    lastName: ADMIN_LAST_NAME,
+    fullName: `${ADMIN_FIRST_NAME} ${ADMIN_LAST_NAME}`.trim(),
     email: ADMIN_EMAIL,
     phone: ADMIN_PHONE,
     password,

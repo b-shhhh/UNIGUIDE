@@ -4,8 +4,7 @@ import { User } from "../models/user.model";
 
 const sanitizeUser = (user: any) => ({
   id: String(user._id),
-  firstName: user.firstName,
-  lastName: user.lastName,
+  fullName: user.fullName,
   email: user.email,
   phone: user.phone,
   role: user.role,
@@ -22,8 +21,7 @@ export const listAdminUsers = async (req: Request, res: Response) => {
     const filter = q
       ? {
           $or: [
-            { firstName: { $regex: q, $options: "i" } },
-            { lastName: { $regex: q, $options: "i" } },
+            { fullName: { $regex: q, $options: "i" } },
             { email: { $regex: q, $options: "i" } },
             { phone: { $regex: q, $options: "i" } }
           ]
@@ -55,12 +53,12 @@ export const getAdminUser = async (req: Request, res: Response) => {
 
 export const createAdminUser = async (req: Request, res: Response) => {
   try {
-    const { firstName, lastName, email, phone, password, role } = req.body || {};
+    const { fullName, email, phone, password, role } = req.body || {};
 
-    if (!firstName || !lastName || !email || !phone || !password) {
+    if (!fullName || !email || !phone || !password) {
       return res
         .status(400)
-        .json({ success: false, message: "firstName, lastName, email, phone and password are required" });
+        .json({ success: false, message: "fullName, email, phone and password are required" });
     }
 
     const existing = await User.findOne({ email });
@@ -71,8 +69,7 @@ export const createAdminUser = async (req: Request, res: Response) => {
     const hashedPassword = await bcrypt.hash(String(password), 10);
 
     const created = await User.create({
-      firstName: String(firstName),
-      lastName: String(lastName),
+      fullName: String(fullName),
       email: String(email),
       phone: String(phone),
       password: hashedPassword,

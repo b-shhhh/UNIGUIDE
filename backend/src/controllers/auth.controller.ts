@@ -14,9 +14,7 @@ import { User } from "../models/user.model";
 
 const userPayload = (user: any) => ({
   id: user._id,
-  firstName: user.firstName,
-  lastName: user.lastName,
-  fullName: `${user.firstName || ""} ${user.lastName || ""}`.trim(),
+  fullName: user.fullName,
   email: user.email,
   phone: user.phone,
   country: user.country,
@@ -82,11 +80,8 @@ export const updateProfile = async (req: AuthRequest, res: Response) => {
     const updates: any = { ...body };
 
     const rawName = body.fullName || body.name || body.username;
-    if (rawName && !body.firstName) {
-      const [first, ...rest] = String(rawName).trim().split(/\s+/).filter(Boolean);
-      updates.firstName = first;
-      updates.lastName = rest.join(" ") || "-";
-      delete updates.fullName;
+    if (rawName) {
+      updates.fullName = String(rawName).trim();
       delete updates.name;
       delete updates.username;
     }

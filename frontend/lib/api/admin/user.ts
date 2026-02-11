@@ -3,8 +3,7 @@ import { API } from "../endpoints";
 
 export type AdminUser = {
   id: string;
-  firstName: string;
-  lastName: string;
+  fullName: string;
   email: string;
   phone: string;
   profilePic?: string;

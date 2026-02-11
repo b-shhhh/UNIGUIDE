@@ -1,10 +1,9 @@
 import { z } from "zod";
 
 const registerBaseSchema = z.object({
-  // Supports frontend payload (`username`) and legacy payload (`firstName`, `lastName`)
+  // Supports frontend payload (`fullName`) and legacy payload (`username`)
+  fullName: z.string().min(2, "Full name is required").optional(),
   username: z.string().min(2, "Username must be at least 2 characters").optional(),
-  firstName: z.string().min(2, "First name is required").optional(),
-  lastName: z.string().min(1, "Last name is required").optional(),
   email: z.string().email("Invalid email"),
   countryCode: z.string().regex(/^\+\d{1,3}$/, "Invalid country code").optional(),
   phone: z.string().min(7, "Phone number too short"),
@@ -14,9 +13,9 @@ const registerBaseSchema = z.object({
 
 // Register input validation
 export const registerSchema = registerBaseSchema
-  .refine((data) => Boolean(data.username || data.firstName), {
-    message: "Provide username or firstName",
-    path: ["username"]
+  .refine((data) => Boolean(data.fullName || data.username), {
+    message: "Provide fullName",
+    path: ["fullName"]
   })
   .refine((data) => !data.confirmPassword || data.password === data.confirmPassword, {
     message: "Passwords do not match",

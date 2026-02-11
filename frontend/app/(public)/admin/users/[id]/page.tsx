@@ -21,7 +21,7 @@ export default async function Page({ params }: Params) {
         <div>
           <p className="text-xs font-bold uppercase tracking-[0.12em] text-slate-500">User Detail</p>
           <h2 className="text-2xl font-bold text-slate-900">
-            {user.firstName} {user.lastName}
+            {user.fullName}
           </h2>
         </div>
         <Link

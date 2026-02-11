@@ -30,7 +30,7 @@ export default function UserTable({ users }: Props) {
             {users.map((user) => (
               <tr key={user.id} className="border-t border-[#d8e5f8]">
                 <td className="px-4 py-3 font-semibold text-[#333333]">
-                  {user.firstName} {user.lastName}
+                  {user.fullName}
                 </td>
                 <td className="px-4 py-3 text-[#666666]">{user.email}</td>
                 <td className="px-4 py-3 text-[#666666]">{user.phone}</td>

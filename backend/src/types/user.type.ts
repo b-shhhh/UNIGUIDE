@@ -11,15 +11,13 @@ export interface AuthRequest extends Request {
 export interface RequestUser {
   id: string;             // User ID from MongoDB
   role?: "user" | "admin";
-  firstName?: string;
-  lastName?: string;
+  fullName?: string;
   email?: string;
 }
 
 // Input for updating user profile
 export interface UpdateUserData {
-  firstName?: string;
-  lastName?: string;
+  fullName?: string;
   email?: string;
   phone?: string;
   country?: string;
@@ -30,8 +28,7 @@ export interface UpdateUserData {
 
 // Input for registering a new user
 export interface RegisterUserData {
-  firstName: string;
-  lastName: string;
+  fullName: string;
   email: string;
   phone: string;
   password: string;

@@ -29,11 +29,7 @@ const asString = (value: unknown, fallback = ""): string => {
 const getUserDisplayName = (user: UserRecord) => {
   const explicitName = asString(user?.fullName) || asString(user?.name) || asString(user?.username);
   if (explicitName) return explicitName;
-
-  const firstName = asString(user?.firstName);
-  const lastName = asString(user?.lastName);
-  const combined = `${firstName} ${lastName}`.trim();
-  return combined || "User";
+  return "User";
 };
 
 const getUserEmail = (user: UserRecord) => asString(user?.email);

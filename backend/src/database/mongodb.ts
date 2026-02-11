@@ -11,10 +11,11 @@ async function cleanupLegacyUserIndexes() {
             const keys = index?.key || {};
             const keyNames = Object.keys(keys).map((key) => key.toLowerCase());
             const targetsFirstName = keyNames.includes("firstname") || keyNames.includes("first_name");
+            const targetsLastName = keyNames.includes("lastname") || keyNames.includes("last_name");
             const isUnique = Boolean(index?.unique);
 
-            // Remove legacy accidental unique index on firstname/first_name.
-            if (isUnique && targetsFirstName && name !== "_id_") {
+            // Remove legacy accidental unique indexes on firstname/lastname fields.
+            if (isUnique && (targetsFirstName || targetsLastName) && name !== "_id_") {
                 await usersCollection.dropIndex(name);
                 console.log(`Dropped legacy user index: ${name}`);
             }
