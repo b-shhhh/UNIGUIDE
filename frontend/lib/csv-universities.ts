@@ -6,6 +6,7 @@ export type CsvUniversity = {
   countryCode: string;
   countryName: string;
   flag: string;
+  countryFlagUrl: string;
   name: string;
   website: string;
   logoUrl: string;
@@ -23,6 +24,7 @@ export type CountrySummary = {
   code: string;
   name: string;
   flag: string;
+  flagImageUrl: string;
   count: number;
 };
 
@@ -198,6 +200,14 @@ const toFlagEmoji = (countryCode: string) => {
   return String.fromCodePoint(code.charCodeAt(0) + 127397, code.charCodeAt(1) + 127397);
 };
 
+const getFlagImageUrl = (countryCode: string) => {
+  const code = countryCode.toLowerCase() === "uk" ? "gb" : countryCode.toLowerCase();
+  if (!/^[a-z]{2}$/.test(code)) {
+    return "";
+  }
+  return `https://flagcdn.com/w80/${code}.png`;
+};
+
 const countryNameFromCode = (countryCode: string) => {
   try {
     const display = new Intl.DisplayNames(["en"], { type: "region" });
@@ -277,6 +287,7 @@ const buildUniversity = (row: CsvRow, id: string): CsvUniversity => {
     countryCode: row.countryCode,
     countryName: countryNameFromCode(row.countryCode),
     flag: toFlagEmoji(row.countryCode),
+    countryFlagUrl: getFlagImageUrl(row.countryCode),
     name: row.name,
     website: row.website,
     logoUrl: getLogoFromWebsite(row.website),
@@ -334,6 +345,7 @@ export const getCountries = async (): Promise<CountrySummary[]> => {
       code: uni.countryCode,
       name: uni.countryName,
       flag: uni.flag,
+      flagImageUrl: uni.countryFlagUrl,
       count: 1,
     });
   }
