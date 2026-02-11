@@ -126,7 +126,8 @@ export const updateProfile = async (req: AuthRequest, res: Response) => {
 export const changePassword = async (req: AuthRequest, res: Response) => {
   try {
     const userId = req.user?.id;
-    const { oldPassword, newPassword } = req.body;
+    const oldPassword = req.body?.oldPassword || req.body?.currentPassword;
+    const newPassword = req.body?.newPassword;
 
     if (!userId) throw new Error("Unauthorized");
     if (!oldPassword || !newPassword) throw new Error("Old and new passwords required");
