@@ -27,7 +27,7 @@ export type UniversityRecommendation = {
 export type DeadlineItem = {
   title: string;
   date: string;
-  tone: string;
+  tone: DeadlineTone;
 };
 
 export type HomepagePayload = {
@@ -102,7 +102,9 @@ const DEFAULT_UNIVERSITIES: UniversityRecommendation[] = [
   },
 ];
 
-const DEADLINE_TONES = ["bg-[#f3f8ff]", "bg-[#fff7ed]", "bg-[#eefcf7]"] as const;
+type DeadlineTone = "bg-[#f3f8ff]" | "bg-[#fff7ed]" | "bg-[#eefcf7]";
+
+const DEADLINE_TONES: readonly DeadlineTone[] = ["bg-[#f3f8ff]", "bg-[#fff7ed]", "bg-[#eefcf7]"];
 
 const DEFAULT_DEADLINES: DeadlineItem[] = [
   { title: "TU Munich - Fall Intake", date: "March 20, 2026", tone: DEADLINE_TONES[0] },
