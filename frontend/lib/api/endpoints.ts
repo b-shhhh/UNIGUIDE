@@ -10,6 +10,18 @@ export const API = {
         REQUEST_PASSWORD_RESET: '/api/auth/request-password-reset',
         RESET_PASSWORD: (token: string) => `/api/auth/reset-password/${token}`,
     },
+    ADMIN: {
+        PROFILE: "/api/admin/profile",
+        LOGOUT: "/api/admin/logout",
+        USERS: "/api/admin/users",
+        USER: (id: string) => `/api/admin/users/${id}`,
+        UNIVERSITIES: "/api/admin/universities",
+        UNIVERSITY: (id: string) => `/api/admin/universities/${id}`,
+        COURSES: "/api/admin/courses",
+        COURSE: (id: string) => `/api/admin/courses/${id}`,
+        COUNTRIES: "/api/admin/countries",
+        COUNTRY: (id: string) => `/api/admin/countries/${id}`,
+    },
     RECOMMENDATION: {
         LIST: "/api/recommendations",
     },
