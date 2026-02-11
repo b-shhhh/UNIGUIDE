@@ -1,7 +1,17 @@
+"use client";
+
 import type { ReactNode } from "react";
+import { usePathname } from "next/navigation";
 import AdminNav from "./_components/AdminNav";
 
 export default function AdminLayout({ children }: { children: ReactNode }) {
+  const pathname = usePathname();
+  const isLoginPage = pathname === "/admin/login";
+
+  if (isLoginPage) {
+    return <>{children}</>;
+  }
+
   return (
     <div className="min-h-screen bg-[linear-gradient(180deg,#f5faff_0%,#ffffff_35%,#f8fbff_100%)]">
       <header className="border-b border-[#d8e5f8] bg-white/95">

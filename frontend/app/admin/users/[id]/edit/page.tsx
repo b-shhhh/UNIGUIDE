@@ -1,10 +1,12 @@
 import Link from "next/link";
+import { requireAdmin } from "@/lib/admin-auth";
 
 type Params = {
   params: Promise<{ id: string }>;
 };
 
 export default async function AdminEditUserPage({ params }: Params) {
+  await requireAdmin();
   const { id } = await params;
 
   return (
