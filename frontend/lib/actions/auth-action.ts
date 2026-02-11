@@ -13,6 +13,18 @@ const getErrorMessage = (error: unknown, fallback: string) => {
   return fallback;
 };
 
+type LoginActionResult =
+  | {
+      success: true;
+      message: string;
+      data: Record<string, unknown> | null;
+    }
+  | {
+      success: false;
+      message: string;
+      data?: undefined;
+    };
+
 export const handleRegister = async (formData: Record<string, unknown>) => {
   try {
     const result = await registerUser(formData);
@@ -35,7 +47,9 @@ export const handleRegister = async (formData: Record<string, unknown>) => {
   }
 };
 
-export const handleLogin = async (formData: Record<string, unknown>) => {
+export const handleLogin = async (
+  formData: Record<string, unknown>
+): Promise<LoginActionResult> => {
   try {
     const result = await loginUser(formData);
     if (result.success) {
@@ -47,7 +61,7 @@ export const handleLogin = async (formData: Record<string, unknown>) => {
       return {
         success: true,
         message: "Login successful",
-        data: result.data,
+        data: (result.data ?? null) as Record<string, unknown> | null,
       };
     }
     return {
