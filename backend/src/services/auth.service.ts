@@ -2,8 +2,9 @@ import { User } from "../models/user.model";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import crypto from "crypto";
-import { JWT_SECRET } from "../config";
+import { FRONTEND_URL, JWT_SECRET, NODE_ENV } from "../config";
 import { RegisterInput, LoginInput } from "../dtos/user.dto";
+import { sendPasswordResetEmail } from "../utils/mailer";
 
 const formatFullName = (data: RegisterInput) => {
   const fullName = data.fullName?.trim();
@@ -90,7 +91,8 @@ export const updateProfileService = async (
 };
 
 export const requestPasswordResetService = async (email: string) => {
-  const user = await User.findOne({ email });
+  const normalizedEmail = email.trim().toLowerCase();
+  const user = await User.findOne({ email: normalizedEmail });
   if (!user) {
     return { success: true };
   }
@@ -102,7 +104,14 @@ export const requestPasswordResetService = async (email: string) => {
   user.resetPasswordExpires = new Date(Date.now() + 60 * 60 * 1000);
   await user.save();
 
-  return { success: true, resetToken: rawToken };
+  const resetLink = `${FRONTEND_URL.replace(/\/$/, "")}/reset-password?token=${rawToken}`;
+  await sendPasswordResetEmail(normalizedEmail, resetLink);
+
+  if (NODE_ENV !== "production") {
+    return { success: true, resetToken: rawToken, resetLink };
+  }
+
+  return { success: true };
 };
 
 export const resetPasswordService = async (token: string, newPassword: string) => {

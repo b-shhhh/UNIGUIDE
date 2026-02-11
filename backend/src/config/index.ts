@@ -27,6 +27,13 @@ export const ALLOWED_ORIGINS = parseOrigins(process.env.ALLOWED_ORIGINS);
 export const RATE_LIMIT_WINDOW_MS = parsePort(process.env.RATE_LIMIT_WINDOW_MS, 15 * 60 * 1000);
 export const RATE_LIMIT_MAX = parsePort(process.env.RATE_LIMIT_MAX, 250);
 export const COOKIE_SECURE = IS_PRODUCTION;
+export const FRONTEND_URL = process.env.FRONTEND_URL || "http://localhost:3000";
+export const MAIL_HOST = process.env.MAIL_HOST || "";
+export const MAIL_PORT = parsePort(process.env.MAIL_PORT, 587);
+export const MAIL_SECURE = process.env.MAIL_SECURE === "true";
+export const MAIL_USER = process.env.MAIL_USER || "";
+export const MAIL_PASS = process.env.MAIL_PASS || "";
+export const MAIL_FROM = process.env.MAIL_FROM || MAIL_USER;
 
 if (IS_PRODUCTION && (!JWT_SECRET || JWT_SECRET.length < 32)) {
   throw new Error("JWT_SECRET must be set and at least 32 characters in production");
