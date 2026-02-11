@@ -12,8 +12,7 @@ const now = () => Date.now();
 
 const getIp = (req: Request) => req.ip || req.socket.remoteAddress || "unknown";
 
-const isSensitivePath = (path: string) =>
-  path.startsWith("/api/auth") || path.startsWith("/api/admin");
+const isSensitivePath = (path: string) => path.startsWith("/api/auth");
 
 export const securityHeadersMiddleware = (_req: Request, res: Response, next: NextFunction) => {
   res.setHeader("X-Content-Type-Options", "nosniff");
