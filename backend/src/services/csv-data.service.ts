@@ -8,6 +8,7 @@ export type CsvUniversity = {
   name: string;
   web_pages?: string;
   flag_url?: string;
+  logo_url?: string;
   courses: string[];
 };
 
@@ -67,6 +68,20 @@ const splitCourses = (raw: string): string[] =>
     .map((value) => value.trim())
     .filter(Boolean);
 
+const defaultFlagUrl = (alpha2: string) =>
+  alpha2 ? `https://flagcdn.com/w160/${alpha2.toLowerCase()}.png` : undefined;
+
+const logoFromWebsite = (website?: string) => {
+  if (!website) return undefined;
+  try {
+    const hostname = new URL(website).hostname;
+    if (!hostname) return undefined;
+    return `https://www.google.com/s2/favicons?domain=${hostname}&sz=128`;
+  } catch {
+    return undefined;
+  }
+};
+
 const extractCourseColumns = (headers: string[]) =>
   headers
     .map((header, index) => ({ header: normalize(header), index }))
@@ -123,14 +138,17 @@ const readCsvUniversities = async (): Promise<CsvUniversity[]> => {
     const alpha2 = (cols[alpha2Index] || "").toUpperCase();
     const name = cols[nameIndex] || "";
     const courses = courseColumnIndexes.flatMap((index) => splitCourses(cols[index] || ""));
+    const webPage = cols[webPagesIndex] || undefined;
+    const flagUrl = cols[flagUrlIndex] || defaultFlagUrl(alpha2);
 
     return {
       id: `csv-${rowIndex + 1}`,
       alpha2,
       country: getCountryName(alpha2),
       name,
-      web_pages: cols[webPagesIndex] || undefined,
-      flag_url: cols[flagUrlIndex] || undefined,
+      web_pages: webPage,
+      flag_url: flagUrl,
+      logo_url: logoFromWebsite(webPage),
       courses: Array.from(new Set(courses))
     };
   }).filter((uni) => Boolean(uni.alpha2 && uni.name));
