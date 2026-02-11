@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import type { DeadlineItem, HomepageStat, UniversityRecommendation } from "@/lib/api/recommendation";
-import { readSavedUniversityIds, SAVED_UNIVERSITIES_UPDATE_EVENT, toggleUniversitySaved } from "@/lib/saved-universities";
+import { fetchSavedUniversityIds, SAVED_UNIVERSITIES_UPDATE_EVENT, toggleUniversitySaved } from "@/lib/saved-universities";
 
 type Props = {
   stats: HomepageStat[];
@@ -43,11 +43,18 @@ export default function HomeDashboardClient({ stats, universities, deadlines }: 
   const [savedIds, setSavedIds] = useState<string[]>([]);
 
   useEffect(() => {
-    const syncSaved = () => setSavedIds(readSavedUniversityIds());
-    syncSaved();
+    let active = true;
+    const syncSaved = async () => {
+      const ids = await fetchSavedUniversityIds();
+      if (active) {
+        setSavedIds(ids);
+      }
+    };
+    void syncSaved();
     window.addEventListener("storage", syncSaved);
     window.addEventListener(SAVED_UNIVERSITIES_UPDATE_EVENT, syncSaved);
     return () => {
+      active = false;
       window.removeEventListener("storage", syncSaved);
       window.removeEventListener(SAVED_UNIVERSITIES_UPDATE_EVENT, syncSaved);
     };
@@ -98,9 +105,9 @@ export default function HomeDashboardClient({ stats, universities, deadlines }: 
     setSelectedUniversity(best);
   };
 
-  const onToggleSaved = (id: string) => {
-    toggleUniversitySaved(id);
-    setSavedIds(readSavedUniversityIds());
+  const onToggleSaved = async (id: string) => {
+    const result = await toggleUniversitySaved(id);
+    setSavedIds(result.ids);
   };
 
   return (
@@ -340,4 +347,3 @@ export default function HomeDashboardClient({ stats, universities, deadlines }: 
     </div>
   );
 }
-
