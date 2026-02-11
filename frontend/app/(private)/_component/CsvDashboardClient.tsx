@@ -269,7 +269,7 @@ export default function CsvDashboardClient({ universities, countries, courses }:
         <section className="fixed bottom-20 right-5 z-40 w-[min(92vw,390px)] rounded-2xl border border-[#d8e5f8] bg-white p-4 shadow-2xl">
           <h3 className="text-lg font-bold text-[#1a2b44]">AI Chatbot (CSV)</h3>
           <p className="mt-1 text-xs text-[#5f7590]">
-            Ask naturally: best country to study CS, best among these, affordable options under budget.
+            Ask anything. It answers from your CSV only and supports follow-ups like "best among these".
           </p>
 
           <div className="mt-3 max-h-72 space-y-2 overflow-y-auto rounded-lg border border-[#d8e5f8] bg-[#f8fbff] p-3">
