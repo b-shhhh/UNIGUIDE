@@ -3,7 +3,9 @@ import { z } from "zod";
 const registerBaseSchema = z.object({
   // Supports frontend payload (`fullName`) and legacy payload (`username`)
   fullName: z.string().min(2, "Full name is required").optional(),
-  email: z.string().email("Invalid email"),
+  email: z
+    .string()
+    .refine((value) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value), "Invalid email"),
   countryCode: z
     .string()
     .refine((value) => /^\+\d{1,3}$/.test(value), "Invalid country code")
@@ -28,7 +30,9 @@ export type RegisterInput = z.infer<typeof registerSchema>;
 
 // Login input validation
 export const loginSchema = z.object({
-  email: z.string().email("Invalid email"),
+  email: z
+    .string()
+    .refine((value) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value), "Invalid email"),
   password: z.string().min(6, "Password must be at least 6 characters")
 });
 
