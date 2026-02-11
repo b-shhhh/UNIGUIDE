@@ -52,7 +52,11 @@ const getAvatarUrl = (avatar: string) => {
   if (/^https?:\/\//i.test(avatar)) return avatar;
 
   const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || "http://127.0.0.1:5050";
-  const path = avatar.startsWith("/") ? avatar : `/${avatar}`;
+  // Handle old stored absolute filesystem paths by extracting `/uploads/...`.
+  const normalized = avatar.replace(/\\/g, "/");
+  const uploadsIndex = normalized.toLowerCase().lastIndexOf("/uploads/");
+  const resolvedPath = uploadsIndex >= 0 ? normalized.slice(uploadsIndex) : normalized;
+  const path = resolvedPath.startsWith("/") ? resolvedPath : `/${resolvedPath}`;
   return `${baseUrl}${path}`;
 };
 
