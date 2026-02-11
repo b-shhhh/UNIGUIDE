@@ -91,7 +91,11 @@ export default function CsvDashboardClient({ universities, countries, courses }:
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           message: raw,
-          history: next.map((msg) => ({ role: msg.role, content: msg.text })),
+          history: next.map((msg) => ({
+            role: msg.role,
+            content: msg.text,
+            recommendationIds: msg.results?.map((uni) => uni.id) || [],
+          })),
         }),
       });
 
