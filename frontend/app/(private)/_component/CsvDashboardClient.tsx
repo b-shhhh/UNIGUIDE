@@ -11,11 +11,21 @@ type Props = {
   courses: CourseSummary[];
 };
 
+type ChatMessage = {
+  role: "user" | "assistant";
+  text: string;
+  results?: CsvUniversity[];
+};
+
 export default function CsvDashboardClient({ universities, countries, courses }: Props) {
   const [query, setQuery] = useState("");
   const [chatInput, setChatInput] = useState("");
-  const [chatResults, setChatResults] = useState<CsvUniversity[]>([]);
-  const [chatMessage, setChatMessage] = useState("Ask for universities by country, course, and budget.");
+  const [chatMessages, setChatMessages] = useState<ChatMessage[]>([
+    {
+      role: "assistant",
+      text: "Hi, ask me for universities by country, course, and budget. Example: affordable universities in Canada for Computer Science under $15k.",
+    },
+  ]);
   const [savedIds, setSavedIds] = useState<string[]>([]);
   const [savingId, setSavingId] = useState<string | null>(null);
 
@@ -85,12 +95,13 @@ export default function CsvDashboardClient({ universities, countries, courses }:
   };
 
   const handleChatAsk = () => {
-    const prompt = chatInput.trim().toLowerCase();
+    const raw = chatInput.trim();
+    const prompt = raw.toLowerCase();
     if (!prompt) {
-      setChatResults([]);
-      setChatMessage("Type a query first.");
       return;
     }
+
+    setChatInput("");
 
     const matchedCountry = countries.find((country) => prompt.includes(country.name.toLowerCase()));
     const matchedCourse = courses.find((course) => prompt.includes(course.name.toLowerCase()));
@@ -106,16 +117,21 @@ export default function CsvDashboardClient({ universities, countries, courses }:
       .sort((a, b) => b.score - a.score)
       .slice(0, 5);
 
-    setChatResults(results);
-
-    if (!results.length) {
-      setChatMessage("No exact match. Try a different country/course or increase budget.");
-      return;
+    let assistantText = "";
+    if (!matchedCountry && !matchedCourse && budgetLimit === null) {
+      assistantText =
+        "I can help better if you include at least one of: country, course, or budget. Example: universities in Canada for Data Science under $20k.";
+    } else if (!results.length) {
+      assistantText = "I found no exact match. Try increasing budget or changing course/country.";
+    } else {
+      assistantText = `I found ${results.length} match${results.length > 1 ? "es" : ""}${matchedCountry ? ` in ${matchedCountry.name}` : ""}${matchedCourse ? ` for ${matchedCourse.name}` : ""}${budgetLimit ? ` under $${budgetLimit.toLocaleString()}` : ""}.`;
     }
 
-    setChatMessage(
-      `Found ${results.length} match${results.length > 1 ? "es" : ""}${matchedCountry ? ` in ${matchedCountry.name}` : ""}${matchedCourse ? ` for ${matchedCourse.name}` : ""}${budgetLimit ? ` under $${budgetLimit.toLocaleString()}` : ""}.`,
-    );
+    setChatMessages((prev) => [
+      ...prev,
+      { role: "user", text: raw },
+      { role: "assistant", text: assistantText, results: results.length ? results : undefined },
+    ]);
   };
 
   return (
@@ -137,11 +153,48 @@ export default function CsvDashboardClient({ universities, countries, courses }:
 
       <section className="rounded-2xl border border-[#d8e5f8] bg-white p-4">
         <h3 className="text-lg font-bold text-[#1a2b44]">AI Chatbot (CSV)</h3>
-        <p className="mt-1 text-xs text-[#5f7590]">Example: I want affordable universities in Canada for Computer Science under $15k</p>
+        <p className="mt-1 text-xs text-[#5f7590]">Try: affordable universities in Canada for Computer Science under $15k</p>
+
+        <div className="mt-3 max-h-72 space-y-2 overflow-y-auto rounded-lg border border-[#d8e5f8] bg-[#f8fbff] p-3">
+          {chatMessages.map((message, index) => (
+            <div key={`chat-msg-${index}`} className={message.role === "user" ? "text-right" : "text-left"}>
+              <div
+                className={`inline-block max-w-[90%] rounded-lg px-3 py-2 text-xs ${
+                  message.role === "user" ? "bg-[#4A90E2] text-white" : "border border-[#d8e5f8] bg-white text-[#1a2b44]"
+                }`}
+              >
+                {message.text}
+              </div>
+              {message.role === "assistant" && message.results?.length ? (
+                <div className="mt-2 grid gap-2 sm:grid-cols-2">
+                  {message.results.map((uni) => (
+                    <Link
+                      key={`chat-${uni.id}`}
+                      href={`/homepage/universities/${uni.id}`}
+                      className="rounded-md border border-[#d8e5f8] bg-white px-3 py-2 text-left hover:bg-[#f5f9ff]"
+                    >
+                      <p className="text-xs font-semibold text-[#1a2b44]">{uni.name}</p>
+                      <p className="text-[11px] text-[#5f7590]">
+                        {uni.countryName} - {uni.course}
+                      </p>
+                      <p className="text-[11px] text-[#5f7590]">{uni.tuition}</p>
+                    </Link>
+                  ))}
+                </div>
+              ) : null}
+            </div>
+          ))}
+        </div>
+
         <div className="mt-3 flex flex-col gap-2 sm:flex-row">
           <input
             value={chatInput}
             onChange={(event) => setChatInput(event.target.value)}
+            onKeyDown={(event) => {
+              if (event.key === "Enter") {
+                handleChatAsk();
+              }
+            }}
             placeholder="Ask your query..."
             className="h-10 w-full rounded-md border border-[#d8e5f8] px-3 text-sm outline-none"
           />
@@ -153,24 +206,6 @@ export default function CsvDashboardClient({ universities, countries, courses }:
             Ask
           </button>
         </div>
-        <p className="mt-2 text-xs font-semibold text-[#1d4ed8]">{chatMessage}</p>
-        {chatResults.length ? (
-          <div className="mt-3 grid gap-2 sm:grid-cols-2">
-            {chatResults.map((uni) => (
-              <Link
-                key={`chat-${uni.id}`}
-                href={`/homepage/universities/${uni.id}`}
-                className="rounded-md border border-[#d8e5f8] px-3 py-2 hover:bg-[#f5f9ff]"
-              >
-                <p className="text-sm font-semibold text-[#1a2b44]">{uni.name}</p>
-                <p className="text-xs text-[#5f7590]">
-                  {uni.countryName} - {uni.course}
-                </p>
-                <p className="text-xs text-[#5f7590]">{uni.tuition}</p>
-              </Link>
-            ))}
-          </div>
-        ) : null}
       </section>
 
       <section className="grid gap-4 lg:grid-cols-2">
