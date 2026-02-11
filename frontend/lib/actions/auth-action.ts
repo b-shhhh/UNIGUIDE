@@ -2,7 +2,7 @@
 "use server"
 
 import { redirect } from "next/navigation";
-import { registerUser, loginUser, updateUserProfile, changePassword, requestPasswordReset, resetPassword } from "../api/auth";
+import { registerUser, loginUser, updateUserProfile, changePassword, deleteAccount, requestPasswordReset, resetPassword } from "../api/auth";
 import { setUserData, setAuthToken, clearAuthCookies } from "../api/cookie";
 import { revalidatePath } from "next/cache";
 
@@ -118,6 +118,25 @@ export const handleChangePassword = async (formData: Record<string, unknown>) =>
     return {
       success: false,
       message: getErrorMessage(error, "Change password failed"),
+    };
+  }
+};
+
+export const handleDeleteAccount = async (payload: Record<string, unknown>) => {
+  try {
+    const result = await deleteAccount(payload);
+    if (result.success) {
+      await clearAuthCookies();
+      redirect("/register");
+    }
+    return {
+      success: false,
+      message: result.message || "Delete account failed",
+    };
+  } catch (error: unknown) {
+    return {
+      success: false,
+      message: getErrorMessage(error, "Delete account failed"),
     };
   }
 };

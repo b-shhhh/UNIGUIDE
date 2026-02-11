@@ -75,6 +75,16 @@ export const changePassword = async (passwordData: Record<string, unknown>) => {
   }
 };
 
+export const deleteAccount = async (payload: Record<string, unknown> = {}) => {
+  try {
+    const endpoint = process.env.NEXT_PUBLIC_DELETE_ACCOUNT_ENDPOINT || API.AUTH.DELETE_ACCOUNT;
+    const response = await axios.delete(endpoint, { data: payload });
+    return response.data as ApiResult;
+  } catch (error: unknown) {
+    throw new Error(getErrorMessage(error, "Delete account failed"));
+  }
+};
+
 export const requestPasswordReset = async (email: string) => {
   try {
     const response = await axios.post(API.AUTH.REQUEST_PASSWORD_RESET, { email });

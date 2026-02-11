@@ -16,16 +16,16 @@ export default function Header() {
 
         <div className="flex items-center gap-2 sm:gap-3">
           <Link
-            href="/user/account-details"
+            href="/homepage/saved-universities"
             className="rounded-lg border border-[#1a2b44]/20 bg-white px-3 py-2 text-xs font-bold uppercase tracking-[0.08em] text-[#1a2b44] hover:bg-[#f8fbff] sm:text-sm"
           >
-            Account
+            Saved Unis
           </Link>
           <Link
-            href="/user/editprofile"
+            href="/user/profile"
             className="rounded-lg bg-[#1a2b44] px-3 py-2 text-xs font-bold uppercase tracking-[0.08em] text-white hover:bg-[#132038] sm:text-sm"
           >
-            Edit Profile
+            Profile
           </Link>
         </div>
       </div>

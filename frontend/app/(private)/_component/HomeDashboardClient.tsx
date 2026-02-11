@@ -1,7 +1,9 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import Link from "next/link";
+import { useEffect, useMemo, useState } from "react";
 import type { DeadlineItem, HomepageStat, UniversityRecommendation } from "@/lib/api/recommendation";
+import { readSavedUniversityIds, SAVED_UNIVERSITIES_UPDATE_EVENT, toggleUniversitySaved } from "@/lib/saved-universities";
 
 type Props = {
   stats: HomepageStat[];
@@ -10,20 +12,20 @@ type Props = {
 };
 
 const countryFlags: Record<string, string> = {
-  australia: "🇦🇺",
-  germany: "🇩🇪",
-  canada: "🇨🇦",
-  uk: "🇬🇧",
-  "united kingdom": "🇬🇧",
-  usa: "🇺🇸",
-  "united states": "🇺🇸",
-  ireland: "🇮🇪",
-  france: "🇫🇷",
-  netherlands: "🇳🇱",
-  sweden: "🇸🇪",
-  japan: "🇯🇵",
-  singapore: "🇸🇬",
-  italy: "🇮🇹",
+  australia: "AU",
+  germany: "DE",
+  canada: "CA",
+  uk: "UK",
+  "united kingdom": "UK",
+  usa: "US",
+  "united states": "US",
+  ireland: "IE",
+  france: "FR",
+  netherlands: "NL",
+  sweden: "SE",
+  japan: "JP",
+  singapore: "SG",
+  italy: "IT",
 };
 
 const parseScore = (value: string) => {
@@ -31,13 +33,25 @@ const parseScore = (value: string) => {
   return Number.isFinite(parsed) ? parsed : 0;
 };
 
-const getFlag = (country: string) => countryFlags[country.toLowerCase()] || "🌍";
+const getFlag = (country: string) => countryFlags[country.toLowerCase()] || "GL";
 
 export default function HomeDashboardClient({ stats, universities, deadlines }: Props) {
   const [query, setQuery] = useState("");
   const [activeCountry, setActiveCountry] = useState<string | null>(null);
   const [activeCourse, setActiveCourse] = useState<string | null>(null);
   const [selectedUniversity, setSelectedUniversity] = useState<UniversityRecommendation | null>(universities[0] ?? null);
+  const [savedIds, setSavedIds] = useState<string[]>([]);
+
+  useEffect(() => {
+    const syncSaved = () => setSavedIds(readSavedUniversityIds());
+    syncSaved();
+    window.addEventListener("storage", syncSaved);
+    window.addEventListener(SAVED_UNIVERSITIES_UPDATE_EVENT, syncSaved);
+    return () => {
+      window.removeEventListener("storage", syncSaved);
+      window.removeEventListener(SAVED_UNIVERSITIES_UPDATE_EVENT, syncSaved);
+    };
+  }, []);
 
   const countries = useMemo(() => {
     const map = new Map<string, number>();
@@ -84,6 +98,11 @@ export default function HomeDashboardClient({ stats, universities, deadlines }: 
     setSelectedUniversity(best);
   };
 
+  const onToggleSaved = (id: string) => {
+    toggleUniversitySaved(id);
+    setSavedIds(readSavedUniversityIds());
+  };
+
   return (
     <div className="space-y-6">
       <section className="relative overflow-hidden rounded-3xl border border-[#1a2b44]/10 bg-[#1a2b44] p-6 text-white sm:p-8">
@@ -94,13 +113,21 @@ export default function HomeDashboardClient({ stats, universities, deadlines }: 
             <p className="text-xs font-bold uppercase tracking-[0.14em] text-[#c5d2e6]">Welcome back</p>
             <h2 className="mt-2 max-w-2xl text-2xl font-bold leading-tight sm:text-4xl">Your admissions dashboard is ready.</h2>
           </div>
-          <button
-            type="button"
-            onClick={runAiFinder}
-            className="rounded-xl bg-[#22c1a7] px-4 py-3 text-sm font-bold uppercase tracking-[0.08em] text-[#08352f] transition hover:bg-[#3ed6be]"
-          >
-            AI Recommendation Finder
-          </button>
+          <div className="flex flex-wrap items-center gap-2">
+            <Link
+              href="/homepage/saved-universities"
+              className="rounded-xl border border-[#d7e1f0] bg-white/10 px-4 py-3 text-xs font-bold uppercase tracking-[0.08em] text-white hover:bg-white/20"
+            >
+              Saved Universities ({savedIds.length})
+            </Link>
+            <button
+              type="button"
+              onClick={runAiFinder}
+              className="rounded-xl bg-[#22c1a7] px-4 py-3 text-sm font-bold uppercase tracking-[0.08em] text-[#08352f] transition hover:bg-[#3ed6be]"
+            >
+              AI Recommendation Finder
+            </button>
+          </div>
         </div>
       </section>
 
@@ -200,7 +227,12 @@ export default function HomeDashboardClient({ stats, universities, deadlines }: 
         <article className="rounded-2xl border border-[#1a2b44]/10 bg-white p-5 lg:col-span-2">
           <div className="mb-3 flex items-center justify-between">
             <h3 className="text-lg font-bold text-[#1a2b44]">Universities</h3>
-            <p className="text-xs font-bold uppercase tracking-[0.08em] text-[#4f6682]">{filteredUniversities.length} results</p>
+            <div className="flex items-center gap-3">
+              <p className="text-xs font-bold uppercase tracking-[0.08em] text-[#4f6682]">{filteredUniversities.length} results</p>
+              <Link href="/homepage/saved-universities" className="text-xs font-bold uppercase tracking-[0.08em] text-[#0f766e]">
+                View saved
+              </Link>
+            </div>
           </div>
           <div className="grid gap-3 sm:grid-cols-2">
             {filteredUniversities.map((item) => (
@@ -222,6 +254,20 @@ export default function HomeDashboardClient({ stats, universities, deadlines }: 
                 <p className="mt-3 text-xs font-semibold uppercase tracking-[0.08em] text-[#5f7590]">
                   {getFlag(item.country)} {item.country}
                 </p>
+                <div className="mt-3">
+                  <button
+                    type="button"
+                    onClick={(event) => {
+                      event.stopPropagation();
+                      onToggleSaved(item.id);
+                    }}
+                    className={`rounded-lg px-2.5 py-1 text-[11px] font-bold uppercase tracking-[0.08em] ${
+                      savedIds.includes(item.id) ? "bg-[#fee2e2] text-[#b91c1c]" : "bg-[#dbeafe] text-[#1d4ed8]"
+                    }`}
+                  >
+                    {savedIds.includes(item.id) ? "Unsave" : "Save"}
+                  </button>
+                </div>
               </button>
             ))}
           </div>
@@ -254,6 +300,15 @@ export default function HomeDashboardClient({ stats, universities, deadlines }: 
               <p>
                 <span className="font-semibold">Intake:</span> {selectedUniversity.intake}
               </p>
+              <button
+                type="button"
+                onClick={() => onToggleSaved(selectedUniversity.id)}
+                className={`rounded-lg px-3 py-1.5 text-xs font-bold uppercase tracking-[0.08em] ${
+                  savedIds.includes(selectedUniversity.id) ? "bg-[#fee2e2] text-[#b91c1c]" : "bg-[#dbeafe] text-[#1d4ed8]"
+                }`}
+              >
+                {savedIds.includes(selectedUniversity.id) ? "Remove from saved" : "Save university"}
+              </button>
               {selectedUniversity.website ? (
                 <a
                   href={selectedUniversity.website}
