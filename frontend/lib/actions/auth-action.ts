@@ -202,6 +202,11 @@ export const handleAdminLogin = async (
   }
 };
 
+export const handleAdminLogout = async () => {
+  await clearAuthCookies();
+  return redirect("/admin/login");
+};
+
 export const handleDeleteAccount = async (payload: Record<string, unknown>) => {
   let shouldRedirect = false;
   try {
