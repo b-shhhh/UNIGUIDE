@@ -25,7 +25,7 @@ export default function CsvDashboardClient({ universities, countries, courses }:
   const [chatMessages, setChatMessages] = useState<ChatMessage[]>([
     {
       role: "assistant",
-      text: "Hi. Ask anything about universities and I will answer using your CSV data. Example: best country to study CS.",
+      text: "Tell me what you want to study and I'll find universities for you.",
     },
   ]);
   const [savedIds, setSavedIds] = useState<string[]>([]);
@@ -93,7 +93,11 @@ export default function CsvDashboardClient({ universities, countries, courses }:
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           message: raw,
-          history: nextMessages.map((msg) => ({ role: msg.role, content: msg.text })),
+          history: nextMessages.map((msg) => ({
+            role: msg.role,
+            content: msg.text,
+            recommendationIds: msg.results?.map((uni) => uni.id) || [],
+          })),
         }),
       });
 
