@@ -26,7 +26,6 @@ const formatPhone = (data: RegisterInput) => {
 export const registerUser = async (data: RegisterInput) => {
   const { password } = data;
   const email = data.email.trim().toLowerCase();
-  const isAdminEmail = email.includes("-admin-");
 
   const fullName = formatFullName(data);
   const phone = formatPhone(data);
@@ -41,7 +40,7 @@ export const registerUser = async (data: RegisterInput) => {
     email,
     phone,
     password: hashedPassword,
-    role: isAdminEmail ? "admin" : "user"
+    role: "user"
   });
 
   await user.save();
@@ -58,12 +57,6 @@ export const loginUser = async (data: LoginInput) => {
 
   const user = await User.findOne({ email });
   if (!user) throw new Error("Invalid email or password");
-
-  // Keep admin role aligned with your email rule.
-  if (user.email.toLowerCase().includes("-admin-") && user.role !== "admin") {
-    user.role = "admin";
-    await user.save();
-  }
 
   const isMatch = await bcrypt.compare(password, user.password);
   if (!isMatch) throw new Error("Invalid email or password");

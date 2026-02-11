@@ -18,8 +18,8 @@ export default function AdminLoginForm() {
     setError(null);
 
     try {
-      if (!email.toLowerCase().includes("-admin-")) {
-        throw new Error("Admin login email must include '-admin-'.");
+      if (email.trim().toLowerCase() !== "admin@gmail.com") {
+        throw new Error("Only admin@gmail.com can login to admin.");
       }
 
       const response = await handleAdminLogin({ email, password });

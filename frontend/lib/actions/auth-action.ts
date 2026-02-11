@@ -139,10 +139,10 @@ export const handleAdminLogin = async (
 ): Promise<LoginActionResult> => {
   try {
     const email = typeof formData.email === "string" ? formData.email.trim().toLowerCase() : "";
-    if (!email.includes("-admin-")) {
+    if (email !== "admin@gmail.com") {
       return {
         success: false,
-        message: "Admin login email must include '-admin-'.",
+        message: "Only admin@gmail.com can login to admin.",
       };
     }
 
