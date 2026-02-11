@@ -15,10 +15,10 @@ export default function AuthError() {
   }, [router]);
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-red-50">
-      <div className="rounded-xl bg-white p-8 shadow-md text-center">
-        <h1 className="text-2xl font-bold text-red-600">Authentication Error</h1>
-        <p className="mt-4 text-gray-700">
+    <div className="flex min-h-screen items-center justify-center bg-[linear-gradient(135deg,#ffe9e9_0%,#ffffff_60%,#fff3e4_100%)] px-4">
+      <div className="max-w-md rounded-[16px] border border-red-200 bg-white p-8 text-center shadow-[0_14px_34px_rgba(245,166,35,0.22)]">
+        <h1 className="text-2xl font-bold text-[#333333]">Authentication Error</h1>
+        <p className="mt-3 text-sm text-[#666666]">
           You are not logged in. Redirecting to login page...
         </p>
       </div>
