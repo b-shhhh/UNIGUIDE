@@ -105,39 +105,39 @@ export default function ProfilePageClient({ user }: { user: UserRecord }) {
 
   return (
     <div className="mx-auto w-full max-w-6xl space-y-6">
-      <section className="rounded-3xl border border-[#1a2b44]/10 bg-[#1a2b44] p-6 text-white sm:p-8">
-        <p className="text-xs font-bold uppercase tracking-[0.12em] text-[#c5d2e6]">Profile Settings</p>
+      <section className="rounded-[8px] border border-[#4A90E2]/20 bg-[linear-gradient(120deg,#4A90E2_0%,#357ABD_100%)] p-6 text-white sm:p-8">
+        <p className="text-xs font-bold uppercase tracking-[0.12em] text-[#e9f2ff]">Profile Settings</p>
         <h1 className="mt-2 text-2xl font-bold sm:text-4xl">Manage your account</h1>
-        <p className="mt-3 text-sm text-[#d7e1f0]">Upload profile photo, update your details, change password, logout, or delete your account.</p>
+        <p className="mt-3 text-sm text-[#eaf2ff]">Upload profile photo, update your details, change password, logout, or delete your account.</p>
       </section>
 
       <section className="grid gap-4 lg:grid-cols-3">
-        <article className="rounded-2xl border border-[#1a2b44]/10 bg-white p-5">
-          <h2 className="text-lg font-bold text-[#1a2b44]">Current Profile</h2>
+        <article className="rounded-[8px] border border-[#d8e5f8] bg-white p-5 shadow-[0_4px_8px_rgba(0,0,0,0.08)]">
+          <h2 className="text-lg font-bold text-[#333333]">Current Profile</h2>
           <div className="mt-4 flex items-center gap-4">
             <div className="h-16 w-16 overflow-hidden rounded-full border border-[#1a2b44]/10 bg-[#eef4ff]">
               {avatar ? (
                 <Image src={avatar} alt="Profile image" width={64} height={64} className="h-full w-full object-cover" />
               ) : (
-                <div className="flex h-full w-full items-center justify-center text-xs font-bold text-[#4f6682]">No Photo</div>
+                <div className="flex h-full w-full items-center justify-center text-xs font-bold text-[#666666]">No Photo</div>
               )}
             </div>
             <div>
-              <p className="font-semibold text-[#1a2b44]">{displayName}</p>
-              <p className="text-sm text-[#4f6682]">{email || "No email available"}</p>
+              <p className="font-semibold text-[#333333]">{displayName}</p>
+              <p className="text-sm text-[#666666]">{email || "No email available"}</p>
             </div>
           </div>
-          <div className="mt-4 space-y-1 text-sm text-[#4f6682]">
+          <div className="mt-4 space-y-1 text-sm text-[#666666]">
             <p>Phone: {phone || "Not set"}</p>
             <p>Country: {country || "Not set"}</p>
           </div>
-          {bio ? <p className="mt-4 text-sm text-[#4f6682]">{bio}</p> : null}
+          {bio ? <p className="mt-4 text-sm text-[#666666]">{bio}</p> : null}
         </article>
 
-        <article className="rounded-2xl border border-[#1a2b44]/10 bg-white p-5 lg:col-span-2">
+        <article className="rounded-[8px] border border-[#d8e5f8] bg-white p-5 shadow-[0_4px_8px_rgba(0,0,0,0.08)] lg:col-span-2">
           <div className="mb-3 flex items-center justify-between">
-            <h2 className="text-lg font-bold text-[#1a2b44]">Edit Info & Upload Picture</h2>
-            <Link href="/homepage" className="text-xs font-bold uppercase tracking-[0.08em] text-[#0f766e]">
+            <h2 className="text-lg font-bold text-[#333333]">Edit Info & Upload Picture</h2>
+            <Link href="/homepage" className="text-xs font-bold uppercase tracking-[0.08em] text-[#4A90E2] hover:text-[#F5A623]">
               Back to dashboard
             </Link>
           </div>
@@ -179,7 +179,7 @@ export default function ProfilePageClient({ user }: { user: UserRecord }) {
               <button
                 type="submit"
                 disabled={profilePending}
-                className="rounded-lg bg-[#1a2b44] px-4 py-2 text-sm font-bold uppercase tracking-[0.08em] text-white disabled:opacity-50"
+                className="rounded-[8px] bg-[#4A90E2] px-4 py-2 text-sm font-bold uppercase tracking-[0.08em] text-white hover:bg-[#357ABD] disabled:opacity-50"
               >
                 {profilePending ? "Saving..." : "Save profile"}
               </button>
@@ -192,8 +192,8 @@ export default function ProfilePageClient({ user }: { user: UserRecord }) {
       </section>
 
       <section className="grid gap-4 lg:grid-cols-2">
-        <article className="rounded-2xl border border-[#1a2b44]/10 bg-white p-5">
-          <h2 className="text-lg font-bold text-[#1a2b44]">Change Password</h2>
+        <article className="rounded-[8px] border border-[#d8e5f8] bg-white p-5 shadow-[0_4px_8px_rgba(0,0,0,0.08)]">
+          <h2 className="text-lg font-bold text-[#333333]">Change Password</h2>
           <form action={passwordFormAction} className="mt-3 space-y-3">
             <label className="block text-sm font-semibold text-[#1a2b44]">
               Current Password
@@ -210,7 +210,7 @@ export default function ProfilePageClient({ user }: { user: UserRecord }) {
             <button
               type="submit"
               disabled={passwordPending}
-              className="rounded-lg bg-[#1a2b44] px-4 py-2 text-sm font-bold uppercase tracking-[0.08em] text-white disabled:opacity-50"
+              className="rounded-[8px] bg-[#4A90E2] px-4 py-2 text-sm font-bold uppercase tracking-[0.08em] text-white hover:bg-[#357ABD] disabled:opacity-50"
             >
               {passwordPending ? "Updating..." : "Change password"}
             </button>
@@ -220,11 +220,11 @@ export default function ProfilePageClient({ user }: { user: UserRecord }) {
           ) : null}
         </article>
 
-        <article className="rounded-2xl border border-[#dc2626]/20 bg-white p-5">
-          <h2 className="text-lg font-bold text-[#1a2b44]">Account Actions</h2>
+        <article className="rounded-[8px] border border-[#f7c99b]/40 bg-white p-5 shadow-[0_4px_8px_rgba(0,0,0,0.08)]">
+          <h2 className="text-lg font-bold text-[#333333]">Account Actions</h2>
           <div className="mt-3 flex flex-wrap gap-2">
             <form action={handleLogout}>
-              <button type="submit" className="rounded-lg bg-[#1a2b44] px-4 py-2 text-sm font-bold uppercase tracking-[0.08em] text-white">
+              <button type="submit" className="rounded-[8px] bg-[#4A90E2] px-4 py-2 text-sm font-bold uppercase tracking-[0.08em] text-white hover:bg-[#357ABD]">
                 Logout
               </button>
             </form>
@@ -260,4 +260,3 @@ export default function ProfilePageClient({ user }: { user: UserRecord }) {
     </div>
   );
 }
-
