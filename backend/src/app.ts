@@ -12,6 +12,7 @@ import authRoutes from './routes/auth.route';
 import userRoutes from './routes/user.route';
 import universityRoutes from './routes/university.route';
 import courseRoutes from './routes/course.route';
+import savedRoutes from './routes/saved.routes';
 
 // Middlewares
 import { errorMiddleware } from './middlewares/error.middleware';
@@ -46,6 +47,7 @@ app.use('/api/auth', authRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/universities', universityRoutes);
 app.use('/api/courses', courseRoutes);
+app.use('/api/saved-universities', savedRoutes);
 
 // 404 handler
 app.use((req, res, next) => {

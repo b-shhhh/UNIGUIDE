@@ -2,10 +2,10 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { EyeIcon } from "@heroicons/react/24/outline";
+import Link from "next/link";
 import { AcademicCapIcon } from "@heroicons/react/24/solid";
 import { useAuth } from "@/context/AuthContext";
-import { handleLogin } from "@/lib/actions/auth-action";
+import { handleLogin } from "@/lib/actions/auth-action"; // <-- import your server-side login handler
 
 export default function LoginPage() {
   const router = useRouter();
@@ -13,13 +13,8 @@ export default function LoginPage() {
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-
-  const emailInputId = "login-email";
-  const passwordInputId = "login-password";
-  const errorMessageId = "login-error";
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -30,85 +25,85 @@ export default function LoginPage() {
       const response = await handleLogin({ email, password });
       if (!response.success) throw new Error(response.message);
 
+      // Set user in context
       setUser(response.data);
       router.push("/private/homepage");
-    } catch (err: unknown) {
-      const message = err instanceof Error ? err.message : "Login failed. Please check your credentials.";
-      setError(message);
+    } catch (err: any) {
+      setError(err.message || "Login failed. Please check your credentials.");
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-[#d8d5e7] px-4 py-10">
-      <div className="w-full max-w-[340px] overflow-hidden rounded-2xl bg-[#f5f4f8] shadow-[0_24px_45px_rgba(78,68,132,0.25)]">
-        <div className="bg-gradient-to-r from-[#5043d1] to-[#6a5af5] px-6 py-5 text-white">
-          <div className="flex items-center gap-2">
-            <AcademicCapIcon className="h-4 w-4" />
-            <div>
-              <p className="text-sm font-semibold leading-none">UniGuide</p>
-              <p className="text-[9px] text-white/80">Your success on your own platform</p>
-            </div>
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-b from-purple-600 via-purple-500 to-indigo-500 relative overflow-hidden">
+      {/* Header Curve */}
+      <div className="absolute top-0 left-0 w-full h-64 bg-gradient-to-r from-purple-700 to-indigo-600 rounded-b-[50%] flex items-center justify-center">
+        <div className="flex items-center space-x-2">
+          <div className="w-12 h-12 flex items-center justify-center rounded-full bg-white">
+            <AcademicCapIcon className="h-6 w-6 text-purple-700" />
           </div>
+          <h1 className="text-white text-2xl font-bold tracking-wide">UniGuide</h1>
         </div>
+      </div>
 
-        <form onSubmit={handleSubmit} className="space-y-4 px-5 pb-6 pt-5">
-          <h2 className="text-center text-[40px] font-black leading-none text-black">Log In</h2>
+      {/* Login Card */}
+      <div className="relative z-10 w-full max-w-md bg-white p-10 rounded-3xl shadow-xl space-y-5">
+        <h2 className="text-center text-2xl font-bold text-gray-800">Welcome Back</h2>
+        <p className="text-center text-gray-500 text-sm">Sign in to your account</p>
 
-          <div className="space-y-3">
-            <label htmlFor={emailInputId} className="sr-only">
-              Email address
-            </label>
+        <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+          {/* Email */}
+          <div className="flex flex-col gap-1">
+            <label className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Email Address</label>
             <input
-              id={emailInputId}
               type="email"
-              placeholder="Email Address"
+              placeholder="name@university.edu"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              autoComplete="email"
               required
-              className="h-11 w-full rounded-xl border border-[#d3d3de] bg-[#f1f1f6] px-3 text-sm text-[#4b4b5d] placeholder:text-[#9b9bac] outline-none focus:ring-2 focus:ring-[#6a5af5]/35"
+              className="w-full h-10 px-3 border border-slate-200 rounded-lg text-sm text-slate-700 placeholder:text-slate-300 outline-none focus:ring-1 focus:ring-purple-500"
             />
-
-            <div className="relative">
-              <label htmlFor={passwordInputId} className="sr-only">
-                Password
-              </label>
-              <input
-                id={passwordInputId}
-                type={showPassword ? "text" : "password"}
-                placeholder="Password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                autoComplete="current-password"
-                required
-                className="h-11 w-full rounded-xl border border-[#d3d3de] bg-[#f1f1f6] px-3 pr-10 text-sm text-[#4b4b5d] placeholder:text-[#9b9bac] outline-none focus:ring-2 focus:ring-[#6a5af5]/35"
-              />
-              <button
-                type="button"
-                onClick={() => setShowPassword((value) => !value)}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-[#83839c] hover:text-[#59597a]"
-                aria-label={showPassword ? "Hide password" : "Show password"}
-              >
-                <EyeIcon className="h-4 w-4" />
-              </button>
-            </div>
           </div>
 
-          {error && (
-            <p id={errorMessageId} role="alert" aria-live="assertive" className="text-xs text-red-600">
-              {error}
-            </p>
-          )}
+          {/* Password */}
+          <div className="flex flex-col gap-1">
+            <label className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Password</label>
+            <input
+              type="password"
+              placeholder="********"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              required
+              className="w-full h-10 px-3 border border-slate-200 rounded-lg text-sm text-slate-700 placeholder:text-slate-300 outline-none focus:ring-1 focus:ring-purple-500"
+            />
+          </div>
 
+          {/* General Error */}
+          {error && <p className="text-red-500 text-[9px]">{error}</p>}
+
+          {/* Submit Button */}
           <button
             type="submit"
             disabled={loading}
-            className="h-11 w-full rounded-full bg-gradient-to-r from-[#5043d1] to-[#6a5af5] text-sm font-semibold text-white shadow-[0_8px_14px_rgba(90,78,217,0.35)] transition hover:opacity-95 active:scale-[0.99] disabled:opacity-60"
+            className="w-full h-10 mt-4 bg-gradient-to-r from-purple-600 to-indigo-600 text-white font-bold rounded-lg text-[10px] uppercase tracking-[0.1em] hover:from-purple-700 hover:to-indigo-700 transition-all active:scale-[0.98] disabled:opacity-50"
           >
-            {loading ? "Logging in..." : "Login"}
+            {loading ? "Signing In..." : "Sign In"}
           </button>
+
+          {/* Footer Links */}
+          <div className="text-center mt-3 text-[10px] text-slate-400">
+            <Link href="/forget-password" className="font-bold text-purple-700 hover:underline uppercase">
+              Forgot password?
+            </Link>
+          </div>
+
+          <div className="text-center mt-3 text-[10px] text-slate-400">
+            Don't have an account?{" "}
+            <Link href="/register" className="font-bold text-purple-700 hover:underline uppercase">
+              Sign up
+            </Link>
+          </div>
         </form>
       </div>
     </div>

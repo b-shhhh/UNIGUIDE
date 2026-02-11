@@ -8,6 +8,8 @@ export interface IUser extends Document {
   password: string;
   profilePic?: string;
   savedUniversities: mongoose.Types.ObjectId[];
+   resetPasswordToken?: string;
+  resetPasswordExpires?: Date;
 }
 
 const userSchema = new Schema<IUser>({
@@ -17,7 +19,9 @@ const userSchema = new Schema<IUser>({
   phone: { type: String, required: true },
   password: { type: String, required: true },
   profilePic: { type: String },
-  savedUniversities: [{ type: Schema.Types.ObjectId, ref: "University" }]
+  savedUniversities: [{ type: Schema.Types.ObjectId, ref: "University" }],
+  resetPasswordToken: { type: String },
+  resetPasswordExpires: { type: Date }
 }, { timestamps: true });
 
 export const User = mongoose.model<IUser>("User", userSchema);
