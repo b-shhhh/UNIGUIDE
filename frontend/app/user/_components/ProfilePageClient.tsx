@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useActionState, useMemo } from "react";
-import { handleChangePassword, handleLogout, handleUpdateProfile } from "@/lib/actions/auth-action";
+import { handleChangePassword, handleDeleteAccount, handleLogout, handleUpdateProfile } from "@/lib/actions/auth-action";
 
 type UserRecord = Record<string, unknown> | null;
 
@@ -87,9 +87,18 @@ const changePasswordAction = async (_prev: ActionFeedback, formData: FormData): 
   };
 };
 
+const deleteAccountAction = async (): Promise<ActionFeedback> => {
+  const result = await handleDeleteAccount({});
+  return {
+    success: result.success,
+    message: result.message,
+  };
+};
+
 export default function ProfilePageClient({ user }: { user: UserRecord }) {
   const [profileState, profileFormAction, profilePending] = useActionState(updateProfileAction, INITIAL_FEEDBACK);
   const [passwordState, passwordFormAction, passwordPending] = useActionState(changePasswordAction, INITIAL_FEEDBACK);
+  const [deleteState, deleteFormAction, deletePending] = useActionState(deleteAccountAction, INITIAL_FEEDBACK);
 
   const displayName = useMemo(() => getUserDisplayName(user), [user]);
   const email = useMemo(() => getUserEmail(user), [user]);
@@ -219,7 +228,27 @@ export default function ProfilePageClient({ user }: { user: UserRecord }) {
               </button>
             </form>
           </div>
-          <p className="mt-4 text-sm text-[#4f6682]">Account deletion is managed by admin.</p>
+          <form
+            action={deleteFormAction}
+            className="mt-4"
+            onSubmit={(event) => {
+              const ok = window.confirm("Are you sure you want to delete your account? This action cannot be undone.");
+              if (!ok) {
+                event.preventDefault();
+              }
+            }}
+          >
+            <button
+              type="submit"
+              disabled={deletePending}
+              className="rounded-lg bg-[#b91c1c] px-4 py-2 text-sm font-bold uppercase tracking-[0.08em] text-white disabled:opacity-50"
+            >
+              {deletePending ? "Deleting..." : "Delete Account"}
+            </button>
+          </form>
+          {deleteState.message ? (
+            <p className={`mt-3 text-sm ${deleteState.success ? "text-[#0f766e]" : "text-[#b91c1c]"}`}>{deleteState.message}</p>
+          ) : null}
         </article>
       </section>
     </div>
