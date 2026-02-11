@@ -300,16 +300,7 @@ export default function CsvDashboardClient({ universities, countries, courses }:
                       >
                         <p className="text-xs font-semibold text-[#1a2b44]">{result.name}</p>
                         <p className="text-[11px] text-[#5f7590]">Country: {result.country}</p>
-                        <p className="text-[11px] text-[#5f7590]">Tuition: {result.tuition}</p>
-                        <p className="text-[11px] text-[#5f7590]">
-                          Courses: {result.courses.slice(0, 3).join(", ")}
-                        </p>
-                        <Link
-                          href={result.viewDetailsUrl}
-                          className="mt-2 inline-block rounded bg-[#4A90E2] px-2 py-1 text-[10px] font-bold uppercase tracking-[0.06em] text-white"
-                        >
-                          View Details
-                        </Link>
+                        <p className="text-[11px] text-[#5f7590]">{result.tuition}</p>
                       </article>
                     ))}
                   </div>
