@@ -254,9 +254,11 @@ export default function CsvDashboardClient({ universities, countries, courses }:
       <button
         type="button"
         onClick={() => setChatOpen((prev) => !prev)}
-        className="fixed bottom-5 right-5 z-40 rounded-full bg-[#4A90E2] px-4 py-3 text-xs font-bold uppercase tracking-[0.08em] text-white shadow-lg hover:bg-[#357ABD]"
+        aria-label={chatOpen ? "Close chatbot" : "Open chatbot"}
+        title={chatOpen ? "Close chatbot" : "Open chatbot"}
+        className="fixed bottom-5 right-5 z-40 flex h-16 w-16 items-center justify-center rounded-full bg-[#4A90E2] text-3xl text-white shadow-lg transition-transform hover:scale-105 hover:bg-[#357ABD]"
       >
-        {chatOpen ? "Close Bot" : "AI Bot"}
+        🎓
       </button>
 
       {chatOpen ? (
