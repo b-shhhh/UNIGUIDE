@@ -92,8 +92,10 @@ export const updateProfile = async (req: AuthRequest, res: Response) => {
       delete updates.countryCode;
     }
 
-    if (req.file?.path) {
-      updates.profilePic = req.file.path.replace(/\\/g, "/");
+    const fileMap = (req.files as Record<string, Express.Multer.File[] | undefined>) || {};
+    const uploadedProfilePic = fileMap.profilePic?.[0] || fileMap.profileImage?.[0];
+    if (uploadedProfilePic?.path) {
+      updates.profilePic = uploadedProfilePic.path.replace(/\\/g, "/");
     }
 
     const updatedUser = await updateProfileService(userId, updates);
