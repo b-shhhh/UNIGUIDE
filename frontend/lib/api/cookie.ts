@@ -10,9 +10,16 @@ const baseCookieOptions = {
     path: "/",
 };
 
+const authCookieOptions = {
+    httpOnly: false as const,
+    sameSite: "lax" as const,
+    secure: isProd,
+    path: "/",
+};
+
 export const setAuthToken = async (token: string) => {
     const cookieStore = await cookies();
-    cookieStore.set({ name: "auth_token", value: token, ...baseCookieOptions })
+    cookieStore.set({ name: "auth_token", value: token, ...authCookieOptions })
 }
 export const getAuthToken = async () => {
     const cookieStore = await cookies();
