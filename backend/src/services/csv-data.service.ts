@@ -78,6 +78,18 @@ const extractCourseColumns = (headers: string[]) =>
     )
     .map(({ index }) => index);
 
+const detectHeaderRow = (normalizedHeaders: string[]) => {
+  return normalizedHeaders.includes("alpha2") && normalizedHeaders.includes("name");
+};
+
+const buildSyntheticHeaders = (columnCount: number) => {
+  const headers = ["alpha2", "name", "web_pages", "flag_url"];
+  for (let i = 4; i < columnCount; i += 1) {
+    headers.push(`course_${i - 3}`);
+  }
+  return headers;
+};
+
 const readCsvUniversities = async (): Promise<CsvUniversity[]> => {
   const fileStat = await fs.stat(csvFilePath);
   if (cachedUniversities && fileStat.mtimeMs === cachedMtimeMs) {
@@ -86,20 +98,27 @@ const readCsvUniversities = async (): Promise<CsvUniversity[]> => {
 
   const raw = await fs.readFile(csvFilePath, "utf8");
   const lines = raw.split(/\r?\n/).filter((line) => line.trim().length > 0);
-  if (lines.length < 2) {
+  if (lines.length < 1) {
     cachedUniversities = [];
     cachedMtimeMs = fileStat.mtimeMs;
     return cachedUniversities;
   }
 
-  const headers = parseCsvLine(lines[0]).map((header) => normalize(header));
+  const firstLineCols = parseCsvLine(lines[0]);
+  const firstLineNormalized = firstLineCols.map((header) => normalize(header));
+  const hasHeader = detectHeaderRow(firstLineNormalized);
+  const headers = hasHeader
+    ? firstLineNormalized
+    : buildSyntheticHeaders(firstLineCols.length).map((header) => normalize(header));
+  const dataLines = hasHeader ? lines.slice(1) : lines;
+
   const alpha2Index = headers.indexOf("alpha2");
   const nameIndex = headers.indexOf("name");
   const webPagesIndex = headers.indexOf("web_pages");
   const flagUrlIndex = headers.indexOf("flag_url");
   const courseColumnIndexes = extractCourseColumns(headers);
 
-  const universities = lines.slice(1).map((line, rowIndex) => {
+  const universities = dataLines.map((line, rowIndex) => {
     const cols = parseCsvLine(line);
     const alpha2 = (cols[alpha2Index] || "").toUpperCase();
     const name = cols[nameIndex] || "";
@@ -114,7 +133,7 @@ const readCsvUniversities = async (): Promise<CsvUniversity[]> => {
       flag_url: cols[flagUrlIndex] || undefined,
       courses: Array.from(new Set(courses))
     };
-  });
+  }).filter((uni) => Boolean(uni.alpha2 && uni.name));
 
   cachedUniversities = universities;
   cachedMtimeMs = fileStat.mtimeMs;
