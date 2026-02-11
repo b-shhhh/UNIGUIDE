@@ -7,6 +7,14 @@ const SAVED_ENDPOINT = process.env.NEXT_PUBLIC_SAVED_UNIVERSITIES_ENDPOINT || AP
 
 const dedupe = (ids: string[]) => Array.from(new Set(ids.filter(Boolean)));
 
+const hasBrowserAuthToken = () => {
+  if (typeof document === "undefined") {
+    return false;
+  }
+
+  return document.cookie.split("; ").some((item) => item.startsWith("auth_token="));
+};
+
 const parseIdList = (payload: unknown): string[] => {
   if (Array.isArray(payload)) {
     return dedupe(
@@ -61,6 +69,9 @@ const writeSavedUniversityIds = (ids: string[]) => {
 };
 
 const fetchRemoteSavedUniversityIds = async (): Promise<string[]> => {
+  if (!hasBrowserAuthToken()) {
+    return [];
+  }
   const response = await axios.get(SAVED_ENDPOINT);
   return parseIdList(response.data);
 };
