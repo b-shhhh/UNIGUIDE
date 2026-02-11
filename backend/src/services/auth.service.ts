@@ -88,7 +88,15 @@ export const whoAmIService = async (userId: string) => {
 
 export const updateProfileService = async (
   userId: string,
-  updates: Partial<{ firstName: string; lastName: string; email: string; phone: string; profilePic: string }>
+  updates: Partial<{
+    firstName: string;
+    lastName: string;
+    email: string;
+    phone: string;
+    country: string;
+    bio: string;
+    profilePic: string;
+  }>
 ) => {
   const updatedUser = await User.findByIdAndUpdate(userId, updates, { new: true }).select(
     "-password -resetPasswordToken -resetPasswordExpires"

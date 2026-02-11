@@ -16,8 +16,11 @@ const userPayload = (user: any) => ({
   id: user._id,
   firstName: user.firstName,
   lastName: user.lastName,
+  fullName: `${user.firstName || ""} ${user.lastName || ""}`.trim(),
   email: user.email,
   phone: user.phone,
+  country: user.country,
+  bio: user.bio,
   role: user.role,
   profilePic: user.profilePic
 });
@@ -78,10 +81,13 @@ export const updateProfile = async (req: AuthRequest, res: Response) => {
     const body = req.body || {};
     const updates: any = { ...body };
 
-    if (body.username && !body.firstName) {
-      const [first, ...rest] = String(body.username).trim().split(/\s+/).filter(Boolean);
+    const rawName = body.fullName || body.name || body.username;
+    if (rawName && !body.firstName) {
+      const [first, ...rest] = String(rawName).trim().split(/\s+/).filter(Boolean);
       updates.firstName = first;
       updates.lastName = rest.join(" ") || "-";
+      delete updates.fullName;
+      delete updates.name;
       delete updates.username;
     }
 
@@ -97,6 +103,18 @@ export const updateProfile = async (req: AuthRequest, res: Response) => {
     if (uploadedProfilePic?.path) {
       updates.profilePic = uploadedProfilePic.path.replace(/\\/g, "/");
     }
+
+    // Do not overwrite persisted values with blank strings from optional form fields.
+    Object.keys(updates).forEach((key) => {
+      if (typeof updates[key] === "string") {
+        const trimmed = updates[key].trim();
+        if (!trimmed) {
+          delete updates[key];
+          return;
+        }
+        updates[key] = trimmed;
+      }
+    });
 
     const updatedUser = await updateProfileService(userId, updates);
     res.status(200).json({ success: true, data: updatedUser });

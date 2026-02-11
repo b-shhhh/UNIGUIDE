@@ -22,6 +22,9 @@ export interface UpdateUserData {
   lastName?: string;
   email?: string;
   phone?: string;
+  country?: string;
+  bio?: string;
+  profilePic?: string;
   password?: string;
 }
 

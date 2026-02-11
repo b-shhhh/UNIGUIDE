@@ -1,6 +1,5 @@
 "use client";
 
-import Image from "next/image";
 import Link from "next/link";
 import { useActionState, useMemo } from "react";
 import { handleChangePassword, handleDeleteAccount, handleLogout, handleUpdateProfile } from "@/lib/actions/auth-action";
@@ -27,15 +26,35 @@ const asString = (value: unknown, fallback = ""): string => {
   return fallback;
 };
 
-const getUserDisplayName = (user: UserRecord) =>
-  asString(user?.fullName) || asString(user?.name) || asString(user?.username) || "User";
+const getUserDisplayName = (user: UserRecord) => {
+  const explicitName = asString(user?.fullName) || asString(user?.name) || asString(user?.username);
+  if (explicitName) return explicitName;
+
+  const firstName = asString(user?.firstName);
+  const lastName = asString(user?.lastName);
+  const combined = `${firstName} ${lastName}`.trim();
+  return combined || "User";
+};
 
 const getUserEmail = (user: UserRecord) => asString(user?.email);
 const getUserPhone = (user: UserRecord) => asString(user?.phone);
 const getUserCountry = (user: UserRecord) => asString(user?.country);
 const getUserBio = (user: UserRecord) => asString(user?.bio);
 const getAvatar = (user: UserRecord) =>
-  asString(user?.avatar) || asString(user?.profileImage) || asString(user?.profilePicture) || asString(user?.image);
+  asString(user?.profilePic) ||
+  asString(user?.avatar) ||
+  asString(user?.profileImage) ||
+  asString(user?.profilePicture) ||
+  asString(user?.image);
+
+const getAvatarUrl = (avatar: string) => {
+  if (!avatar) return "";
+  if (/^https?:\/\//i.test(avatar)) return avatar;
+
+  const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || "http://127.0.0.1:5050";
+  const path = avatar.startsWith("/") ? avatar : `/${avatar}`;
+  return `${baseUrl}${path}`;
+};
 
 const updateProfileAction = async (_prev: ActionFeedback, formData: FormData): Promise<ActionFeedback> => {
   const result = await handleUpdateProfile(formData);
@@ -102,6 +121,7 @@ export default function ProfilePageClient({ user }: { user: UserRecord }) {
   const country = useMemo(() => getUserCountry(user), [user]);
   const bio = useMemo(() => getUserBio(user), [user]);
   const avatar = useMemo(() => getAvatar(user), [user]);
+  const avatarUrl = useMemo(() => getAvatarUrl(avatar), [avatar]);
 
   return (
     <div className="mx-auto w-full max-w-6xl space-y-6">
@@ -116,8 +136,8 @@ export default function ProfilePageClient({ user }: { user: UserRecord }) {
           <h2 className="text-lg font-bold text-[#333333]">Current Profile</h2>
           <div className="mt-4 flex items-center gap-4">
             <div className="h-16 w-16 overflow-hidden rounded-full border border-[#1a2b44]/10 bg-[#eef4ff]">
-              {avatar ? (
-                <Image src={avatar} alt="Profile image" width={64} height={64} className="h-full w-full object-cover" />
+              {avatarUrl ? (
+                <img src={avatarUrl} alt="Profile image" className="h-full w-full object-cover" />
               ) : (
                 <div className="flex h-full w-full items-center justify-center text-xs font-bold text-[#666666]">No Photo</div>
               )}
