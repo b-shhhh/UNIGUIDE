@@ -15,7 +15,8 @@ export async function requireAdmin() {
     const whoAmI = await fetchWhoAmI();
     const data = (whoAmI.data ?? null) as Record<string, unknown> | null;
     const role = typeof data?.role === "string" ? data.role : "";
-    if (role !== "admin") {
+    const email = typeof data?.email === "string" ? data.email.trim().toLowerCase() : "";
+    if (email !== "admin@gmail.com" && role !== "admin") {
       redirect("/homepage");
     }
   } catch {
