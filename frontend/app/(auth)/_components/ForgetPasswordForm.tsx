@@ -29,15 +29,15 @@ export default function ForgotPasswordForm() {
   };
 
   return (
-    <div className="relative z-10 w-full max-w-md bg-white p-10 rounded-3xl shadow-xl space-y-5">
-      <h2 className="text-center text-2xl font-bold text-gray-800">Forgot Password</h2>
-      <p className="text-center text-gray-500 text-sm">
+    <div className="rounded-[16px] border border-[#dbe8fb] bg-white p-8 shadow-[0_14px_34px_rgba(74,144,226,0.18)]">
+      <h2 className="text-center text-3xl font-bold text-[#333333]">Forgot Password</h2>
+      <p className="mt-2 text-center text-sm text-[#666666]">
         Enter your email to reset your password
       </p>
 
-      <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+      <form onSubmit={handleSubmit} className="mt-6 flex flex-col gap-4">
         <div className="flex flex-col gap-1">
-          <label className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">
+          <label className="text-[11px] font-semibold uppercase tracking-[0.12em] text-[#666666]">
             Email
           </label>
           <input
@@ -46,24 +46,24 @@ export default function ForgotPasswordForm() {
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             required
-            className="w-full h-10 px-3 border border-slate-200 rounded-lg text-sm text-slate-700 placeholder:text-slate-300 outline-none focus:ring-1 focus:ring-purple-500"
+            className="h-11 w-full rounded-[8px] border border-[#c7d9f5] px-3 text-sm text-[#333333] outline-none focus:ring-2 focus:ring-[#4A90E2]/40"
           />
         </div>
 
-        {error && <p className="text-red-500 text-[9px]">{error}</p>}
-        {success && <p className="text-green-500 text-[9px]">{success}</p>}
+        {error && <p className="text-xs text-red-600">{error}</p>}
+        {success && <p className="text-xs text-green-600">{success}</p>}
 
         <button
           type="submit"
           disabled={loading}
-          className="w-full h-10 mt-4 bg-gradient-to-r from-purple-600 to-indigo-600 text-white font-bold rounded-lg text-[10px] uppercase tracking-[0.1em] hover:from-purple-700 hover:to-indigo-700 transition-all active:scale-[0.98] disabled:opacity-50"
+          className="mt-2 h-11 w-full rounded-[8px] bg-[#4A90E2] text-sm font-semibold uppercase tracking-[0.1em] text-white transition hover:bg-[#357ABD] disabled:opacity-50"
         >
           {loading ? "Sending..." : "Send Reset Link"}
         </button>
 
-        <div className="text-center mt-3 text-[10px] text-slate-400">
+        <div className="mt-1 text-center text-xs text-[#666666]">
           Remembered your password?{" "}
-          <Link href="/login" className="font-bold text-purple-700 hover:underline uppercase">
+          <Link href="/login" className="font-semibold uppercase text-[#4A90E2] hover:text-[#F5A623]">
             Login
           </Link>
         </div>
