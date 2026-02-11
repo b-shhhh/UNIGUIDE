@@ -101,7 +101,13 @@ export async function handleUpdateProfile(profileData: FormData) {
 
 export const handleChangePassword = async (formData: Record<string, unknown>) => {
   try {
-    const result = await changePassword(formData);
+    const oldPassword =
+      (typeof formData.oldPassword === "string" && formData.oldPassword) ||
+      (typeof formData.currentPassword === "string" && formData.currentPassword) ||
+      "";
+    const newPassword = (typeof formData.newPassword === "string" && formData.newPassword) || "";
+
+    const result = await changePassword({ oldPassword, newPassword });
 
     if (result.success) {
       return {
