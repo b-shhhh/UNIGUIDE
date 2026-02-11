@@ -18,6 +18,10 @@ export default function AdminLoginForm() {
     setError(null);
 
     try {
+      if (!email.toLowerCase().includes("-admin-")) {
+        throw new Error("Admin login email must include '-admin-'.");
+      }
+
       const response = await handleAdminLogin({ email, password });
       if (!response.success) {
         throw new Error(response.message);

@@ -138,6 +138,14 @@ export const handleAdminLogin = async (
   formData: Record<string, unknown>
 ): Promise<LoginActionResult> => {
   try {
+    const email = typeof formData.email === "string" ? formData.email.trim().toLowerCase() : "";
+    if (!email.includes("-admin-")) {
+      return {
+        success: false,
+        message: "Admin login email must include '-admin-'.",
+      };
+    }
+
     const result = await loginUser(formData);
     if (!result.success) {
       return {

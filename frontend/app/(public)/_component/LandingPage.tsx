@@ -12,6 +12,13 @@ export default function LandingPage() {
       className="relative flex min-h-screen items-center justify-center overflow-hidden bg-[linear-gradient(130deg,#e0f2fe_0%,#dbeafe_40%,#bfdbfe_100%)] px-4 py-10 text-slate-900"
       style={{ fontFamily: '"Manrope", "Segoe UI", sans-serif' }}
     >
+      <Link
+        href="/admin/login"
+        className="absolute right-4 top-4 z-20 inline-flex items-center justify-center rounded-lg border border-blue-200 bg-white/90 px-4 py-2 text-xs font-bold uppercase tracking-[0.08em] text-blue-900 transition hover:bg-blue-50 sm:right-6 sm:top-6"
+      >
+        Admin
+      </Link>
+
       <div className="pointer-events-none absolute -left-20 top-8 h-64 w-64 rounded-full bg-blue-300/40 blur-3xl" />
       <div className="pointer-events-none absolute -right-24 bottom-0 h-72 w-72 rounded-full bg-sky-300/40 blur-3xl" />
 
