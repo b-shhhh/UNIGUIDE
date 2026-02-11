@@ -19,6 +19,9 @@ export default async function UniversityDetailPage({ params }: Props) {
     <div className="space-y-5">
       <section className="rounded-2xl border border-[#d8e5f8] bg-white p-5">
         <p className="text-xs font-bold uppercase tracking-[0.12em] text-[#5f7590]">University Detail</p>
+        {university.logoUrl ? (
+          <img src={university.logoUrl} alt={`${university.name} logo`} width={42} height={42} className="mt-3 rounded" />
+        ) : null}
         <h2 className="mt-2 text-2xl font-bold text-[#1a2b44]">{university.name}</h2>
         <p className="mt-1 text-sm text-[#5f7590]">
           {university.flag} {university.countryName}
@@ -79,4 +82,3 @@ export default async function UniversityDetailPage({ params }: Props) {
     </div>
   );
 }
-
