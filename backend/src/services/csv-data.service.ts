@@ -82,6 +82,22 @@ const logoFromWebsite = (website?: string) => {
   }
 };
 
+const isLikelyFlagUrl = (value?: string) => {
+  if (!value) return false;
+  const text = value.trim().toLowerCase();
+  if (!text) return false;
+  if (!/^https?:\/\//.test(text)) return false;
+  return (
+    text.includes("flag") ||
+    text.includes("flagcdn.com") ||
+    text.endsWith(".png") ||
+    text.endsWith(".jpg") ||
+    text.endsWith(".jpeg") ||
+    text.endsWith(".svg") ||
+    text.endsWith(".webp")
+  );
+};
+
 const extractCourseColumns = (headers: string[]) =>
   headers
     .map((header, index) => ({ header: normalize(header), index }))
@@ -97,10 +113,14 @@ const detectHeaderRow = (normalizedHeaders: string[]) => {
   return normalizedHeaders.includes("alpha2") && normalizedHeaders.includes("name");
 };
 
-const buildSyntheticHeaders = (columnCount: number) => {
-  const headers = ["alpha2", "name", "web_pages", "flag_url"];
-  for (let i = 4; i < columnCount; i += 1) {
-    headers.push(`course_${i - 3}`);
+const buildSyntheticHeaders = (columnCount: number, hasFlagUrlColumn: boolean) => {
+  const headers = ["alpha2", "name", "web_pages"];
+  const startIndex = hasFlagUrlColumn ? 4 : 3;
+  if (hasFlagUrlColumn) {
+    headers.push("flag_url");
+  }
+  for (let i = startIndex; i < columnCount; i += 1) {
+    headers.push(`course_${i - (hasFlagUrlColumn ? 3 : 2)}`);
   }
   return headers;
 };
@@ -122,9 +142,10 @@ const readCsvUniversities = async (): Promise<CsvUniversity[]> => {
   const firstLineCols = parseCsvLine(lines[0]);
   const firstLineNormalized = firstLineCols.map((header) => normalize(header));
   const hasHeader = detectHeaderRow(firstLineNormalized);
+  const hasFlagUrlColumn = !hasHeader && isLikelyFlagUrl(firstLineCols[3]);
   const headers = hasHeader
     ? firstLineNormalized
-    : buildSyntheticHeaders(firstLineCols.length).map((header) => normalize(header));
+    : buildSyntheticHeaders(firstLineCols.length, hasFlagUrlColumn).map((header) => normalize(header));
   const dataLines = hasHeader ? lines.slice(1) : lines;
 
   const alpha2Index = headers.indexOf("alpha2");
@@ -139,7 +160,7 @@ const readCsvUniversities = async (): Promise<CsvUniversity[]> => {
     const name = cols[nameIndex] || "";
     const courses = courseColumnIndexes.flatMap((index) => splitCourses(cols[index] || ""));
     const webPage = cols[webPagesIndex] || undefined;
-    const flagUrl = cols[flagUrlIndex] || defaultFlagUrl(alpha2);
+    const flagUrl = (flagUrlIndex >= 0 ? cols[flagUrlIndex] : undefined) || defaultFlagUrl(alpha2);
 
     return {
       id: `csv-${rowIndex + 1}`,

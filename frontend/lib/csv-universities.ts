@@ -38,6 +38,7 @@ type CsvRow = {
   countryCode: string;
   name: string;
   website: string;
+  flagUrl: string;
   courses: string[];
 };
 
@@ -105,6 +106,22 @@ const getLogoFromWebsite = (website: string) => {
   }
 };
 
+const isLikelyFlagUrl = (value?: string) => {
+  if (!value) return false;
+  const text = value.trim().toLowerCase();
+  if (!text) return false;
+  if (!/^https?:\/\//.test(text)) return false;
+  return (
+    text.includes("flag") ||
+    text.includes("flagcdn.com") ||
+    text.endsWith(".png") ||
+    text.endsWith(".jpg") ||
+    text.endsWith(".jpeg") ||
+    text.endsWith(".svg") ||
+    text.endsWith(".webp")
+  );
+};
+
 const splitCourses = (raw: string): string[] =>
   raw
     .split(/[|;/]/)
@@ -158,10 +175,14 @@ const extractCourseColumns = (headers: string[]) =>
 const detectHeaderRow = (normalizedHeaders: string[]) =>
   normalizedHeaders.includes("alpha2") && normalizedHeaders.includes("name");
 
-const buildSyntheticHeaders = (columnCount: number) => {
-  const headers = ["alpha2", "name", "web_pages", "flag_url"];
-  for (let i = 4; i < columnCount; i += 1) {
-    headers.push(`course_${i - 3}`);
+const buildSyntheticHeaders = (columnCount: number, hasFlagUrlColumn: boolean) => {
+  const headers = ["alpha2", "name", "web_pages"];
+  const startIndex = hasFlagUrlColumn ? 4 : 3;
+  if (hasFlagUrlColumn) {
+    headers.push("flag_url");
+  }
+  for (let i = startIndex; i < columnCount; i += 1) {
+    headers.push(`course_${i - (hasFlagUrlColumn ? 3 : 2)}`);
   }
   return headers;
 };
@@ -175,12 +196,16 @@ const parseCsv = (csvText: string): CsvRow[] => {
   const firstCols = parseCsvLine(lines[0]);
   const firstNormalized = firstCols.map((header) => normalize(header));
   const hasHeader = detectHeaderRow(firstNormalized);
-  const headers = hasHeader ? firstNormalized : buildSyntheticHeaders(firstCols.length).map((header) => normalize(header));
+  const hasFlagUrlColumn = !hasHeader && isLikelyFlagUrl(firstCols[3]);
+  const headers = hasHeader
+    ? firstNormalized
+    : buildSyntheticHeaders(firstCols.length, hasFlagUrlColumn).map((header) => normalize(header));
   const dataLines = hasHeader ? lines.slice(1) : lines;
 
   const alpha2Index = headers.indexOf("alpha2");
   const nameIndex = headers.indexOf("name");
   const webPagesIndex = headers.indexOf("web_pages");
+  const flagUrlIndex = headers.indexOf("flag_url");
   const courseColumnIndexes = extractCourseColumns(headers);
 
   return dataLines
@@ -189,6 +214,7 @@ const parseCsv = (csvText: string): CsvRow[] => {
       countryCode: (cols[alpha2Index] || "").toUpperCase(),
       name: cols[nameIndex] || "",
       website: cols[webPagesIndex] || "",
+      flagUrl: flagUrlIndex >= 0 ? cols[flagUrlIndex] || "" : "",
       courses: courseColumnIndexes.flatMap((index) => splitCourses(cols[index] || "")),
     }))
     .filter((row) => row.countryCode && row.name)
@@ -209,7 +235,7 @@ const buildUniversity = (row: CsvRow, id: string): CsvUniversity => {
     countryCode: row.countryCode,
     countryName: countryNameFromCode(row.countryCode),
     flag: toFlagEmoji(row.countryCode),
-    countryFlagUrl: getFlagImageUrl(row.countryCode),
+    countryFlagUrl: row.flagUrl || getFlagImageUrl(row.countryCode),
     name: row.name,
     website: row.website,
     logoUrl: getLogoFromWebsite(row.website),
