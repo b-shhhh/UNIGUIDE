@@ -111,25 +111,25 @@ export default function CsvDashboardClient({ universities, countries, courses }:
       </section>
 
       <section className="grid gap-4 lg:grid-cols-2">
-        <article className="rounded-2xl border border-[#d8e5f8] bg-white p-5">
+        <article className="h-fit self-start rounded-2xl border border-[#d8e5f8] bg-white p-4">
           <div className="mb-3 flex items-center justify-between">
             <h3 className="text-lg font-bold text-[#1a2b44]">Countries</h3>
             <p className="text-xs font-bold uppercase tracking-[0.08em] text-[#5f7590]">{countries.length} total</p>
           </div>
-          <div className="flex gap-1.5 overflow-x-auto pb-2">
+          <div className="flex gap-1 overflow-x-auto pb-1">
             {countries.slice(0, 12).map((country) => (
               <Link
                 key={country.code}
                 href={`/homepage/countries/${country.code}`}
-                className="flex min-w-[125px] items-center justify-between rounded-md border border-[#d8e5f8] px-2 py-1.5 hover:bg-[#f5f9ff]"
+                className="flex min-w-[108px] items-center justify-between rounded-md border border-[#d8e5f8] px-1.5 py-1 hover:bg-[#f5f9ff]"
               >
-                <span className="truncate text-xs font-semibold text-[#1a2b44]">
+                <span className="truncate text-[11px] font-semibold text-[#1a2b44]">
                   {country.flagImageUrl ? (
                     <img
                       src={country.flagImageUrl}
                       alt={`${country.name} flag`}
-                      width={14}
-                      height={10}
+                      width={12}
+                      height={9}
                       className="mr-1 inline rounded-[2px] align-[-2px]"
                     />
                   ) : null}
