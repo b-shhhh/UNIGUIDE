@@ -17,5 +17,8 @@ export const API = {
             UPDATE: (id: string) => `/api/admin/users/${id}`,
             DELETE: (id: string) => `/api/admin/users/${id}`,
         }
+    },
+    RECOMMENDATION: {
+        LIST: "/api/recommendations",
     }
 }

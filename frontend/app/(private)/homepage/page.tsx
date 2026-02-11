@@ -1,5 +1,8 @@
-import Homepage from "../_component/Homepage";
+import { fetchHomepageData } from "@/lib/api/recommendation";
+import HomeDashboardClient from "../_component/HomeDashboardClient";
 
-export default function Page() {
-  return <Homepage />;
+export default async function Homepage() {
+  const { stats, universities, deadlines } = await fetchHomepageData();
+
+  return <HomeDashboardClient stats={stats} universities={universities} deadlines={deadlines} />;
 }
