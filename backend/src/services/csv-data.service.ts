@@ -121,6 +121,10 @@ const readCsvUniversities = async (): Promise<CsvUniversity[]> => {
   return universities;
 };
 
+export const getCsvUniversities = async (): Promise<CsvUniversity[]> => {
+  return readCsvUniversities();
+};
+
 export const getCsvCountries = async (): Promise<string[]> => {
   const universities = await readCsvUniversities();
   return Array.from(new Set(universities.map((uni) => uni.country))).sort((a, b) => a.localeCompare(b));
@@ -156,4 +160,3 @@ export const getCsvCoursesByCountry = async (country: string): Promise<string[]>
   const courses = universities.flatMap((uni) => uni.courses);
   return Array.from(new Set(courses)).sort((a, b) => a.localeCompare(b));
 };
-
