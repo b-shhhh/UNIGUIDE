@@ -16,6 +16,24 @@ export default function Header() {
 
         <div className="flex items-center gap-2 sm:gap-3">
           <Link
+            href="/homepage"
+            className="rounded-[8px] border border-[#4A90E2]/30 bg-white px-3 py-2 text-xs font-bold uppercase tracking-[0.08em] text-[#4A90E2] hover:bg-[#eef5ff] sm:text-sm"
+          >
+            Dashboard
+          </Link>
+          <Link
+            href="/homepage/countries"
+            className="rounded-[8px] border border-[#4A90E2]/30 bg-white px-3 py-2 text-xs font-bold uppercase tracking-[0.08em] text-[#4A90E2] hover:bg-[#eef5ff] sm:text-sm"
+          >
+            Countries
+          </Link>
+          <Link
+            href="/homepage/courses"
+            className="rounded-[8px] border border-[#4A90E2]/30 bg-white px-3 py-2 text-xs font-bold uppercase tracking-[0.08em] text-[#4A90E2] hover:bg-[#eef5ff] sm:text-sm"
+          >
+            Courses
+          </Link>
+          <Link
             href="/homepage/saved-universities"
             className="rounded-[8px] border border-[#4A90E2]/30 bg-white px-3 py-2 text-xs font-bold uppercase tracking-[0.08em] text-[#4A90E2] hover:bg-[#eef5ff] sm:text-sm"
           >
