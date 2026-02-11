@@ -235,13 +235,13 @@ export default function CsvDashboardClient({ universities, countries, courses }:
         ? `Top ${countryResults.length} countries${effectiveCourse ? ` for ${courses.find((c) => c.slug === effectiveCourse)?.name || "your course"}` : ""} are listed below.`
         : "I found no country match for this request.";
 
-      setChatContext((prev) => ({
+      setChatContext({
         courseSlug: effectiveCourse,
         countryCode: effectiveCountry,
         budgetLimit: effectiveBudget,
         lastUniversityResults: countryResults.map((c) => c.bestUniversity),
         lastCountryResults: countryResults,
-      }));
+      });
       setChatMessages((prev) => [
         ...prev,
         { role: "user", text: raw },
