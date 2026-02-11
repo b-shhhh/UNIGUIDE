@@ -1,6 +1,5 @@
 "use client";
 
-import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import type { DeadlineItem, HomepageStat, UniversityRecommendation } from "@/lib/api/recommendation";
@@ -185,7 +184,7 @@ export default function HomeDashboardClient({ stats, universities, deadlines }: 
                 <p className="text-sm text-[#666666]">{uni.program}</p>
               </div>
               {uni.logoUrl ? (
-                <Image src={uni.logoUrl} alt={`${uni.name} logo`} width={40} height={40} className="rounded-[8px]" unoptimized />
+                <img src={uni.logoUrl} alt={`${uni.name} logo`} width={40} height={40} className="rounded-[8px]" />
               ) : null}
             </div>
             <p className="mt-3 text-sm text-[#666666]">
@@ -216,7 +215,7 @@ export default function HomeDashboardClient({ stats, universities, deadlines }: 
                   className="flex items-center gap-3 rounded-[8px] border border-[#d8e5f8] p-3 text-left hover:bg-[#f5f9ff]"
                 >
                   {countrySample?.countryImage ? (
-                    <Image src={countrySample.countryImage} alt={country.name} width={36} height={24} className="rounded" unoptimized />
+                    <img src={countrySample.countryImage} alt={country.name} width={36} height={24} className="rounded" />
                   ) : (
                     <span className="text-sm font-bold text-[#4A90E2]">{country.flag}</span>
                   )}
@@ -355,7 +354,7 @@ export default function HomeDashboardClient({ stats, universities, deadlines }: 
                     <p className="mt-1 text-xs text-[#4f6682]">{item.program}</p>
                   </div>
                   {item.logoUrl ? (
-                    <Image src={item.logoUrl} alt={`${item.name} logo`} width={28} height={28} className="rounded" unoptimized />
+                    <img src={item.logoUrl} alt={`${item.name} logo`} width={28} height={28} className="rounded" />
                   ) : null}
                   <span className="rounded-full bg-[#d7f0ec] px-2.5 py-1 text-[11px] font-bold text-[#0f766e]">{item.score} fit</span>
                 </div>
