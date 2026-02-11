@@ -111,6 +111,7 @@ const splitCourses = (raw: string): string[] =>
     .map((value) => value.trim())
     .filter(Boolean);
 
+
 const parseCsvLine = (line: string): string[] => {
   const output: string[] = [];
   let current = "";
