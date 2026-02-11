@@ -1,6 +1,6 @@
 import axios from "axios";
 
-const BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:5000";
+const BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || "http://127.0.0.1:5050";
 
 const getBrowserCookie = (name: string) => {
   if (typeof document === "undefined") {
