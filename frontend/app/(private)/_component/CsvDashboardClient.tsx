@@ -15,47 +15,18 @@ type ChatMessage = {
   role: "user" | "assistant";
   text: string;
   results?: CsvUniversity[];
-  countryResults?: {
-    code: string;
-    name: string;
-    flagImageUrl: string;
-    averageScore: number;
-    count: number;
-    bestUniversity: CsvUniversity;
-  }[];
-};
-
-type ChatContext = {
-  courseSlug: string | null;
-  countryCode: string | null;
-  budgetLimit: number | null;
-  lastUniversityResults: CsvUniversity[];
-  lastCountryResults: {
-    code: string;
-    name: string;
-    flagImageUrl: string;
-    averageScore: number;
-    count: number;
-    bestUniversity: CsvUniversity;
-  }[];
 };
 
 export default function CsvDashboardClient({ universities, countries, courses }: Props) {
   const [query, setQuery] = useState("");
   const [chatInput, setChatInput] = useState("");
+  const [chatLoading, setChatLoading] = useState(false);
   const [chatMessages, setChatMessages] = useState<ChatMessage[]>([
     {
       role: "assistant",
-      text: "Hi, ask me for universities by country, course, and budget. Example: affordable universities in Canada for Computer Science under $15k.",
+      text: "Hi. Ask anything about universities and I will answer using your CSV data. Example: best country to study CS.",
     },
   ]);
-  const [chatContext, setChatContext] = useState<ChatContext>({
-    courseSlug: null,
-    countryCode: null,
-    budgetLimit: null,
-    lastUniversityResults: [],
-    lastCountryResults: [],
-  });
   const [savedIds, setSavedIds] = useState<string[]>([]);
   const [savingId, setSavingId] = useState<string | null>(null);
 
@@ -104,177 +75,59 @@ export default function CsvDashboardClient({ universities, countries, courses }:
     setSavingId(null);
   };
 
-  const parseBudget = (text: string) => {
-    const match = text.match(/(?:under|below|less than)\s*\$?\s*(\d+(?:[.,]\d+)?)\s*(k)?/i);
-    if (!match) {
-      return null;
-    }
-    const amount = Number(match[1].replace(",", ""));
-    if (!Number.isFinite(amount)) {
-      return null;
-    }
-    return match[2] ? amount * 1000 : amount;
-  };
-
-  const parseTuition = (tuition: string) => {
-    const match = tuition.match(/\$([\d,]+)/);
-    if (!match) {
-      return Number.POSITIVE_INFINITY;
-    }
-    return Number(match[1].replace(/,/g, ""));
-  };
-
-  const handleChatAsk = () => {
+  const handleChatAsk = async () => {
     const raw = chatInput.trim();
-    const prompt = raw.toLowerCase();
-    if (!prompt) {
+    if (!raw || chatLoading) {
       return;
     }
 
     setChatInput("");
+    const nextMessages = [...chatMessages, { role: "user" as const, text: raw }];
+    setChatMessages(nextMessages);
+    setChatLoading(true);
 
-    const courseAliases: Record<string, string> = {
-      cs: "computer-science",
-      "computer science": "computer-science",
-      ai: "artificial-intelligence",
-      "data science": "data-science",
-      cybersecurity: "cyber-security",
-      "software engineering": "software-engineering",
-    };
-
-    const matchedCountry = countries.find((country) => prompt.includes(country.name.toLowerCase()));
-    const detectedCourse =
-      courses.find((course) => prompt.includes(course.name.toLowerCase())) ??
-      courses.find((course) =>
-        Object.entries(courseAliases).some(([alias, slug]) => prompt.includes(alias) && slug === course.slug),
-      );
-    const budgetLimit = parseBudget(prompt);
-    const followupBestAmong =
-      prompt.includes("best among these") || prompt.includes("best one") || prompt.includes("which is best");
-    const askBestCountries =
-      prompt.includes("best country") || prompt.includes("best countries") || prompt.includes("top countries");
-
-    const effectiveCountry = matchedCountry?.code ?? chatContext.countryCode;
-    const effectiveCourse = detectedCourse?.slug ?? chatContext.courseSlug;
-    const effectiveBudget = budgetLimit ?? chatContext.budgetLimit;
-
-    if (followupBestAmong) {
-      if (chatContext.lastCountryResults.length) {
-        const bestCountry = chatContext.lastCountryResults[0];
-        const assistantText = `Best among those is ${bestCountry.name}. Top university there from your last request is ${bestCountry.bestUniversity.name}.`;
-        setChatMessages((prev) => [
-          ...prev,
-          { role: "user", text: raw },
-          {
-            role: "assistant",
-            text: assistantText,
-            results: [bestCountry.bestUniversity],
-            countryResults: [bestCountry],
-          },
-        ]);
-        return;
-      }
-      if (chatContext.lastUniversityResults.length) {
-        const bestUni = chatContext.lastUniversityResults[0];
-        const assistantText = `Best among those is ${bestUni.name} in ${bestUni.countryName}.`;
-        setChatMessages((prev) => [
-          ...prev,
-          { role: "user", text: raw },
-          { role: "assistant", text: assistantText, results: [bestUni] },
-        ]);
-        return;
-      }
-    }
-
-    const scoped = universities.filter((uni) => {
-      const byCountry = effectiveCountry ? uni.countryCode === effectiveCountry : true;
-      const byCourse = effectiveCourse ? uni.courseSlug === effectiveCourse : true;
-      const byBudget = effectiveBudget !== null ? parseTuition(uni.tuition) <= effectiveBudget : true;
-      return byCountry && byCourse && byBudget;
-    });
-
-    if (askBestCountries) {
-      const grouped = new Map<
-        string,
-        { code: string; name: string; flagImageUrl: string; totalScore: number; count: number; bestUniversity: CsvUniversity }
-      >();
-
-      for (const uni of scoped) {
-        const current = grouped.get(uni.countryCode);
-        if (!current) {
-          grouped.set(uni.countryCode, {
-            code: uni.countryCode,
-            name: uni.countryName,
-            flagImageUrl: uni.countryFlagUrl,
-            totalScore: uni.score,
-            count: 1,
-            bestUniversity: uni,
-          });
-          continue;
-        }
-        current.totalScore += uni.score;
-        current.count += 1;
-        if (uni.score > current.bestUniversity.score) {
-          current.bestUniversity = uni;
-        }
-      }
-
-      const countryResults = Array.from(grouped.values())
-        .map((item) => ({
-          code: item.code,
-          name: item.name,
-          flagImageUrl: item.flagImageUrl,
-          averageScore: item.totalScore / item.count,
-          count: item.count,
-          bestUniversity: item.bestUniversity,
-        }))
-        .sort((a, b) => b.averageScore - a.averageScore)
-        .slice(0, 5);
-
-      const assistantText = countryResults.length
-        ? `Top ${countryResults.length} countries${effectiveCourse ? ` for ${courses.find((c) => c.slug === effectiveCourse)?.name || "your course"}` : ""} are listed below.`
-        : "I found no country match for this request.";
-
-      setChatContext({
-        courseSlug: effectiveCourse,
-        countryCode: effectiveCountry,
-        budgetLimit: effectiveBudget,
-        lastUniversityResults: countryResults.map((c) => c.bestUniversity),
-        lastCountryResults: countryResults,
+    try {
+      const response = await fetch("/api/chatbot", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          message: raw,
+          history: nextMessages.map((msg) => ({ role: msg.role, content: msg.text })),
+        }),
       });
+
+      if (!response.ok) {
+        throw new Error("Chat request failed");
+      }
+
+      const payload = (await response.json()) as {
+        answer?: string;
+        recommendations?: string[];
+      };
+
+      const recommended = (payload.recommendations || [])
+        .map((id) => universities.find((uni) => uni.id === id))
+        .filter((item): item is CsvUniversity => Boolean(item));
+
       setChatMessages((prev) => [
         ...prev,
-        { role: "user", text: raw },
-        { role: "assistant", text: assistantText, countryResults: countryResults.length ? countryResults : undefined },
+        {
+          role: "assistant",
+          text: payload.answer || "I found some useful matches from your CSV.",
+          results: recommended.length ? recommended : undefined,
+        },
       ]);
-      return;
+    } catch {
+      setChatMessages((prev) => [
+        ...prev,
+        {
+          role: "assistant",
+          text: "I could not process that right now. Please try again.",
+        },
+      ]);
+    } finally {
+      setChatLoading(false);
     }
-
-    const results = scoped.sort((a, b) => b.score - a.score).slice(0, 5);
-
-    let assistantText = "";
-    if (!matchedCountry && !detectedCourse && budgetLimit === null && !chatContext.courseSlug && !chatContext.countryCode) {
-      assistantText =
-        "I can help better if you include at least one of: country, course, or budget. Example: universities in Canada for Data Science under $20k.";
-    } else if (!results.length) {
-      assistantText = "I found no exact match. Try increasing budget or changing course/country.";
-    } else {
-      assistantText = `I found ${results.length} match${results.length > 1 ? "es" : ""}${effectiveCountry ? ` in ${countries.find((c) => c.code === effectiveCountry)?.name || ""}` : ""}${effectiveCourse ? ` for ${courses.find((c) => c.slug === effectiveCourse)?.name || "selected course"}` : ""}${effectiveBudget ? ` under $${effectiveBudget.toLocaleString()}` : ""}.`;
-    }
-
-    setChatContext((prev) => ({
-      ...prev,
-      courseSlug: effectiveCourse,
-      countryCode: effectiveCountry,
-      budgetLimit: effectiveBudget,
-      lastUniversityResults: results,
-      lastCountryResults: [],
-    }));
-    setChatMessages((prev) => [
-      ...prev,
-      { role: "user", text: raw },
-      { role: "assistant", text: assistantText, results: results.length ? results : undefined },
-    ]);
   };
 
   return (
@@ -296,7 +149,7 @@ export default function CsvDashboardClient({ universities, countries, courses }:
 
       <section className="rounded-2xl border border-[#d8e5f8] bg-white p-4">
         <h3 className="text-lg font-bold text-[#1a2b44]">AI Chatbot (CSV)</h3>
-        <p className="mt-1 text-xs text-[#5f7590]">Try: affordable universities in Canada for Computer Science under $15k</p>
+        <p className="mt-1 text-xs text-[#5f7590]">Ask naturally: best country to study CS, best among these, affordable options under budget, etc.</p>
 
         <div className="mt-3 max-h-72 space-y-2 overflow-y-auto rounded-lg border border-[#d8e5f8] bg-[#f8fbff] p-3">
           {chatMessages.map((message, index) => (
@@ -325,35 +178,9 @@ export default function CsvDashboardClient({ universities, countries, courses }:
                   ))}
                 </div>
               ) : null}
-              {message.role === "assistant" && message.countryResults?.length ? (
-                <div className="mt-2 grid gap-2 sm:grid-cols-2">
-                  {message.countryResults.map((country) => (
-                    <Link
-                      key={`chat-country-${country.code}`}
-                      href={`/homepage/countries/${country.code}`}
-                      className="rounded-md border border-[#d8e5f8] bg-white px-3 py-2 text-left hover:bg-[#f5f9ff]"
-                    >
-                      <p className="text-xs font-semibold text-[#1a2b44]">
-                        {country.flagImageUrl ? (
-                          <img
-                            src={country.flagImageUrl}
-                            alt={`${country.name} flag`}
-                            width={14}
-                            height={10}
-                            className="mr-1 inline rounded-[2px] align-[-2px]"
-                          />
-                        ) : null}
-                        {country.name}
-                      </p>
-                      <p className="text-[11px] text-[#5f7590]">Avg score: {country.averageScore.toFixed(1)}%</p>
-                      <p className="text-[11px] text-[#5f7590]">Matches: {country.count}</p>
-                      <p className="text-[11px] text-[#5f7590]">Best uni: {country.bestUniversity.name}</p>
-                    </Link>
-                  ))}
-                </div>
-              ) : null}
             </div>
           ))}
+          {chatLoading ? <p className="text-xs text-[#5f7590]">Assistant is thinking...</p> : null}
         </div>
 
         <div className="mt-3 flex flex-col gap-2 sm:flex-row">
@@ -362,7 +189,7 @@ export default function CsvDashboardClient({ universities, countries, courses }:
             onChange={(event) => setChatInput(event.target.value)}
             onKeyDown={(event) => {
               if (event.key === "Enter") {
-                handleChatAsk();
+                void handleChatAsk();
               }
             }}
             placeholder="Ask your query..."
@@ -370,8 +197,11 @@ export default function CsvDashboardClient({ universities, countries, courses }:
           />
           <button
             type="button"
-            onClick={handleChatAsk}
-            className="h-10 rounded-md bg-[#4A90E2] px-4 text-xs font-bold uppercase tracking-[0.08em] text-white"
+            disabled={chatLoading}
+            onClick={() => {
+              void handleChatAsk();
+            }}
+            className="h-10 rounded-md bg-[#4A90E2] px-4 text-xs font-bold uppercase tracking-[0.08em] text-white disabled:opacity-50"
           >
             Ask
           </button>
