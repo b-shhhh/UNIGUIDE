@@ -134,79 +134,6 @@ export const handleChangePassword = async (formData: Record<string, unknown>) =>
   }
 };
 
-export const handleAdminLogin = async (
-  formData: Record<string, unknown>
-): Promise<LoginActionResult> => {
-  try {
-    const email = typeof formData.email === "string" ? formData.email.trim().toLowerCase() : "";
-    if (email !== "admin@gmail.com") {
-      return {
-        success: false,
-        message: "Only admin@gmail.com can login to admin.",
-      };
-    }
-
-    const result = await loginUser({
-      ...formData,
-      email,
-    });
-    if (!result.success) {
-      return {
-        success: false,
-        message: result.message || "Login failed",
-      };
-    }
-
-    const payload = (result.data ?? null) as Record<string, unknown> | null;
-    const userFromPayload =
-      payload && typeof payload === "object" && "user" in payload
-        ? (payload.user as Record<string, unknown> | null)
-        : null;
-    const role =
-      (userFromPayload && typeof userFromPayload.role === "string" ? userFromPayload.role : "") ||
-      (payload && typeof payload.role === "string" ? payload.role : "");
-    const emailFromPayload =
-      (userFromPayload && typeof userFromPayload.email === "string" ? userFromPayload.email : "") ||
-      (payload && typeof payload.email === "string" ? payload.email : "");
-
-    if (emailFromPayload.trim().toLowerCase() !== "admin@gmail.com" && role !== "admin") {
-      return {
-        success: false,
-        message: "Admin access required.",
-      };
-    }
-
-    const tokenFromData =
-      payload && typeof payload === "object" && "token" in payload
-        ? (payload as { token?: unknown }).token
-        : undefined;
-    const token =
-      (typeof result.token === "string" && result.token) ||
-      (typeof tokenFromData === "string" ? tokenFromData : "");
-
-    if (token) {
-      await setAuthToken(token);
-    }
-    await setUserData(payload);
-
-    return {
-      success: true,
-      message: "Admin login successful",
-      data: payload,
-    };
-  } catch (error: unknown) {
-    return {
-      success: false,
-      message: getErrorMessage(error, "Login failed"),
-    };
-  }
-};
-
-export const handleAdminLogout = async () => {
-  await clearAuthCookies();
-  return redirect("/admin/login");
-};
-
 export const handleDeleteAccount = async (payload: Record<string, unknown>) => {
   let shouldRedirect = false;
   try {
@@ -273,3 +200,4 @@ export const handleResetPassword = async (token: string, newPassword: string) =>
     return { success: false, message: getErrorMessage(error, "Reset password action failed") };
   }
 };
+

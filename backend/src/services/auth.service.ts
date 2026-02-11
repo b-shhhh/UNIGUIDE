@@ -7,10 +7,8 @@ import { RegisterInput, LoginInput } from "../dtos/user.dto";
 
 const formatFullName = (data: RegisterInput) => {
   const fullName = data.fullName?.trim();
-  const username = data.username?.trim();
 
   if (fullName) return fullName;
-  if (username) return username;
   throw new Error("Full name is required");
 };
 
