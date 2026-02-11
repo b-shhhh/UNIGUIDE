@@ -59,7 +59,16 @@ export default function CsvSavedUniversitiesClient({ universities }: Props) {
               ) : null}
               <p className="text-base font-bold text-[#1a2b44]">{uni.name}</p>
               <p className="mt-1 text-xs text-[#5f7590]">
-                {uni.flag} {uni.countryName}
+                {uni.countryFlagUrl ? (
+                  <img
+                    src={uni.countryFlagUrl}
+                    alt={`${uni.countryName} flag`}
+                    width={16}
+                    height={12}
+                    className="mr-1 inline rounded-[2px] align-[-2px]"
+                  />
+                ) : null}
+                {uni.countryName}
               </p>
               <p className="mt-1 text-xs text-[#5f7590]">{uni.course}</p>
               <div className="mt-3 flex items-center gap-2">
