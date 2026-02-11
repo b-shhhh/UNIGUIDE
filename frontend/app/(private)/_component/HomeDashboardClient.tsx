@@ -112,25 +112,25 @@ export default function HomeDashboardClient({ stats, universities, deadlines }: 
 
   return (
     <div className="space-y-6">
-      <section className="relative overflow-hidden rounded-3xl border border-[#1a2b44]/10 bg-[#1a2b44] p-6 text-white sm:p-8">
-        <div className="pointer-events-none absolute -right-16 -top-10 h-48 w-48 rounded-full bg-[#22c1a7]/30 blur-2xl" />
-        <div className="pointer-events-none absolute -bottom-16 right-16 h-44 w-44 rounded-full bg-[#f59e0b]/25 blur-2xl" />
+      <section className="relative overflow-hidden rounded-2xl border border-[#4A90E2]/20 bg-[linear-gradient(120deg,#4A90E2_0%,#357ABD_100%)] p-6 text-white sm:p-8">
+        <div className="pointer-events-none absolute -right-16 -top-10 h-48 w-48 rounded-full bg-white/20 blur-2xl" />
+        <div className="pointer-events-none absolute -bottom-16 right-16 h-44 w-44 rounded-full bg-[#F5A623]/25 blur-2xl" />
         <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
           <div>
-            <p className="text-xs font-bold uppercase tracking-[0.14em] text-[#c5d2e6]">Welcome back</p>
+            <p className="text-xs font-bold uppercase tracking-[0.14em] text-[#e9f2ff]">Welcome back</p>
             <h2 className="mt-2 max-w-2xl text-2xl font-bold leading-tight sm:text-4xl">Your admissions dashboard is ready.</h2>
           </div>
           <div className="flex flex-wrap items-center gap-2">
             <Link
               href="/homepage/saved-universities"
-              className="rounded-xl border border-[#d7e1f0] bg-white/10 px-4 py-3 text-xs font-bold uppercase tracking-[0.08em] text-white hover:bg-white/20"
+              className="rounded-[8px] border border-white/50 bg-white/10 px-4 py-3 text-xs font-bold uppercase tracking-[0.08em] text-white hover:bg-white/20"
             >
               Saved Universities ({savedIds.length})
             </Link>
             <button
               type="button"
               onClick={runAiFinder}
-              className="rounded-xl bg-[#22c1a7] px-4 py-3 text-sm font-bold uppercase tracking-[0.08em] text-[#08352f] transition hover:bg-[#3ed6be]"
+              className="rounded-[8px] bg-[#F5A623] px-4 py-3 text-sm font-bold uppercase tracking-[0.08em] text-[#333333] transition hover:bg-[#f9b648]"
             >
               AI Recommendation Finder
             </button>
@@ -140,25 +140,25 @@ export default function HomeDashboardClient({ stats, universities, deadlines }: 
 
       <section className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
         {stats.map((item) => (
-          <article key={item.label} className="rounded-2xl border border-[#1a2b44]/10 bg-white p-4 shadow-[0_8px_30px_rgba(26,43,68,0.06)]">
-            <p className="text-xs font-bold uppercase tracking-[0.1em] text-[#4f6682]">{item.label}</p>
+          <article key={item.label} className="rounded-[8px] border border-[#d8e5f8] bg-white p-4 shadow-[0_4px_8px_rgba(0,0,0,0.1)]">
+            <p className="text-xs font-bold uppercase tracking-[0.1em] text-[#666666]">{item.label}</p>
             <div className="mt-3 flex items-center justify-between">
-              <p className="text-3xl font-bold text-[#1a2b44]">{item.value}</p>
+              <p className="text-3xl font-bold text-[#333333]">{item.value}</p>
               <span className={`rounded-full px-3 py-1 text-[11px] font-bold uppercase tracking-[0.08em] ${item.tone}`}>Live</span>
             </div>
           </article>
         ))}
       </section>
 
-      <section className="rounded-2xl border border-[#1a2b44]/10 bg-white p-5">
+      <section className="rounded-[8px] border border-[#d8e5f8] bg-white p-5 shadow-[0_4px_8px_rgba(0,0,0,0.08)]">
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-          <h3 className="text-lg font-bold text-[#1a2b44]">Search Engine</h3>
+          <h3 className="text-lg font-bold text-[#333333]">Search Engine</h3>
           <input
             type="text"
             value={query}
             onChange={(event) => setQuery(event.target.value)}
             placeholder="Search by country, course, city, university..."
-            className="w-full rounded-xl border border-[#1a2b44]/20 bg-[#fcfeff] px-4 py-2.5 text-sm text-[#1a2b44] outline-none ring-[#1a2b44]/20 focus:ring sm:max-w-md"
+            className="w-full rounded-[8px] border border-[#c7d9f5] bg-white px-4 py-2.5 text-sm text-[#333333] outline-none focus:ring-2 focus:ring-[#4A90E2]/30 sm:max-w-md"
           />
         </div>
       </section>
