@@ -54,12 +54,13 @@ export const registerUser = async (data: RegisterInput) => {
     lastName,
     email,
     phone,
-    password: hashedPassword
+    password: hashedPassword,
+    role: "user"
   });
 
   await user.save();
 
-  const token = jwt.sign({ id: user._id }, JWT_SECRET, { expiresIn: "7d" });
+  const token = jwt.sign({ id: user._id, role: user.role }, JWT_SECRET, { expiresIn: "7d" });
 
   return { user, token };
 };
@@ -74,7 +75,7 @@ export const loginUser = async (data: LoginInput) => {
   const isMatch = await bcrypt.compare(password, user.password);
   if (!isMatch) throw new Error("Invalid email or password");
 
-  const token = jwt.sign({ id: user._id }, JWT_SECRET, { expiresIn: "7d" });
+  const token = jwt.sign({ id: user._id, role: user.role }, JWT_SECRET, { expiresIn: "7d" });
 
   return { user, token };
 };
