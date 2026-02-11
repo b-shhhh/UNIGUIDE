@@ -17,11 +17,11 @@ type RegisterFormData = {
 
 export default function RegisterForm() {
   const router = useRouter();
-  const { register, handleSubmit, watch, formState: { errors, isSubmitting } } = useForm<RegisterFormData>({
+  const { register, handleSubmit, formState: { errors, isSubmitting } } = useForm<RegisterFormData>({
     defaultValues: { name: "", email: "", countryCode: "+977", phone: "", password: "", confirmPassword: "" },
   });
 
-  const [pending, startTransition] = useTransition();
+  const [pending] = useTransition();
   const [error, setError] = useState("");
 
   const onSubmit = async (data: RegisterFormData) => {
@@ -44,8 +44,9 @@ export default function RegisterForm() {
       const res = await handleRegister(payload);
       if (!res.success) throw new Error(res.message || "Registration failed");
       router.push("/login");
-    } catch (err: any) {
-      setError(err.message || "Registration failed");
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : "Registration failed";
+      setError(message);
     }
   };
 

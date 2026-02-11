@@ -2,11 +2,9 @@
 
 import { useState } from "react";
 import { handleRequestPasswordReset } from "@/lib/actions/auth-action"; // <-- import your server-side password reset handler
-import { useRouter } from "next/navigation";
 import Link from "next/link";
 
 export default function ForgotPasswordForm() {
-  const router = useRouter();
   const [email, setEmail] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
@@ -22,8 +20,9 @@ export default function ForgotPasswordForm() {
       const res = await handleRequestPasswordReset(email);
       if (!res.success) throw new Error(res.message || "Failed to send reset email");
       setSuccess(res.message || "Password reset email sent successfully!");
-    } catch (err: any) {
-      setError(err.message || "Failed to send reset email");
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : "Failed to send reset email";
+      setError(message);
     } finally {
       setLoading(false);
     }

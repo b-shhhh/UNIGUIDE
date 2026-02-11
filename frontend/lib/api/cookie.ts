@@ -10,15 +10,15 @@ export const getAuthToken = async () => {
     const token = cookieStore.get("auth_token")?.value;
     return token || null;
 }
-export const setUserData = async (userData: any) => {
+export const setUserData = async (userData: unknown) => {
     const cookieStore = await cookies();
     cookieStore.set({ name: "user_data", value: JSON.stringify(userData) })
 }
-export const getUserData = async () => {
+export const getUserData = async <T = unknown>() => {
     const cookieStore = await cookies();
     const userData = cookieStore.get("user_data")?.value;
     if (userData) {
-        return JSON.parse(userData);
+        return JSON.parse(userData) as T;
     }
     return null;
 }

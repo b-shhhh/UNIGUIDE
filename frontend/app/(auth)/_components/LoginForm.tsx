@@ -26,10 +26,11 @@ export default function LoginPage() {
       if (!response.success) throw new Error(response.message);
 
       // Set user in context
-      setUser(response.data);
+      setUser(typeof response.data === "object" && response.data !== null ? (response.data as Record<string, unknown>) : null);
       router.push("/private/homepage");
-    } catch (err: any) {
-      setError(err.message || "Login failed. Please check your credentials.");
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : "Login failed. Please check your credentials.";
+      setError(message);
     } finally {
       setLoading(false);
     }
@@ -99,7 +100,7 @@ export default function LoginPage() {
           </div>
 
           <div className="text-center mt-3 text-[10px] text-slate-400">
-            Don't have an account?{" "}
+            Don&apos;t have an account?{" "}
             <Link href="/register" className="font-bold text-purple-700 hover:underline uppercase">
               Sign up
             </Link>
