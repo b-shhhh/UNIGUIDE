@@ -11,6 +11,7 @@ type ExtractedFilters = {
   countries: string[];
   countryCodes: string[];
   courses: string[];
+  askedCourseLabel: string | null;
   budgetMax: number | null;
   budgetMin: number | null;
   ieltsMin: number | null;
@@ -113,21 +114,42 @@ const parseSortBy = (text: string): ExtractedFilters["sortBy"] => {
   return "relevance";
 };
 
-const buildFilters = (queryText: string, countryLookup: Map<string, string>, knownCourses: string[]): ExtractedFilters => {
+const getAskedCourseLabel = (text: string) => {
+  const normalized = normalize(text);
+  if (/\bcomputer science\b|\bcs\b/.test(normalized)) return "Computer Science";
+  if (/\bmedicine\b|\bmedical\b/.test(normalized)) return "Medicine";
+  if (/\bengineering\b/.test(normalized)) return "Engineering";
+  if (/\bbusiness\b/.test(normalized)) return "Business";
+  if (/\blaw\b/.test(normalized)) return "Law";
+  if (/\bart\b/.test(normalized)) return "Arts";
+  return null;
+};
+
+const buildFilters = (
+  queryText: string,
+  countryNameLookup: Map<string, string>,
+  knownCountryCodes: Set<string>,
+  knownCourses: string[],
+): ExtractedFilters => {
   const normalized = normalize(queryText);
   const budget = parseBudgetRange(queryText);
 
-  const countryCodes = Array.from(countryLookup.entries())
-    .filter(([nameOrCode]) => {
-      const escaped = nameOrCode.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  const countryCodesFromNames = Array.from(countryNameLookup.entries())
+    .filter(([countryName]) => {
+      const escaped = countryName.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
       return new RegExp(`\\b${escaped}\\b`, "i").test(normalized);
     })
     .map(([, code]) => code);
 
+  const countryCodesFromUppercaseMentions = Array.from(new Set((queryText.match(/\b[A-Z]{2}\b/g) || []).map((code) => code.toUpperCase()))).filter(
+    (code) => knownCountryCodes.has(code),
+  );
+
+  const countryCodes = [...countryCodesFromNames, ...countryCodesFromUppercaseMentions];
   const uniqueCountryCodes = Array.from(new Set(countryCodes));
   const countries = uniqueCountryCodes.map((code) => {
-    for (const [name, mappedCode] of countryLookup.entries()) {
-      if (mappedCode === code && name.length > 2) return name;
+    for (const [name, mappedCode] of countryNameLookup.entries()) {
+      if (mappedCode === code) return name;
     }
     return code;
   });
@@ -142,11 +164,13 @@ const buildFilters = (queryText: string, countryLookup: Map<string, string>, kno
       return expansions.some((item) => courseNorm.includes(item));
     });
   });
+  const askedCourseLabel = getAskedCourseLabel(queryText);
 
   return {
     countries,
     countryCodes: uniqueCountryCodes,
     courses: matchedCourses,
+    askedCourseLabel,
     budgetMin: budget.min,
     budgetMax: budget.max,
     ieltsMin: parseIelts(queryText),
@@ -178,18 +202,15 @@ export async function POST(req: NextRequest) {
 
   const universities = await getUniversities();
   const knownCourses = Array.from(new Set(universities.flatMap((uni) => uni.courses)));
-  const countryLookup = new Map<string, string>();
+  const countryNameLookup = new Map<string, string>();
+  const knownCountryCodes = new Set<string>();
   for (const uni of universities) {
-    countryLookup.set(normalize(uni.countryCode), uni.countryCode);
-    countryLookup.set(normalize(uni.countryName), uni.countryCode);
+    countryNameLookup.set(normalize(uni.countryName), uni.countryCode);
+    knownCountryCodes.add(uni.countryCode);
   }
 
-  const priorUserContext = history
-    .filter((turn) => turn.role === "user")
-    .map((turn) => turn.content)
-    .join(" ");
-  const queryText = `${priorUserContext} ${message}`.trim();
-  const filters = buildFilters(queryText, countryLookup, knownCourses);
+  const queryText = message;
+  const filters = buildFilters(queryText, countryNameLookup, knownCountryCodes, knownCourses);
 
   const previousRecommendationIds = history.flatMap((turn) => (Array.isArray(turn.recommendationIds) ? turn.recommendationIds : []));
   const previousRecommendationSet = new Set(previousRecommendationIds);
@@ -206,7 +227,10 @@ export async function POST(req: NextRequest) {
 
     if (filters.courses.length) {
       const uniCourses = uni.courses.map((course) => normalize(course));
-      const hasCourseMatch = filters.courses.some((course) => uniCourses.includes(normalize(course)));
+      const hasCourseMatch = filters.courses.some((course) => {
+        const courseNorm = normalize(course);
+        return uniCourses.some((uniCourse) => uniCourse.includes(courseNorm) || courseNorm.includes(uniCourse));
+      });
       if (!hasCourseMatch) {
         return { uni, score: Number.NEGATIVE_INFINITY };
       }
@@ -277,12 +301,19 @@ export async function POST(req: NextRequest) {
     .slice(0, 5);
 
   const recommendationIds = shortlist.slice(0, filters.topN).map((item) => item.id);
+  const countryIntent = /(which country|best country|top countries|country is best)/i.test(message);
   const gotItLine = (() => {
     const countryPart = filters.countries.length ? ` in ${filters.countries[0]}` : "";
-    const coursePart = filters.courses.length ? ` for ${filters.courses[0]}` : "";
+    const coursePart = filters.askedCourseLabel
+      ? ` for ${filters.askedCourseLabel}`
+      : filters.courses.length
+      ? ` for ${filters.courses[0]}`
+      : "";
     const tuitionPart =
       filters.budgetMax !== null || filters.sortBy === "tuition_asc" ? " under low tuition" : "";
-    return `Got it. Searching universities${countryPart}${coursePart}${tuitionPart}...`;
+    return countryIntent
+      ? `Got it. Finding best countries${coursePart}${tuitionPart}...`
+      : `Got it. Searching universities${countryPart}${coursePart}${tuitionPart}...`;
   })();
 
   const updatedLine = (() => {
@@ -351,14 +382,25 @@ export async function POST(req: NextRequest) {
     return `${index + 1}. ${uni.name} (${uni.countryName}) - ${uni.ranking}, ${uni.tuition}`;
   });
 
+  const countryLines = bestCountries.map(
+    (item, index) => `${index + 1}. ${item.country} (${item.count} matches, avg score ${item.avgScore.toFixed(1)}%)`,
+  );
+
   const fallbackAnswer = shortlist.length
-    ? [
-        `I found ${shortlist.length} CSV matches.`,
-        bestCountries.length ? `Top countries: ${bestCountries.map((item) => item.country).join(", ")}.` : "",
-        topLines.length ? `Best options:\n${topLines.join("\n")}` : "",
-      ]
-        .filter(Boolean)
-        .join("\n\n")
+    ? countryIntent
+      ? [
+          `From your CSV data, these are the best countries${filters.askedCourseLabel ? ` for ${filters.askedCourseLabel}` : ""}:`,
+          countryLines.join("\n"),
+        ]
+          .filter(Boolean)
+          .join("\n\n")
+      : [
+          `I found ${shortlist.length} CSV matches.`,
+          bestCountries.length ? `Top countries: ${bestCountries.map((item) => item.country).join(", ")}.` : "",
+          topLines.length ? `Best options:\n${topLines.join("\n")}` : "",
+        ]
+          .filter(Boolean)
+          .join("\n\n")
     : "I could not find a good match in your CSV data for that request. Try specifying country, course, or budget.";
 
   return NextResponse.json({
