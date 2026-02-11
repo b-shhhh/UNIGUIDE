@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import type { UniversityRecommendation } from "@/lib/api/recommendation";
-import { readSavedUniversityIds, SAVED_UNIVERSITIES_UPDATE_EVENT, toggleUniversitySaved } from "@/lib/saved-universities";
+import { fetchSavedUniversityIds, SAVED_UNIVERSITIES_UPDATE_EVENT, toggleUniversitySaved } from "@/lib/saved-universities";
 
 type Props = {
   universities: UniversityRecommendation[];
@@ -33,11 +33,18 @@ export default function SavedUniversitiesClient({ universities }: Props) {
   const [selectedId, setSelectedId] = useState<string | null>(null);
 
   useEffect(() => {
-    const syncSaved = () => setSavedIds(readSavedUniversityIds());
-    syncSaved();
+    let active = true;
+    const syncSaved = async () => {
+      const ids = await fetchSavedUniversityIds();
+      if (active) {
+        setSavedIds(ids);
+      }
+    };
+    void syncSaved();
     window.addEventListener("storage", syncSaved);
     window.addEventListener(SAVED_UNIVERSITIES_UPDATE_EVENT, syncSaved);
     return () => {
+      active = false;
       window.removeEventListener("storage", syncSaved);
       window.removeEventListener(SAVED_UNIVERSITIES_UPDATE_EVENT, syncSaved);
     };
@@ -58,12 +65,11 @@ export default function SavedUniversitiesClient({ universities }: Props) {
     return savedUniversities.find((item) => item.id === selectedId) ?? savedUniversities[0];
   }, [savedUniversities, selectedId]);
 
-  const onRemove = (id: string) => {
-    toggleUniversitySaved(id);
-    const nextIds = readSavedUniversityIds();
-    setSavedIds(nextIds);
+  const onRemove = async (id: string) => {
+    const result = await toggleUniversitySaved(id);
+    setSavedIds(result.ids);
     if (selectedId === id) {
-      setSelectedId(nextIds[0] ?? null);
+      setSelectedId(result.ids[0] ?? null);
     }
   };
 
@@ -177,4 +183,3 @@ export default function SavedUniversitiesClient({ universities }: Props) {
     </div>
   );
 }
-
