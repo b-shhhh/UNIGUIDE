@@ -14,6 +14,11 @@ export const errorMiddleware = (err: any, _req: Request, res: Response, _next: N
     return res.status(400).json({ success: false, message: err.message });
   }
 
+  // Handle upload file filter errors
+  if (typeof err?.message === "string" && err.message.includes("Only image files are allowed")) {
+    return res.status(400).json({ success: false, message: err.message });
+  }
+
   // Default to 500 Internal Server Error
   res.status(500).json({ success: false, message: err.message || "Internal Server Error" });
 };
