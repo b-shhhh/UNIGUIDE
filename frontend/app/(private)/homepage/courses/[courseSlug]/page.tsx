@@ -16,7 +16,12 @@ export default async function CourseDetailPage({ params }: Props) {
 
   const courseName = universities[0].course;
   const availableCountries = Array.from(
-    new Map(universities.map((item) => [item.countryCode, { code: item.countryCode, name: item.countryName, flag: item.flag }])).values(),
+    new Map(
+      universities.map((item) => [
+        item.countryCode,
+        { code: item.countryCode, name: item.countryName, flagImageUrl: item.countryFlagUrl },
+      ]),
+    ).values(),
   );
 
   return (
@@ -39,7 +44,16 @@ export default async function CourseDetailPage({ params }: Props) {
               href={`/homepage/countries/${country.code}`}
               className="rounded-full bg-[#e9f2ff] px-3 py-1 text-xs font-semibold text-[#1d4ed8]"
             >
-              {country.flag} {country.name}
+              {country.flagImageUrl ? (
+                <img
+                  src={country.flagImageUrl}
+                  alt={`${country.name} flag`}
+                  width={16}
+                  height={12}
+                  className="mr-1 inline rounded-[2px] align-[-2px]"
+                />
+              ) : null}
+              {country.name}
             </Link>
           ))}
         </div>
@@ -53,7 +67,16 @@ export default async function CourseDetailPage({ params }: Props) {
             ) : null}
             <p className="text-base font-bold text-[#1a2b44]">{uni.name}</p>
             <p className="mt-1 text-xs text-[#5f7590]">
-              {uni.flag} {uni.countryName}
+              {uni.countryFlagUrl ? (
+                <img
+                  src={uni.countryFlagUrl}
+                  alt={`${uni.countryName} flag`}
+                  width={16}
+                  height={12}
+                  className="mr-1 inline rounded-[2px] align-[-2px]"
+                />
+              ) : null}
+              {uni.countryName}
             </p>
             <Link
               href={`/homepage/universities/${uni.id}`}

@@ -24,7 +24,16 @@ export default async function UniversityDetailPage({ params }: Props) {
         ) : null}
         <h2 className="mt-2 text-2xl font-bold text-[#1a2b44]">{university.name}</h2>
         <p className="mt-1 text-sm text-[#5f7590]">
-          {university.flag} {university.countryName}
+          {university.countryFlagUrl ? (
+            <img
+              src={university.countryFlagUrl}
+              alt={`${university.countryName} flag`}
+              width={16}
+              height={12}
+              className="mr-1 inline rounded-[2px] align-[-2px]"
+            />
+          ) : null}
+          {university.countryName}
         </p>
         <div className="mt-4 flex flex-wrap gap-2">
           <Link
