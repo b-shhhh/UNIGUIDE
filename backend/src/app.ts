@@ -25,6 +25,7 @@ dotenv.config();
 
 const app: Application = express();
 app.set("trust proxy", 1);
+const uploadDir = path.resolve(process.cwd(), "uploads");
 
 // CORS options
 const corsOptions = {
@@ -36,7 +37,7 @@ app.use(securityHeadersMiddleware);
 app.use(rateLimitMiddleware);
 
 // Serve static files (uploads)
-app.use("/uploads", express.static(path.join(__dirname, "../uploads")));
+app.use("/uploads", express.static(uploadDir));
 
 // Body parser
 app.use(express.json({ limit: "1mb" }));
