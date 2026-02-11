@@ -85,11 +85,13 @@ const askOpenAI = async ({
   history,
   context,
   filters,
+  universityMode,
 }: {
   message: string;
   history: ChatTurn[];
   context: string;
   filters: ExtractedFilters;
+  universityMode: boolean;
 }) => {
   const key = process.env.OPENAI_API_KEY;
   if (!key) return null;
@@ -106,8 +108,9 @@ const askOpenAI = async ({
       messages: [
         {
           role: "system",
-          content:
-            "You are a university advisor chatbot. Use only the provided university context. If data is missing, say so briefly. Be concise and practical.",
+          content: universityMode
+            ? "You are a university advisor chatbot. Use the provided university context for recommendation answers. If data is missing, say so briefly. Be concise and practical."
+            : "You are a helpful chatbot. Answer naturally and clearly.",
         },
         ...history.map((turn) => ({
           role: turn.role,
@@ -115,11 +118,13 @@ const askOpenAI = async ({
         })),
         {
           role: "user",
-          content: `User query: ${message}\n\nExtracted filters:\n${JSON.stringify(
-            filters,
-            null,
-            2,
-          )}\n\nUniversity context:\n${context}`,
+          content: universityMode
+            ? `User query: ${message}\n\nExtracted filters:\n${JSON.stringify(
+                filters,
+                null,
+                2,
+              )}\n\nUniversity context:\n${context}`
+            : `User query: ${message}`,
         },
       ],
     }),
@@ -226,6 +231,29 @@ export async function POST(req: NextRequest) {
   const countryNames = Array.from(new Set(universities.map((uni) => uni.countryName)));
   const knownCourses = Array.from(new Set(universities.flatMap((uni) => uni.courses)));
   const filters = extractFilters(message, countryNames, knownCourses);
+  const universityIntent =
+    /(university|universities|college|study|course|program|tuition|ielts|gpa|intake|admission|scholarship|major|best country|which country|cs|mba|engineering|medicine|law)/i.test(
+      message,
+    ) ||
+    Boolean(filters.country || filters.course || filters.budget || filters.min_ielts || filters.min_gpa || filters.intake || filters.mode);
+
+  if (!universityIntent) {
+    const generalAnswer =
+      (await askOpenAI({
+        message,
+        history,
+        context: "",
+        filters: {},
+        universityMode: false,
+      })) || "Sure. Ask me anything, and if you want university guidance, tell me country/course/budget.";
+
+    return NextResponse.json({
+      answer: generalAnswer,
+      recommendations: [],
+      filters: {},
+    });
+  }
+
   const budgetMax = getBudgetMax(filters.budget);
   const followPrevious = /(best among these|among these|among them|from these|which one)/i.test(message);
 
@@ -317,6 +345,7 @@ export async function POST(req: NextRequest) {
           .map((entry, index) => `${index + 1}. ${entry.name} (${entry.count} matches)`)
           .join("\n")}`,
       filters,
+      universityMode: true,
     });
 
     return NextResponse.json({ answer: openAiAnswer || answer, recommendations, filters });
@@ -328,6 +357,7 @@ export async function POST(req: NextRequest) {
     history,
     context,
     filters,
+    universityMode: true,
   });
 
   return NextResponse.json({
