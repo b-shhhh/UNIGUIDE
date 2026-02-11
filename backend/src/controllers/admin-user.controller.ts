@@ -8,6 +8,7 @@ const sanitizeUser = (user: any) => ({
   lastName: user.lastName,
   email: user.email,
   phone: user.phone,
+  role: user.role,
   profilePic: user.profilePic || "",
   createdAt: user.createdAt,
   updatedAt: user.updatedAt
@@ -54,7 +55,7 @@ export const getAdminUser = async (req: Request, res: Response) => {
 
 export const createAdminUser = async (req: Request, res: Response) => {
   try {
-    const { firstName, lastName, email, phone, password } = req.body || {};
+    const { firstName, lastName, email, phone, password, role } = req.body || {};
 
     if (!firstName || !lastName || !email || !phone || !password) {
       return res
@@ -74,7 +75,8 @@ export const createAdminUser = async (req: Request, res: Response) => {
       lastName: String(lastName),
       email: String(email),
       phone: String(phone),
-      password: hashedPassword
+      password: hashedPassword,
+      role: role === "admin" ? "admin" : "user"
     });
 
     return res.status(201).json({ success: true, data: sanitizeUser(created) });
