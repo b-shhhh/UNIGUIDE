@@ -135,6 +135,7 @@ export const handleChangePassword = async (formData: Record<string, unknown>) =>
 };
 
 export const handleDeleteAccount = async (payload: Record<string, unknown>) => {
+  let shouldRedirect = false;
   try {
     const authToken = await getAuthToken();
     const userData = await getUserData<Record<string, unknown>>();
@@ -146,18 +147,28 @@ export const handleDeleteAccount = async (payload: Record<string, unknown>) => {
     const result = await deleteAccount(payload, token ?? undefined);
     if (result.success) {
       await clearAuthCookies();
-      redirect("/?accountDeleted=1");
+      shouldRedirect = true;
+    } else {
+      return {
+        success: false,
+        message: result.message || "Delete account failed",
+      };
     }
-    return {
-      success: false,
-      message: result.message || "Delete account failed",
-    };
   } catch (error: unknown) {
     return {
       success: false,
       message: getErrorMessage(error, "Delete account failed"),
     };
   }
+
+  if (shouldRedirect) {
+    redirect("/?accountDeleted=1");
+  }
+
+  return {
+    success: false,
+    message: "Delete account failed",
+  };
 };
 
 export const handleRequestPasswordReset = async (email: string) => {
