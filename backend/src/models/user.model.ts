@@ -6,6 +6,7 @@ export interface IUser extends Document {
   email: string;
   phone: string;
   password: string;
+  role: "user" | "admin";
   profilePic?: string;
   savedUniversities: mongoose.Types.ObjectId[];
    resetPasswordToken?: string;
@@ -18,6 +19,7 @@ const userSchema = new Schema<IUser>({
   email: { type: String, required: true, unique: true },
   phone: { type: String, required: true },
   password: { type: String, required: true },
+  role: { type: String, enum: ["user", "admin"], default: "user" },
   profilePic: { type: String },
   savedUniversities: [{ type: Schema.Types.ObjectId, ref: "University" }],
   resetPasswordToken: { type: String },

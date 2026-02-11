@@ -3,12 +3,14 @@ import { Request } from "express";
 export interface AuthRequest extends Request {
   user?: {
     id: string;
+    role?: "user" | "admin";
   };
 }
 
 // Basic user info for requests (added by auth middleware)
 export interface RequestUser {
   id: string;             // User ID from MongoDB
+  role?: "user" | "admin";
   firstName?: string;
   lastName?: string;
   email?: string;
