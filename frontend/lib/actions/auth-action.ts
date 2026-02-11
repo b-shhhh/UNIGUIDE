@@ -53,8 +53,14 @@ export const handleLogin = async (
   try {
     const result = await loginUser(formData);
     if (result.success) {
-      if (result.token) {
-        await setAuthToken(result.token);
+      const tokenFromData =
+        typeof result.data === "object" && result.data !== null && "token" in result.data
+          ? (result.data as { token?: unknown }).token
+          : undefined;
+      const token = (typeof result.token === "string" && result.token) || (typeof tokenFromData === "string" ? tokenFromData : "");
+
+      if (token) {
+        await setAuthToken(token);
       }
       await setUserData(result.data ?? null);
 
@@ -131,6 +137,12 @@ export const handleChangePassword = async (formData: Record<string, unknown>) =>
 export const handleDeleteAccount = async (payload: Record<string, unknown>) => {
   try {
     const token = await getAuthToken();
+    if (!token) {
+      return {
+        success: false,
+        message: "No auth token found. Please login again.",
+      };
+    }
     const result = await deleteAccount(payload, token);
     if (result.success) {
       await clearAuthCookies();
