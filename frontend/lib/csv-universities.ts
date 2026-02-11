@@ -203,14 +203,14 @@ const parseCsv = (csvText: string): CsvRow[] => {
     .filter((row) => row.countryCode && row.name);
 };
 
-const buildUniversity = (row: CsvRow): CsvUniversity => {
+const buildUniversity = (row: CsvRow, id: string): CsvUniversity => {
   const key = `${row.countryCode}-${row.name}`;
   const hash = hashCode(key);
   const course = COURSE_POOL[hash % COURSE_POOL.length];
   const tuitionValue = 8000 + (hash % 55) * 1000;
 
   return {
-    id: slugify(key),
+    id,
     countryCode: row.countryCode,
     countryName: countryNameFromCode(row.countryCode),
     flag: toFlagEmoji(row.countryCode),
@@ -246,7 +246,14 @@ export const getUniversities = async (): Promise<CsvUniversity[]> => {
 
   const text = await readCsvText();
   const parsed = parseCsv(text);
-  cachedUniversities = parsed.map(buildUniversity);
+  const idCounts = new Map<string, number>();
+  cachedUniversities = parsed.map((row) => {
+    const baseId = slugify(`${row.countryCode}-${row.name}`);
+    const seen = idCounts.get(baseId) ?? 0;
+    idCounts.set(baseId, seen + 1);
+    const uniqueId = seen === 0 ? baseId : `${baseId}-${seen + 1}`;
+    return buildUniversity(row, uniqueId);
+  });
   return cachedUniversities;
 };
 
@@ -306,4 +313,3 @@ export const getUniversityById = async (id: string) => {
   const universities = await getUniversities();
   return universities.find((item) => item.id === id) || null;
 };
-
