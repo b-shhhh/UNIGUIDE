@@ -4,7 +4,7 @@ import {
   getUniversitiesService,
   getUniversityDetailService,
   getCoursesService
-} from "@/backend/src/services/university.service";
+} from "../services/university.service";
 
 // Get all countries
 export const getCountries = async (_req: Request, res: Response) => {

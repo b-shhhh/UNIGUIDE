@@ -1,13 +1,6 @@
 import app from "./app";
-import { PORT } from "./config";
-import { connectDatabase } from "./database/mongodb";
+const PORT = process.env.PORT || 5000;
 
-async function start() {
-    await connectDatabase();
-    
-    app.listen(PORT, () => {
-        console.log(`Server: http://localhost:${PORT}`);
-    })
-}
-
-start().catch((error) => console.log(error));
+app.listen(PORT, () => {
+  console.log(`Server running on port ${PORT}`);
+});
