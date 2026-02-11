@@ -1,8 +1,11 @@
-import { fetchHomepageData } from "@/lib/api/recommendation";
-import HomeDashboardClient from "../_component/HomeDashboardClient";
+import CsvDashboardClient from "../_component/CsvDashboardClient";
+import { getCountries, getCourses, getUniversities } from "@/lib/csv-universities";
 
 export default async function Homepage() {
-  const { stats, universities, deadlines } = await fetchHomepageData();
-
-  return <HomeDashboardClient stats={stats} universities={universities} deadlines={deadlines} />;
+  const [universities, countries, courses] = await Promise.all([
+    getUniversities(),
+    getCountries(),
+    getCourses(),
+  ]);
+  return <CsvDashboardClient universities={universities} countries={countries} courses={courses} />;
 }
