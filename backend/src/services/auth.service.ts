@@ -9,6 +9,7 @@ const formatNameParts = (data: RegisterInput) => {
   const username = data.username?.trim();
   const firstName = data.firstName?.trim();
   const lastName = data.lastName?.trim();
+   const phone = formatPhone(data);
 
   if (firstName) {
     return {
