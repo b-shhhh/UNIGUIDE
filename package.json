@@ -6,7 +6,10 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "backend:typecheck": "npm --prefix backend run typecheck",
+    "frontend:lint": "npm --prefix frontend run lint",
+    "typecheck": "npm run backend:typecheck && npm run frontend:lint"
   },
   "dependencies": {
     "@heroicons/react": "^2.2.0",
