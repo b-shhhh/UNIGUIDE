@@ -87,21 +87,8 @@ const changePasswordAction = async (_prev: ActionFeedback, formData: FormData): 
   };
 };
 
-const deleteAccountAction = async (_prev: ActionFeedback, formData: FormData): Promise<ActionFeedback> => {
-  const confirmText = asString(formData.get("confirmText"));
-  const password = asString(formData.get("password"));
-
-  if (confirmText !== "DELETE") {
-    return {
-      success: false,
-      message: 'Type "DELETE" exactly to confirm account deletion.',
-    };
-  }
-
-  const result = await handleDeleteAccount({
-    password,
-    confirmText,
-  });
+const deleteAccountAction = async (): Promise<ActionFeedback> => {
+  const result = await handleDeleteAccount({});
 
   return {
     success: result.success,
@@ -243,20 +230,7 @@ export default function ProfilePageClient({ user }: { user: UserRecord }) {
             </form>
           </div>
 
-          <form action={deleteFormAction} className="mt-4 space-y-3">
-            <p className="text-sm text-[#4f6682]">Delete account is permanent. Type DELETE to confirm.</p>
-            <label className="block text-sm font-semibold text-[#1a2b44]">
-              Confirm Text
-              <input
-                name="confirmText"
-                placeholder="DELETE"
-                className="mt-1 w-full rounded-lg border border-[#dc2626]/30 px-3 py-2 text-sm"
-              />
-            </label>
-            <label className="block text-sm font-semibold text-[#1a2b44]">
-              Password (if required by backend)
-              <input name="password" type="password" className="mt-1 w-full rounded-lg border border-[#dc2626]/30 px-3 py-2 text-sm" />
-            </label>
+          <form action={deleteFormAction} className="mt-4">
             <button
               type="submit"
               disabled={deletePending}
