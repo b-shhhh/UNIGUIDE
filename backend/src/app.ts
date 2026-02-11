@@ -13,6 +13,8 @@ import userRoutes from './routes/user.route';
 import universityRoutes from './routes/university.route';
 import courseRoutes from './routes/course.route';
 import savedRoutes from './routes/saved.routes';
+import adminUserRoutes from "./routes/admin-user.route";
+import recommendationRoutes from "./routes/recommendation.route";
 
 // Middlewares
 import { errorMiddleware } from './middlewares/error.middleware';
@@ -48,6 +50,8 @@ app.use('/api/users', userRoutes);
 app.use('/api/universities', universityRoutes);
 app.use('/api/courses', courseRoutes);
 app.use('/api/saved-universities', savedRoutes);
+app.use("/api/admin/users", adminUserRoutes);
+app.use("/api/recommendations", recommendationRoutes);
 
 // 404 handler
 app.use((req, res, next) => {
