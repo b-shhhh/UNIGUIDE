@@ -125,21 +125,21 @@ export async function POST(req: NextRequest) {
       .slice(0, 5);
 
     const answer = topCountries.length
-      ? `Top countries from your CSV:\n${topCountries
+      ? `Top countries for your query:\n${topCountries
           .map((item, index) => `${index + 1}. ${item.name} (${item.count} matches, avg score ${item.avg.toFixed(1)}%)`)
           .join("\n")}`
-      : "No country-level match found in CSV for that query.";
+      : "No country-level match found for that query.";
 
     return NextResponse.json({ answer, recommendations: recommendationIds });
   }
 
   if (!shortlist.length) {
     return NextResponse.json({
-      answer: "No strong match found in CSV. Try adding country, course, or budget.",
+      answer: "No strong match found. Try adding country, course, or budget.",
       recommendations: [],
     });
   }
 
-  const answer = `Found ${shortlist.length} relevant universities from CSV. Showing top ${Math.min(5, shortlist.length)}.`;
+  const answer = `Found ${shortlist.length} relevant universities. Showing top ${Math.min(5, shortlist.length)}.`;
   return NextResponse.json({ answer, recommendations: recommendationIds });
 }

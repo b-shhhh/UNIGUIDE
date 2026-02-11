@@ -25,7 +25,7 @@ export default function CsvDashboardClient({ universities, countries, courses }:
   const [chatMessages, setChatMessages] = useState<ChatMessage[]>([
     {
       role: "assistant",
-      text: "Tell me what you want to study and I will find universities from your CSV.",
+      text: "Tell me what you want to study and I will find universities for you.",
     },
   ]);
   const [savedIds, setSavedIds] = useState<string[]>([]);
@@ -112,7 +112,7 @@ export default function CsvDashboardClient({ universities, countries, courses }:
         ...prev,
         {
           role: "assistant",
-          text: payload.answer || "I found some results from your CSV.",
+          text: payload.answer || "I found some matching universities for you.",
           results: recommended.length ? recommended : undefined,
         },
       ]);
@@ -133,7 +133,7 @@ export default function CsvDashboardClient({ universities, countries, courses }:
     <div className="space-y-6">
       <section className="rounded-2xl border border-[#4A90E2]/20 bg-[linear-gradient(120deg,#4A90E2_0%,#357ABD_100%)] p-6 text-white">
         <p className="text-xs font-bold uppercase tracking-[0.16em] text-[#e9f2ff]">Dashboard</p>
-        <h2 className="mt-2 text-2xl font-bold sm:text-3xl">Search universities from CSV data</h2>
+        <h2 className="mt-2 text-2xl font-bold sm:text-3xl">Search universities</h2>
         <p className="mt-2 text-sm text-white/90">Search engine, countries, courses, and university detail pages.</p>
 
         <div className="mt-5">
@@ -261,8 +261,8 @@ export default function CsvDashboardClient({ universities, countries, courses }:
 
       {chatOpen ? (
         <section className="fixed bottom-20 right-5 z-40 w-[min(92vw,390px)] rounded-2xl border border-[#d8e5f8] bg-white p-4 shadow-2xl">
-          <h3 className="text-lg font-bold text-[#1a2b44]">AI Chatbot (CSV)</h3>
-          <p className="mt-1 text-xs text-[#5f7590]">Ask naturally. It answers using your CSV data only.</p>
+          <h3 className="text-lg font-bold text-[#1a2b44]">AI Chatbot</h3>
+          <p className="mt-1 text-xs text-[#5f7590]">Ask naturally. I will find matching universities for you.</p>
 
           <div className="mt-3 max-h-72 space-y-2 overflow-y-auto rounded-lg border border-[#d8e5f8] bg-[#f8fbff] p-3">
             {chatMessages.map((message, index) => (
