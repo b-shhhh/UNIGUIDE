@@ -38,134 +38,11 @@ type CsvRow = {
   countryCode: string;
   name: string;
   website: string;
+  courses: string[];
 };
-
-const COURSE_POOL = [
-  "Computer Science",
-  "Data Science",
-  "Artificial Intelligence",
-  "Cyber Security",
-  "Business Analytics",
-  "Cloud Computing",
-  "Software Engineering",
-  "Information Systems",
-  "Machine Learning",
-  "Electrical Engineering",
-  "Bioinformatics",
-  "Digital Marketing",
-] as const;
 
 const DURATION_POOL = ["1 year", "1.5 years", "2 years", "3 years"] as const;
 const INTAKE_POOL = ["January", "February", "September", "October"] as const;
-
-const MANUAL_FLAG_MAP: Record<string, string> = {
-  AD: "🇦🇩",
-  AE: "🇦🇪",
-  AF: "🇦🇫",
-  AL: "🇦🇱",
-  AM: "🇦🇲",
-  AO: "🇦🇴",
-  AR: "🇦🇷",
-  AT: "🇦🇹",
-  AU: "🇦🇺",
-  AZ: "🇦🇿",
-  BA: "🇧🇦",
-  BD: "🇧🇩",
-  BE: "🇧🇪",
-  BG: "🇧🇬",
-  BH: "🇧🇭",
-  BO: "🇧🇴",
-  BR: "🇧🇷",
-  BY: "🇧🇾",
-  CA: "🇨🇦",
-  CH: "🇨🇭",
-  CL: "🇨🇱",
-  CN: "🇨🇳",
-  CO: "🇨🇴",
-  CR: "🇨🇷",
-  CY: "🇨🇾",
-  CZ: "🇨🇿",
-  DE: "🇩🇪",
-  DK: "🇩🇰",
-  DO: "🇩🇴",
-  DZ: "🇩🇿",
-  EC: "🇪🇨",
-  EE: "🇪🇪",
-  EG: "🇪🇬",
-  ES: "🇪🇸",
-  ET: "🇪🇹",
-  FI: "🇫🇮",
-  FR: "🇫🇷",
-  GB: "🇬🇧",
-  GE: "🇬🇪",
-  GH: "🇬🇭",
-  GR: "🇬🇷",
-  HK: "🇭🇰",
-  HR: "🇭🇷",
-  HU: "🇭🇺",
-  ID: "🇮🇩",
-  IE: "🇮🇪",
-  IL: "🇮🇱",
-  IN: "🇮🇳",
-  IQ: "🇮🇶",
-  IR: "🇮🇷",
-  IS: "🇮🇸",
-  IT: "🇮🇹",
-  JO: "🇯🇴",
-  JP: "🇯🇵",
-  KE: "🇰🇪",
-  KG: "🇰🇬",
-  KH: "🇰🇭",
-  KR: "🇰🇷",
-  KW: "🇰🇼",
-  KZ: "🇰🇿",
-  LB: "🇱🇧",
-  LK: "🇱🇰",
-  LT: "🇱🇹",
-  LU: "🇱🇺",
-  LV: "🇱🇻",
-  MA: "🇲🇦",
-  MD: "🇲🇩",
-  MK: "🇲🇰",
-  MM: "🇲🇲",
-  MN: "🇲🇳",
-  MT: "🇲🇹",
-  MX: "🇲🇽",
-  MY: "🇲🇾",
-  NG: "🇳🇬",
-  NL: "🇳🇱",
-  NO: "🇳🇴",
-  NP: "🇳🇵",
-  NZ: "🇳🇿",
-  OM: "🇴🇲",
-  PA: "🇵🇦",
-  PE: "🇵🇪",
-  PH: "🇵🇭",
-  PK: "🇵🇰",
-  PL: "🇵🇱",
-  PT: "🇵🇹",
-  QA: "🇶🇦",
-  RO: "🇷🇴",
-  RS: "🇷🇸",
-  RU: "🇷🇺",
-  SA: "🇸🇦",
-  SE: "🇸🇪",
-  SG: "🇸🇬",
-  SI: "🇸🇮",
-  SK: "🇸🇰",
-  TH: "🇹🇭",
-  TN: "🇹🇳",
-  TR: "🇹🇷",
-  TW: "🇹🇼",
-  UA: "🇺🇦",
-  US: "🇺🇸",
-  UY: "🇺🇾",
-  UZ: "🇺🇿",
-  VE: "🇻🇪",
-  VN: "🇻🇳",
-  ZA: "🇿🇦",
-  UK: "🇬🇧",
-};
 
 let cachedUniversities: CsvUniversity[] | null = null;
 
@@ -173,6 +50,8 @@ const csvCandidates = () => [
   path.resolve(process.cwd(), "../backend/src/uploads/universities.csv"),
   path.resolve(process.cwd(), "backend/src/uploads/universities.csv"),
 ];
+
+const normalize = (value: string) => value.trim().toLowerCase();
 
 const slugify = (value: string) =>
   value
@@ -191,9 +70,6 @@ const hashCode = (value: string) => {
 
 const toFlagEmoji = (countryCode: string) => {
   const code = countryCode.toUpperCase();
-  if (MANUAL_FLAG_MAP[code]) {
-    return MANUAL_FLAG_MAP[code];
-  }
   if (!/^[A-Z]{2}$/.test(code)) {
     return "??";
   }
@@ -229,6 +105,12 @@ const getLogoFromWebsite = (website: string) => {
   }
 };
 
+const splitCourses = (raw: string): string[] =>
+  raw
+    .split(/[|;/]/)
+    .map((value) => value.trim())
+    .filter(Boolean);
+
 const parseCsvLine = (line: string): string[] => {
   const output: string[] = [];
   let current = "";
@@ -261,25 +143,64 @@ const parseCsvLine = (line: string): string[] => {
   return output;
 };
 
+const extractCourseColumns = (headers: string[]) =>
+  headers
+    .map((header, index) => ({ header: normalize(header), index }))
+    .filter(({ header }) =>
+      header.includes("course") ||
+      header.includes("program") ||
+      header.includes("major") ||
+      header.includes("subject"),
+    )
+    .map(({ index }) => index);
+
+const detectHeaderRow = (normalizedHeaders: string[]) =>
+  normalizedHeaders.includes("alpha2") && normalizedHeaders.includes("name");
+
+const buildSyntheticHeaders = (columnCount: number) => {
+  const headers = ["alpha2", "name", "web_pages", "flag_url"];
+  for (let i = 4; i < columnCount; i += 1) {
+    headers.push(`course_${i - 3}`);
+  }
+  return headers;
+};
+
 const parseCsv = (csvText: string): CsvRow[] => {
-  return csvText
-    .split(/\r?\n/)
-    .map((line) => line.trim())
-    .filter(Boolean)
+  const lines = csvText.split(/\r?\n/).map((line) => line.trim()).filter(Boolean);
+  if (!lines.length) {
+    return [];
+  }
+
+  const firstCols = parseCsvLine(lines[0]);
+  const firstNormalized = firstCols.map((header) => normalize(header));
+  const hasHeader = detectHeaderRow(firstNormalized);
+  const headers = hasHeader ? firstNormalized : buildSyntheticHeaders(firstCols.length).map((header) => normalize(header));
+  const dataLines = hasHeader ? lines.slice(1) : lines;
+
+  const alpha2Index = headers.indexOf("alpha2");
+  const nameIndex = headers.indexOf("name");
+  const webPagesIndex = headers.indexOf("web_pages");
+  const courseColumnIndexes = extractCourseColumns(headers);
+
+  return dataLines
     .map((line) => parseCsvLine(line))
-    .filter((parts) => parts.length >= 3)
-    .map((parts) => ({
-      countryCode: (parts[0] || "").toUpperCase(),
-      name: parts[1] || "",
-      website: parts[2] || "",
+    .map((cols) => ({
+      countryCode: (cols[alpha2Index] || "").toUpperCase(),
+      name: cols[nameIndex] || "",
+      website: cols[webPagesIndex] || "",
+      courses: courseColumnIndexes.flatMap((index) => splitCourses(cols[index] || "")),
     }))
-    .filter((row) => row.countryCode && row.name);
+    .filter((row) => row.countryCode && row.name)
+    .map((row) => ({
+      ...row,
+      courses: Array.from(new Set(row.courses)),
+    }));
 };
 
 const buildUniversity = (row: CsvRow, id: string): CsvUniversity => {
   const key = `${row.countryCode}-${row.name}`;
   const hash = hashCode(key);
-  const course = COURSE_POOL[hash % COURSE_POOL.length];
+  const primaryCourse = row.courses[0] || "N/A";
   const tuitionValue = 8000 + (hash % 55) * 1000;
 
   return {
@@ -291,14 +212,14 @@ const buildUniversity = (row: CsvRow, id: string): CsvUniversity => {
     name: row.name,
     website: row.website,
     logoUrl: getLogoFromWebsite(row.website),
-    course,
-    courseSlug: slugify(course),
+    course: primaryCourse,
+    courseSlug: primaryCourse === "N/A" ? "" : slugify(primaryCourse),
     score: 70 + (hash % 30),
     tuition: `$${tuitionValue.toLocaleString()}/year`,
     ranking: `Top ${10 + (hash % 250)}`,
     duration: DURATION_POOL[hash % DURATION_POOL.length],
     intake: INTAKE_POOL[hash % INTAKE_POOL.length],
-    description: `${row.name} in ${countryNameFromCode(row.countryCode)} offers a strong ${course} pathway for international students.`,
+    description: `${row.name} in ${countryNameFromCode(row.countryCode)} offers programs from CSV course data.`,
   };
 };
 
@@ -358,6 +279,9 @@ export const getCourses = async (): Promise<CourseSummary[]> => {
   const map = new Map<string, CourseSummary>();
 
   for (const uni of universities) {
+    if (!uni.courseSlug || uni.course === "N/A") {
+      continue;
+    }
     const current = map.get(uni.courseSlug);
     if (current) {
       current.count += 1;
