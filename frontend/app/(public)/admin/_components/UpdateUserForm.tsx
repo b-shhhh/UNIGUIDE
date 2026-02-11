@@ -74,41 +74,41 @@ export default function UpdateUserForm({ user }: Props) {
   };
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className="space-y-4 rounded-2xl border border-slate-200 bg-white p-5">
-      <h2 className="text-lg font-bold text-slate-900">Update User</h2>
+    <form onSubmit={handleSubmit(onSubmit)} className="space-y-4 rounded-[8px] border border-[#d8e5f8] bg-white p-5 shadow-[0_4px_8px_rgba(0,0,0,0.08)]">
+      <h2 className="text-lg font-bold text-[#333333]">Update User</h2>
 
       <div className="grid gap-4 sm:grid-cols-2">
         <label className="space-y-1 text-sm">
-          <span className="font-semibold text-slate-700">First Name</span>
-          <input {...register("firstName")} className="w-full rounded-lg border border-slate-300 px-3 py-2" />
+          <span className="font-semibold text-[#666666]">First Name</span>
+          <input {...register("firstName")} className="w-full rounded-[8px] border border-[#c7d9f5] px-3 py-2 outline-none focus:ring-2 focus:ring-[#4A90E2]/30" />
           {errors.firstName ? <p className="text-xs text-red-600">{errors.firstName.message}</p> : null}
         </label>
 
         <label className="space-y-1 text-sm">
-          <span className="font-semibold text-slate-700">Last Name</span>
-          <input {...register("lastName")} className="w-full rounded-lg border border-slate-300 px-3 py-2" />
+          <span className="font-semibold text-[#666666]">Last Name</span>
+          <input {...register("lastName")} className="w-full rounded-[8px] border border-[#c7d9f5] px-3 py-2 outline-none focus:ring-2 focus:ring-[#4A90E2]/30" />
           {errors.lastName ? <p className="text-xs text-red-600">{errors.lastName.message}</p> : null}
         </label>
       </div>
 
       <label className="block space-y-1 text-sm">
-        <span className="font-semibold text-slate-700">Email</span>
-        <input {...register("email")} type="email" className="w-full rounded-lg border border-slate-300 px-3 py-2" />
+        <span className="font-semibold text-[#666666]">Email</span>
+        <input {...register("email")} type="email" className="w-full rounded-[8px] border border-[#c7d9f5] px-3 py-2 outline-none focus:ring-2 focus:ring-[#4A90E2]/30" />
         {errors.email ? <p className="text-xs text-red-600">{errors.email.message}</p> : null}
       </label>
 
       <label className="block space-y-1 text-sm">
-        <span className="font-semibold text-slate-700">Phone</span>
-        <input {...register("phone")} className="w-full rounded-lg border border-slate-300 px-3 py-2" />
+        <span className="font-semibold text-[#666666]">Phone</span>
+        <input {...register("phone")} className="w-full rounded-[8px] border border-[#c7d9f5] px-3 py-2 outline-none focus:ring-2 focus:ring-[#4A90E2]/30" />
         {errors.phone ? <p className="text-xs text-red-600">{errors.phone.message}</p> : null}
       </label>
 
       <label className="block space-y-1 text-sm">
-        <span className="font-semibold text-slate-700">New Password (Optional)</span>
+        <span className="font-semibold text-[#666666]">New Password (Optional)</span>
         <input
           {...register("password")}
           type="password"
-          className="w-full rounded-lg border border-slate-300 px-3 py-2"
+          className="w-full rounded-[8px] border border-[#c7d9f5] px-3 py-2 outline-none focus:ring-2 focus:ring-[#4A90E2]/30"
         />
       </label>
 
@@ -118,7 +118,7 @@ export default function UpdateUserForm({ user }: Props) {
         <button
           type="submit"
           disabled={submitting}
-          className="rounded-lg bg-slate-900 px-4 py-2 text-sm font-bold text-white hover:bg-slate-700 disabled:opacity-50"
+          className="rounded-[8px] bg-[#4A90E2] px-4 py-2 text-sm font-bold text-white hover:bg-[#357ABD] disabled:opacity-50"
         >
           {submitting ? "Saving..." : "Save Changes"}
         </button>
@@ -127,7 +127,7 @@ export default function UpdateUserForm({ user }: Props) {
           type="button"
           onClick={onDelete}
           disabled={submitting}
-          className="rounded-lg bg-red-100 px-4 py-2 text-sm font-bold text-red-700 hover:bg-red-200 disabled:opacity-50"
+          className="rounded-[8px] bg-[#F5A623] px-4 py-2 text-sm font-bold text-[#333333] hover:bg-[#f8b84b] disabled:opacity-50"
         >
           Delete User
         </button>
