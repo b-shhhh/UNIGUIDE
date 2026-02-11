@@ -1,6 +1,9 @@
 import Link from "next/link";
+import { requireAdmin } from "@/lib/admin-auth";
 
-export default function AdminUsersPage() {
+export default async function AdminUsersPage() {
+  await requireAdmin();
+
   return (
     <div className="space-y-4 rounded-xl border border-[#d8e5f8] bg-white p-5">
       <div className="flex items-center justify-between">

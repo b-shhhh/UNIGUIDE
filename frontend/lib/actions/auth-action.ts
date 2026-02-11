@@ -134,6 +134,60 @@ export const handleChangePassword = async (formData: Record<string, unknown>) =>
   }
 };
 
+export const handleAdminLogin = async (
+  formData: Record<string, unknown>
+): Promise<LoginActionResult> => {
+  try {
+    const result = await loginUser(formData);
+    if (!result.success) {
+      return {
+        success: false,
+        message: result.message || "Login failed",
+      };
+    }
+
+    const payload = (result.data ?? null) as Record<string, unknown> | null;
+    const userFromPayload =
+      payload && typeof payload === "object" && "user" in payload
+        ? (payload.user as Record<string, unknown> | null)
+        : null;
+    const role =
+      (userFromPayload && typeof userFromPayload.role === "string" ? userFromPayload.role : "") ||
+      (payload && typeof payload.role === "string" ? payload.role : "");
+
+    if (role !== "admin") {
+      return {
+        success: false,
+        message: "Admin access required.",
+      };
+    }
+
+    const tokenFromData =
+      payload && typeof payload === "object" && "token" in payload
+        ? (payload as { token?: unknown }).token
+        : undefined;
+    const token =
+      (typeof result.token === "string" && result.token) ||
+      (typeof tokenFromData === "string" ? tokenFromData : "");
+
+    if (token) {
+      await setAuthToken(token);
+    }
+    await setUserData(payload);
+
+    return {
+      success: true,
+      message: "Admin login successful",
+      data: payload,
+    };
+  } catch (error: unknown) {
+    return {
+      success: false,
+      message: getErrorMessage(error, "Login failed"),
+    };
+  }
+};
+
 export const handleDeleteAccount = async (payload: Record<string, unknown>) => {
   let shouldRedirect = false;
   try {

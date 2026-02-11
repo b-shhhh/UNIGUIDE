@@ -1,6 +1,9 @@
 import Link from "next/link";
+import { requireAdmin } from "@/lib/admin-auth";
 
-export default function AdminPage() {
+export default async function AdminPage() {
+  await requireAdmin();
+
   return (
     <div className="space-y-4 rounded-xl border border-[#d8e5f8] bg-white p-5">
       <p className="text-xs font-bold uppercase tracking-[0.12em] text-[#5f7590]">Overview</p>
