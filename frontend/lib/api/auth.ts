@@ -10,16 +10,16 @@ type ApiResult<T = unknown> = {
 };
 
 const getErrorMessage = (error: unknown, fallback: string) => {
-  if (error instanceof Error) {
-    return error.message || fallback;
-  }
-
   if (typeof error === "object" && error !== null) {
     const maybeResponse = (error as { response?: { data?: { message?: string } } }).response;
     const apiMessage = maybeResponse?.data?.message;
     if (typeof apiMessage === "string" && apiMessage.trim()) {
       return apiMessage;
     }
+  }
+
+  if (error instanceof Error) {
+    return error.message || fallback;
   }
 
   return fallback;
