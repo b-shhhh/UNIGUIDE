@@ -54,6 +54,17 @@ export default function CsvDashboardClient({ universities, countries, courses }:
     return [...filteredUniversities].sort((a, b) => b.score - a.score)[0];
   }, [filteredUniversities]);
 
+  const topRankedUniversities = useMemo(() => {
+    const readRank = (ranking: string) => {
+      const match = ranking.match(/\d+/);
+      return match ? Number(match[0]) : Number.POSITIVE_INFINITY;
+    };
+
+    return [...filteredUniversities]
+      .sort((a, b) => readRank(a.ranking) - readRank(b.ranking))
+      .slice(0, 3);
+  }, [filteredUniversities]);
+
   const onToggleSaved = async (id: string) => {
     setSavingId(id);
     const result = await toggleUniversitySaved(id);
@@ -105,12 +116,12 @@ export default function CsvDashboardClient({ universities, countries, courses }:
             <h3 className="text-lg font-bold text-[#1a2b44]">Countries</h3>
             <p className="text-xs font-bold uppercase tracking-[0.08em] text-[#5f7590]">{countries.length} total</p>
           </div>
-          <div className="grid gap-2 sm:grid-cols-2">
+          <div className="flex gap-3 overflow-x-auto pb-2">
             {countries.slice(0, 12).map((country) => (
               <Link
                 key={country.code}
                 href={`/homepage/countries/${country.code}`}
-                className="flex items-center justify-between rounded-xl border border-[#d8e5f8] p-3 hover:bg-[#f5f9ff]"
+                className="flex min-w-[210px] items-center justify-between rounded-xl border border-[#d8e5f8] p-3 hover:bg-[#f5f9ff]"
               >
                 <span className="text-sm font-semibold text-[#1a2b44]">
                   {country.flag} {country.name}
@@ -145,19 +156,23 @@ export default function CsvDashboardClient({ universities, countries, courses }:
         <div className="mb-3 flex items-center justify-between">
           <h3 className="text-lg font-bold text-[#1a2b44]">University Cards</h3>
           <p className="text-xs font-bold uppercase tracking-[0.08em] text-[#5f7590]">
-            {filteredUniversities.length} matches
+            Showing {topRankedUniversities.length} of {filteredUniversities.length}
           </p>
         </div>
         <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
-          {filteredUniversities.slice(0, 30).map((uni) => {
+          {topRankedUniversities.map((uni) => {
             const saved = savedIds.includes(uni.id);
             return (
               <article key={uni.id} className="rounded-xl border border-[#d8e5f8] bg-[#fcfeff] p-4">
+                {uni.logoUrl ? (
+                  <img src={uni.logoUrl} alt={`${uni.name} logo`} width={34} height={34} className="mb-2 rounded" />
+                ) : null}
                 <p className="text-base font-bold text-[#1a2b44]">{uni.name}</p>
                 <p className="mt-1 text-xs text-[#5f7590]">
                   {uni.flag} {uni.countryName}
                 </p>
                 <p className="mt-1 text-xs text-[#5f7590]">{uni.course}</p>
+                <p className="mt-1 text-xs text-[#5f7590]">{uni.ranking}</p>
                 <p className="mt-1 text-xs text-[#0f766e]">AI score: {uni.score}%</p>
                 <div className="mt-3 flex items-center gap-2">
                   <Link
@@ -185,4 +200,3 @@ export default function CsvDashboardClient({ universities, countries, courses }:
     </div>
   );
 }
-
