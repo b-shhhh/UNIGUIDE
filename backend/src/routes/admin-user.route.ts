@@ -6,8 +6,12 @@ import {
   updateAdminUser,
   deleteAdminUser
 } from "../controllers/admin-user.controller";
+import { authMiddleware } from "../middlewares/auth.middleware";
+import { adminMiddleware } from "../middlewares/admin.middleware";
 
 const router = Router();
+
+router.use(authMiddleware, adminMiddleware);
 
 router.get("/", listAdminUsers);
 router.get("/:id", getAdminUser);
