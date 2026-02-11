@@ -8,8 +8,8 @@ export default async function Page() {
   return (
     <div className="space-y-4">
       <div>
-        <p className="text-xs font-bold uppercase tracking-[0.12em] text-slate-500">Dashboard</p>
-        <h2 className="text-2xl font-bold text-slate-900">Users</h2>
+        <p className="text-xs font-bold uppercase tracking-[0.12em] text-[#666666]">Dashboard</p>
+        <h2 className="text-2xl font-bold text-[#333333]">Users</h2>
       </div>
       <UserTable users={users} />
     </div>
