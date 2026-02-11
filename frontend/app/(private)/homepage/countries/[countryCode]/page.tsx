@@ -21,7 +21,16 @@ export default async function CountryUniversitiesPage({ params }: Props) {
       <section className="rounded-2xl border border-[#d8e5f8] bg-white p-5">
         <p className="text-xs font-bold uppercase tracking-[0.12em] text-[#5f7590]">Country</p>
         <h2 className="mt-2 text-2xl font-bold text-[#1a2b44]">
-          {country.flag} {country.countryName}
+          {country.countryFlagUrl ? (
+            <img
+              src={country.countryFlagUrl}
+              alt={`${country.countryName} flag`}
+              width={22}
+              height={16}
+              className="mr-2 inline rounded-[2px] align-[-3px]"
+            />
+          ) : null}
+          {country.countryName}
         </h2>
         <p className="mt-1 text-sm text-[#5f7590]">{universities.length} universities in this country</p>
         <Link href="/homepage" className="mt-3 inline-block text-xs font-bold uppercase tracking-[0.08em] text-[#4A90E2]">
