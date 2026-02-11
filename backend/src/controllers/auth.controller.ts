@@ -18,6 +18,7 @@ const userPayload = (user: any) => ({
   lastName: user.lastName,
   email: user.email,
   phone: user.phone,
+  role: user.role,
   profilePic: user.profilePic
 });
 
