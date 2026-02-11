@@ -2,7 +2,6 @@
 
 import Link from "next/link";
 import { useMemo, useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
 import type { CountrySummary, CourseSummary, CsvUniversity } from "@/lib/csv-universities";
 import { fetchSavedUniversityIds, SAVED_UNIVERSITIES_UPDATE_EVENT, toggleUniversitySaved } from "@/lib/saved-universities";
 
@@ -13,8 +12,10 @@ type Props = {
 };
 
 export default function CsvDashboardClient({ universities, countries, courses }: Props) {
-  const router = useRouter();
   const [query, setQuery] = useState("");
+  const [chatInput, setChatInput] = useState("");
+  const [chatResults, setChatResults] = useState<CsvUniversity[]>([]);
+  const [chatMessage, setChatMessage] = useState("Ask for universities by country, course, and budget.");
   const [savedIds, setSavedIds] = useState<string[]>([]);
   const [savingId, setSavingId] = useState<string | null>(null);
 
@@ -42,17 +43,8 @@ export default function CsvDashboardClient({ universities, countries, courses }:
     if (!needle) {
       return universities;
     }
-    return universities.filter((uni) =>
-      `${uni.name} ${uni.countryName} ${uni.course}`.toLowerCase().includes(needle),
-    );
+    return universities.filter((uni) => `${uni.name} ${uni.countryName} ${uni.course}`.toLowerCase().includes(needle));
   }, [query, universities]);
-
-  const aiSuggested = useMemo(() => {
-    if (!filteredUniversities.length) {
-      return null;
-    }
-    return [...filteredUniversities].sort((a, b) => b.score - a.score)[0];
-  }, [filteredUniversities]);
 
   const topRankedUniversities = useMemo(() => {
     const readRank = (ranking: string) => {
@@ -72,42 +64,113 @@ export default function CsvDashboardClient({ universities, countries, courses }:
     setSavingId(null);
   };
 
+  const parseBudget = (text: string) => {
+    const match = text.match(/(?:under|below|less than)\s*\$?\s*(\d+(?:[.,]\d+)?)\s*(k)?/i);
+    if (!match) {
+      return null;
+    }
+    const amount = Number(match[1].replace(",", ""));
+    if (!Number.isFinite(amount)) {
+      return null;
+    }
+    return match[2] ? amount * 1000 : amount;
+  };
+
+  const parseTuition = (tuition: string) => {
+    const match = tuition.match(/\$([\d,]+)/);
+    if (!match) {
+      return Number.POSITIVE_INFINITY;
+    }
+    return Number(match[1].replace(/,/g, ""));
+  };
+
+  const handleChatAsk = () => {
+    const prompt = chatInput.trim().toLowerCase();
+    if (!prompt) {
+      setChatResults([]);
+      setChatMessage("Type a query first.");
+      return;
+    }
+
+    const matchedCountry = countries.find((country) => prompt.includes(country.name.toLowerCase()));
+    const matchedCourse = courses.find((course) => prompt.includes(course.name.toLowerCase()));
+    const budgetLimit = parseBudget(prompt);
+
+    const results = universities
+      .filter((uni) => {
+        const byCountry = matchedCountry ? uni.countryCode === matchedCountry.code : true;
+        const byCourse = matchedCourse ? uni.courseSlug === matchedCourse.slug : true;
+        const byBudget = budgetLimit !== null ? parseTuition(uni.tuition) <= budgetLimit : true;
+        return byCountry && byCourse && byBudget;
+      })
+      .sort((a, b) => b.score - a.score)
+      .slice(0, 5);
+
+    setChatResults(results);
+
+    if (!results.length) {
+      setChatMessage("No exact match. Try a different country/course or increase budget.");
+      return;
+    }
+
+    setChatMessage(
+      `Found ${results.length} match${results.length > 1 ? "es" : ""}${matchedCountry ? ` in ${matchedCountry.name}` : ""}${matchedCourse ? ` for ${matchedCourse.name}` : ""}${budgetLimit ? ` under $${budgetLimit.toLocaleString()}` : ""}.`,
+    );
+  };
+
   return (
     <div className="space-y-6">
       <section className="rounded-2xl border border-[#4A90E2]/20 bg-[linear-gradient(120deg,#4A90E2_0%,#357ABD_100%)] p-6 text-white">
         <p className="text-xs font-bold uppercase tracking-[0.16em] text-[#e9f2ff]">Dashboard</p>
         <h2 className="mt-2 text-2xl font-bold sm:text-3xl">Search universities from CSV data</h2>
-        <p className="mt-2 text-sm text-white/90">
-          Search engine, AI finder, countries, courses, and university detail pages.
-        </p>
+        <p className="mt-2 text-sm text-white/90">Search engine, countries, courses, and university detail pages.</p>
 
-        <div className="mt-5 flex flex-col gap-3 sm:flex-row">
+        <div className="mt-5">
           <input
             value={query}
             onChange={(event) => setQuery(event.target.value)}
             placeholder="Search by university, course, or country..."
             className="h-11 w-full rounded-lg border border-white/50 bg-white px-3 text-sm text-[#1a2b44] outline-none"
           />
+        </div>
+      </section>
+
+      <section className="rounded-2xl border border-[#d8e5f8] bg-white p-4">
+        <h3 className="text-lg font-bold text-[#1a2b44]">AI Chatbot (CSV)</h3>
+        <p className="mt-1 text-xs text-[#5f7590]">Example: I want affordable universities in Canada for Computer Science under $15k</p>
+        <div className="mt-3 flex flex-col gap-2 sm:flex-row">
+          <input
+            value={chatInput}
+            onChange={(event) => setChatInput(event.target.value)}
+            placeholder="Ask your query..."
+            className="h-10 w-full rounded-md border border-[#d8e5f8] px-3 text-sm outline-none"
+          />
           <button
             type="button"
-            disabled={!aiSuggested}
-            onClick={() => {
-              if (aiSuggested) {
-                router.push(`/homepage/universities/${aiSuggested.id}`);
-              }
-            }}
-            className="h-11 rounded-lg bg-[#F5A623] px-4 text-sm font-bold uppercase tracking-[0.08em] text-[#1a2b44] hover:bg-[#f8ba51] disabled:opacity-50"
+            onClick={handleChatAsk}
+            className="h-10 rounded-md bg-[#4A90E2] px-4 text-xs font-bold uppercase tracking-[0.08em] text-white"
           >
-            AI Finder
+            Ask
           </button>
         </div>
-        {aiSuggested ? (
-          <p className="mt-2 text-xs font-semibold text-white/90">
-            Suggested: {aiSuggested.name} ({aiSuggested.countryName}) - {aiSuggested.course}
-          </p>
-        ) : (
-          <p className="mt-2 text-xs font-semibold text-white/90">No match found for this search query.</p>
-        )}
+        <p className="mt-2 text-xs font-semibold text-[#1d4ed8]">{chatMessage}</p>
+        {chatResults.length ? (
+          <div className="mt-3 grid gap-2 sm:grid-cols-2">
+            {chatResults.map((uni) => (
+              <Link
+                key={`chat-${uni.id}`}
+                href={`/homepage/universities/${uni.id}`}
+                className="rounded-md border border-[#d8e5f8] px-3 py-2 hover:bg-[#f5f9ff]"
+              >
+                <p className="text-sm font-semibold text-[#1a2b44]">{uni.name}</p>
+                <p className="text-xs text-[#5f7590]">
+                  {uni.countryName} - {uni.course}
+                </p>
+                <p className="text-xs text-[#5f7590]">{uni.tuition}</p>
+              </Link>
+            ))}
+          </div>
+        ) : null}
       </section>
 
       <section className="grid gap-4 lg:grid-cols-2">
