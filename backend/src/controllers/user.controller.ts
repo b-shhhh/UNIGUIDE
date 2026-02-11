@@ -31,7 +31,7 @@ export const editProfile = async (req: AuthRequest, res: Response) => {
       updates.password = await bcrypt.hash(updates.password, 10);
     }
 
-    const updatedUser = await User.findByIdAndUpdate(userId, updates, { new: true }).select("-password");
+    const updatedUser = await User.findByIdAndUpdate(userId, updates, { returnDocument: "after" }).select("-password");
     if (!updatedUser) return res.status(404).json({ success: false, message: "User not found" });
 
     res.status(200).json({ success: true, data: updatedUser });

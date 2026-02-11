@@ -95,7 +95,7 @@ export const updateAdminUser = async (req: Request, res: Response) => {
       delete updates.password;
     }
 
-    const updated = await User.findByIdAndUpdate(req.params.id, updates, { new: true }).select(
+    const updated = await User.findByIdAndUpdate(req.params.id, updates, { returnDocument: "after" }).select(
       "-password -resetPasswordToken -resetPasswordExpires"
     );
 

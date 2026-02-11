@@ -98,7 +98,7 @@ export const updateProfileService = async (
     profilePic: string;
   }>
 ) => {
-  const updatedUser = await User.findByIdAndUpdate(userId, updates, { new: true }).select(
+  const updatedUser = await User.findByIdAndUpdate(userId, updates, { returnDocument: "after" }).select(
     "-password -resetPasswordToken -resetPasswordExpires"
   );
 
