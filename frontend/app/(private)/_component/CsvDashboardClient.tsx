@@ -124,7 +124,16 @@ export default function CsvDashboardClient({ universities, countries, courses }:
                 className="flex min-w-[160px] items-center justify-between rounded-lg border border-[#d8e5f8] px-2.5 py-2 hover:bg-[#f5f9ff]"
               >
                 <span className="truncate text-sm font-semibold text-[#1a2b44]">
-                  {country.flag} {country.name}
+                  {country.flagImageUrl ? (
+                    <img
+                      src={country.flagImageUrl}
+                      alt={`${country.name} flag`}
+                      width={16}
+                      height={12}
+                      className="mr-1 inline rounded-[2px] align-[-2px]"
+                    />
+                  ) : null}
+                  {country.name}
                 </span>
                 <span className="text-xs font-bold text-[#5f7590]">{country.count}</span>
               </Link>
@@ -169,7 +178,16 @@ export default function CsvDashboardClient({ universities, countries, courses }:
                 ) : null}
                 <p className="text-base font-bold text-[#1a2b44]">{uni.name}</p>
                 <p className="mt-1 text-xs text-[#5f7590]">
-                  {uni.flag} {uni.countryName}
+                  {uni.countryFlagUrl ? (
+                    <img
+                      src={uni.countryFlagUrl}
+                      alt={`${uni.countryName} flag`}
+                      width={16}
+                      height={12}
+                      className="mr-1 inline rounded-[2px] align-[-2px]"
+                    />
+                  ) : null}
+                  {uni.countryName}
                 </p>
                 <p className="mt-1 text-xs text-[#5f7590]">{uni.course}</p>
                 <p className="mt-1 text-xs text-[#5f7590]">{uni.ranking}</p>
