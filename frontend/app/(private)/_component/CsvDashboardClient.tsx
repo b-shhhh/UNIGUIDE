@@ -116,14 +116,14 @@ export default function CsvDashboardClient({ universities, countries, courses }:
             <h3 className="text-lg font-bold text-[#1a2b44]">Countries</h3>
             <p className="text-xs font-bold uppercase tracking-[0.08em] text-[#5f7590]">{countries.length} total</p>
           </div>
-          <div className="flex gap-3 overflow-x-auto pb-2">
+          <div className="flex gap-2 overflow-x-auto pb-2">
             {countries.slice(0, 12).map((country) => (
               <Link
                 key={country.code}
                 href={`/homepage/countries/${country.code}`}
-                className="flex min-w-[210px] items-center justify-between rounded-xl border border-[#d8e5f8] p-3 hover:bg-[#f5f9ff]"
+                className="flex min-w-[160px] items-center justify-between rounded-lg border border-[#d8e5f8] px-2.5 py-2 hover:bg-[#f5f9ff]"
               >
-                <span className="text-sm font-semibold text-[#1a2b44]">
+                <span className="truncate text-sm font-semibold text-[#1a2b44]">
                   {country.flag} {country.name}
                 </span>
                 <span className="text-xs font-bold text-[#5f7590]">{country.count}</span>

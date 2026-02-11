@@ -56,50 +56,6 @@ const COURSE_POOL = [
 const DURATION_POOL = ["1 year", "1.5 years", "2 years", "3 years"] as const;
 const INTAKE_POOL = ["January", "February", "September", "October"] as const;
 
-const FLAG_MAP: Record<string, string> = {
-  AD: "🇦🇩",
-  AE: "🇦🇪",
-  AU: "🇦🇺",
-  BD: "🇧🇩",
-  BE: "🇧🇪",
-  BR: "🇧🇷",
-  CA: "🇨🇦",
-  CH: "🇨🇭",
-  CN: "🇨🇳",
-  DE: "🇩🇪",
-  DK: "🇩🇰",
-  ES: "🇪🇸",
-  FI: "🇫🇮",
-  FR: "🇫🇷",
-  GB: "🇬🇧",
-  HK: "🇭🇰",
-  ID: "🇮🇩",
-  IE: "🇮🇪",
-  IN: "🇮🇳",
-  IT: "🇮🇹",
-  JP: "🇯🇵",
-  KR: "🇰🇷",
-  LK: "🇱🇰",
-  MY: "🇲🇾",
-  NL: "🇳🇱",
-  NO: "🇳🇴",
-  NP: "🇳🇵",
-  NZ: "🇳🇿",
-  PH: "🇵🇭",
-  PK: "🇵🇰",
-  QA: "🇶🇦",
-  RU: "🇷🇺",
-  SA: "🇸🇦",
-  SE: "🇸🇪",
-  SG: "🇸🇬",
-  TH: "🇹🇭",
-  TR: "🇹🇷",
-  TW: "🇹🇼",
-  UA: "🇺🇦",
-  US: "🇺🇸",
-  VN: "🇻🇳",
-};
-
 let cachedUniversities: CsvUniversity[] | null = null;
 
 const csvCandidates = () => [
@@ -123,16 +79,11 @@ const hashCode = (value: string) => {
 };
 
 const toFlagEmoji = (countryCode: string) => {
-  if (FLAG_MAP[countryCode]) {
-    return FLAG_MAP[countryCode];
+  const code = countryCode.toUpperCase();
+  if (!/^[A-Z]{2}$/.test(code)) {
+    return "??";
   }
-  if (!/^[A-Z]{2}$/.test(countryCode)) {
-    return "GL";
-  }
-  return String.fromCodePoint(
-    countryCode.charCodeAt(0) + 127397,
-    countryCode.charCodeAt(1) + 127397,
-  );
+  return String.fromCodePoint(code.charCodeAt(0) + 127397, code.charCodeAt(1) + 127397);
 };
 
 const countryNameFromCode = (countryCode: string) => {
