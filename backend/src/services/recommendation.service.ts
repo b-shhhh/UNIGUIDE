@@ -10,6 +10,8 @@ type RecommendationItem = {
   name: string;
   program: string;
   country: string;
+  countryImage: string;
+  logoUrl: string;
   score: string;
   city: string;
   duration: string;
@@ -51,6 +53,8 @@ export const getRecommendationsService = async () => {
       name: uni.name,
       program: primaryProgram,
       country: uni.country,
+      countryImage: uni.flag_url || "",
+      logoUrl: uni.logo_url || "",
       score: scoreForId(uni.id),
       city: "N/A",
       duration: index % 2 === 0 ? "2 years" : "1.5 years",

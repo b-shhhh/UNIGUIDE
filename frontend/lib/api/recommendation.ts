@@ -14,6 +14,8 @@ export type UniversityRecommendation = {
   name: string;
   program: string;
   country: string;
+  countryImage: string;
+  logoUrl: string;
   score: string;
   city: string;
   duration: string;
@@ -49,6 +51,8 @@ const DEFAULT_UNIVERSITIES: UniversityRecommendation[] = [
     name: "University of Melbourne",
     program: "MSc Data Science",
     country: "Australia",
+    countryImage: "https://flagcdn.com/w160/au.png",
+    logoUrl: "https://www.google.com/s2/favicons?domain=unimelb.edu.au&sz=128",
     score: "96%",
     city: "Melbourne",
     duration: "2 years",
@@ -63,6 +67,8 @@ const DEFAULT_UNIVERSITIES: UniversityRecommendation[] = [
     name: "TU Munich",
     program: "MS Informatics",
     country: "Germany",
+    countryImage: "https://flagcdn.com/w160/de.png",
+    logoUrl: "https://www.google.com/s2/favicons?domain=tum.de&sz=128",
     score: "92%",
     city: "Munich",
     duration: "2 years",
@@ -77,6 +83,8 @@ const DEFAULT_UNIVERSITIES: UniversityRecommendation[] = [
     name: "University of Toronto",
     program: "MEng Software",
     country: "Canada",
+    countryImage: "https://flagcdn.com/w160/ca.png",
+    logoUrl: "https://www.google.com/s2/favicons?domain=utoronto.ca&sz=128",
     score: "89%",
     city: "Toronto",
     duration: "1.5 years",
@@ -91,6 +99,8 @@ const DEFAULT_UNIVERSITIES: UniversityRecommendation[] = [
     name: "King's College London",
     program: "MSc AI",
     country: "UK",
+    countryImage: "https://flagcdn.com/w160/gb.png",
+    logoUrl: "https://www.google.com/s2/favicons?domain=kcl.ac.uk&sz=128",
     score: "87%",
     city: "London",
     duration: "1 year",
@@ -177,6 +187,8 @@ const normalizeUniversities = (rows: RawRecord[]): UniversityRecommendation[] =>
         name,
         program,
         country,
+        countryImage: getString(row, ["countryImage", "country_image", "flag", "flag_url"], ""),
+        logoUrl: getString(row, ["logoUrl", "logo_url", "logo", "image"], ""),
         score: normalizeScore(getString(row, ["score", "match", "fit"], "0")),
         city: getString(row, ["city", "campus"], "N/A"),
         duration: getString(row, ["duration", "programDuration"], "N/A"),
