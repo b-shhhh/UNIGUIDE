@@ -53,12 +53,16 @@ export const registerUser = async (data: RegisterInput) => {
 export const loginUser = async (data: LoginInput) => {
   const email = data.email.trim().toLowerCase();
   const { password } = data;
+  const requestedRole = data.role;
 
   const user = await User.findOne({ email });
   if (!user) throw new Error("Invalid email or password");
 
   const isMatch = await bcrypt.compare(password, user.password);
   if (!isMatch) throw new Error("Invalid email or password");
+  if (requestedRole && user.role !== requestedRole) {
+    throw new Error(`${requestedRole === "admin" ? "Admin" : "User"} access required`);
+  }
 
   const token = jwt.sign({ id: user._id, role: user.role }, JWT_SECRET, { expiresIn: "7d" });
 

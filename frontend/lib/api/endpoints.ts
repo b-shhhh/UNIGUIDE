@@ -11,6 +11,7 @@ export const API = {
         RESET_PASSWORD: (token: string) => `/api/auth/reset-password/${token}`,
     },
     ADMIN: {
+        PROFILE: "/api/admin/profile",
         USERS: "/api/admin/users",
         USER: (id: string) => `/api/admin/users/${id}`,
     },

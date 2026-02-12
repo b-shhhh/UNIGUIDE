@@ -1,4 +1,4 @@
-import { getCsvUniversities } from "./csv-data.service";
+import { getAllUniversitiesService } from "./university.service";
 
 type RecommendationStat = {
   label: string;
@@ -43,7 +43,7 @@ const makeDate = (offsetDays: number) => {
 };
 
 export const getRecommendationsService = async () => {
-  const universities = await getCsvUniversities();
+  const universities = await getAllUniversitiesService();
 
   const recommendations: RecommendationItem[] = universities.slice(0, 30).map((uni, index) => {
     const primaryProgram = uni.courses[0] || "General Studies";

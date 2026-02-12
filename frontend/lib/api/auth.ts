@@ -53,6 +53,17 @@ export const fetchWhoAmI = async () => {
   }
 };
 
+export const fetchAdminProfile = async (token?: string) => {
+  try {
+    const response = await axios.get(API.ADMIN.PROFILE, {
+      headers: token ? { Authorization: `Bearer ${token}` } : undefined,
+    });
+    return response.data as ApiResult;
+  } catch (error: unknown) {
+    throw new Error(getErrorMessage(error, "Fetch admin profile failed"));
+  }
+};
+
 export const updateUserProfile = async (updateData: FormData) => {
   try {
     const response = await axios.put(API.AUTH.UPDATEPROFILE, updateData, {

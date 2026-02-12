@@ -26,7 +26,11 @@ export default function LoginPage() {
 
       // Set user in context
       setUser(response.data);
-      router.push("/homepage");
+      const role =
+        response.data && typeof response.data === "object" && "role" in response.data
+          ? (response.data as { role?: unknown }).role
+          : undefined;
+      router.push(role === "admin" ? "/admin" : "/homepage");
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : "Login failed. Please check your credentials.");
     } finally {

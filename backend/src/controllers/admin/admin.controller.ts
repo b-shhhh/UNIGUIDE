@@ -24,10 +24,12 @@ export const adminProfile = async (req: AuthRequest, res: Response) => {
     if (!adminId) {
       return res.status(401).json({ success: false, message: "Unauthorized" });
     }
+    if (req.user?.role !== "admin") {
+      return res.status(403).json({ success: false, message: "Admin access required" });
+    }
     const data = await adminProfileService(adminId);
     res.status(200).json({ success: true, data });
   } catch (error: any) {
     res.status(400).json({ success: false, message: error.message });
   }
 };
-

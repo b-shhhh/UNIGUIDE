@@ -2,7 +2,7 @@
 "use server"
 
 import { redirect } from "next/navigation";
-import { registerUser, loginUser, updateUserProfile, changePassword, deleteAccount, requestPasswordReset, resetPassword } from "../api/auth";
+import { registerUser, loginUser, updateUserProfile, changePassword, deleteAccount, requestPasswordReset, resetPassword, fetchAdminProfile } from "../api/auth";
 import { setUserData, setAuthToken, clearAuthCookies, getAuthToken, getUserData } from "../api/cookie";
 import { revalidatePath } from "next/cache";
 
@@ -62,12 +62,34 @@ export const handleLogin = async (
       if (token) {
         await setAuthToken(token);
       }
-      await setUserData(result.data ?? null);
+
+      const userFromData =
+        typeof result.data === "object" && result.data !== null && "user" in result.data
+          ? (result.data as { user?: unknown }).user
+          : null;
+      const role =
+        typeof userFromData === "object" && userFromData !== null && "role" in userFromData
+          ? (userFromData as { role?: unknown }).role
+          : undefined;
+
+      if (role === "admin" && token) {
+        const profileRes = await fetchAdminProfile(token);
+        if (profileRes.success) {
+          await setUserData(profileRes.data ?? userFromData ?? result.data ?? null);
+          return {
+            success: true,
+            message: "Login successful",
+            data: (profileRes.data ?? null) as Record<string, unknown> | null,
+          };
+        }
+      }
+
+      await setUserData(userFromData ?? result.data ?? null);
 
       return {
         success: true,
         message: "Login successful",
-        data: (result.data ?? null) as Record<string, unknown> | null,
+        data: (userFromData ?? result.data ?? null) as Record<string, unknown> | null,
       };
     }
     return {

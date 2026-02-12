@@ -7,7 +7,8 @@
     "build": "tsc",
     "start": "node dist/index.js",
     "typecheck": "tsc --noEmit",
-    "create:admin": "ts-node --transpile-only src/scripts/create-admin.ts"
+    "create:admin": "ts-node --transpile-only src/scripts/create-admin.ts",
+    "import:universities": "ts-node --transpile-only src/scripts/import-universities.ts"
   },
   "keywords": [],
   "author": "",

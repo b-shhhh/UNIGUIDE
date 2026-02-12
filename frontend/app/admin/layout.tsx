@@ -1,8 +1,20 @@
 import type { ReactNode } from "react";
+import { redirect } from "next/navigation";
 import Header from "./_components/Header";
 import Sidebar from "./_components/Sidebar";
+import { getUserData } from "@/lib/api/cookie";
 
-export default function AdminLayout({ children }: { children: ReactNode }) {
+type AuthProfile = { role?: string };
+
+export default async function AdminLayout({ children }: { children: ReactNode }) {
+  const user = await getUserData<AuthProfile>();
+  if (!user) {
+    redirect("/login");
+  }
+  if (user.role !== "admin") {
+    redirect("/homepage");
+  }
+
   return (
     <div className="min-h-screen bg-[#f6f9ff] text-[#1a2b44]">
       <Header />
@@ -13,4 +25,3 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
     </div>
   );
 }
-

@@ -40,6 +40,8 @@ export const adminProfileService = async (adminId: string) => {
   if (!admin) {
     throw new Error("Admin not found");
   }
+  if (admin.role !== "admin") {
+    throw new Error("Admin access required");
+  }
   return admin;
 };
-

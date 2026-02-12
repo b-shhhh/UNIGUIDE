@@ -1,6 +1,3 @@
-import { readFile, stat } from "node:fs/promises";
-import path from "node:path";
-
 export type CsvUniversity = {
   id: string;
   countryCode: string;
@@ -38,26 +35,21 @@ export type CourseSummary = {
   countryCount: number;
 };
 
-type CsvRow = {
-  countryCode: string;
+type BackendUniversity = {
+  id: string;
+  alpha2?: string;
+  country: string;
   name: string;
-  website: string;
-  flagUrl: string;
+  web_pages?: string;
+  flag_url?: string;
+  logo_url?: string;
   courses: string[];
+  description?: string;
 };
 
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || "http://127.0.0.1:5050";
 const DURATION_POOL = ["1 year", "1.5 years", "2 years", "3 years"] as const;
 const INTAKE_POOL = ["January", "February", "September", "October"] as const;
-
-let cachedUniversities: CsvUniversity[] | null = null;
-let cachedMtimeMs = 0;
-
-const csvCandidates = () => [
-  path.resolve(process.cwd(), "../backend/src/uploads/universities.csv"),
-  path.resolve(process.cwd(), "backend/src/uploads/universities.csv"),
-];
-
-const normalize = (value: string) => value.trim().toLowerCase();
 
 const slugify = (value: string) =>
   value
@@ -82,7 +74,7 @@ const toFlagEmoji = (countryCode: string) => {
   return String.fromCodePoint(code.charCodeAt(0) + 127397, code.charCodeAt(1) + 127397);
 };
 
-const getFlagImageUrl = (countryCode: string) => {
+const toFlagImageUrl = (countryCode: string) => {
   const code = countryCode.toLowerCase() === "uk" ? "gb" : countryCode.toLowerCase();
   if (!/^[a-z]{2}$/.test(code)) {
     return "";
@@ -90,19 +82,8 @@ const getFlagImageUrl = (countryCode: string) => {
   return `https://flagcdn.com/w80/${code}.png`;
 };
 
-const countryNameFromCode = (countryCode: string) => {
-  try {
-    const display = new Intl.DisplayNames(["en"], { type: "region" });
-    return display.of(countryCode) || countryCode;
-  } catch {
-    return countryCode;
-  }
-};
-
 const getLogoFromWebsite = (website: string) => {
-  if (!website) {
-    return "";
-  }
+  if (!website) return "";
   try {
     const url = new URL(website);
     return `https://www.google.com/s2/favicons?domain=${url.hostname}&sz=128`;
@@ -111,181 +92,55 @@ const getLogoFromWebsite = (website: string) => {
   }
 };
 
-const isLikelyFlagUrl = (value?: string) => {
-  if (!value) return false;
-  const text = value.trim().toLowerCase();
-  if (!text) return false;
-  if (!/^https?:\/\//.test(text)) return false;
-  return (
-    text.includes("flag") ||
-    text.includes("flagcdn.com") ||
-    text.endsWith(".png") ||
-    text.endsWith(".jpg") ||
-    text.endsWith(".jpeg") ||
-    text.endsWith(".svg") ||
-    text.endsWith(".webp")
-  );
+const inferCountryCode = (alpha2: string | undefined, countryName: string) => {
+  if (alpha2 && /^[A-Za-z]{2}$/.test(alpha2.trim())) {
+    return alpha2.trim().toUpperCase();
+  }
+  const letters = countryName.replace(/[^A-Za-z]/g, "").toUpperCase();
+  return letters.slice(0, 2) || "UN";
 };
 
-const splitCourses = (raw: string): string[] =>
-  raw
-    .split(/[|;/,]/)
-    .map((value) => value.trim())
-    .filter(Boolean);
-
-
-const parseCsvLine = (line: string): string[] => {
-  const output: string[] = [];
-  let current = "";
-  let inQuotes = false;
-
-  for (let i = 0; i < line.length; i += 1) {
-    const char = line[i];
-    const next = line[i + 1];
-
-    if (char === '"' && inQuotes && next === '"') {
-      current += '"';
-      i += 1;
-      continue;
-    }
-
-    if (char === '"') {
-      inQuotes = !inQuotes;
-      continue;
-    }
-
-    if (char === "," && !inQuotes) {
-      output.push(current.trim());
-      current = "";
-      continue;
-    }
-
-    current += char;
-  }
-  output.push(current.trim());
-  return output;
-};
-
-const extractCourseColumns = (headers: string[]) =>
-  headers
-    .map((header, index) => ({ header: normalize(header), index }))
-    .filter(({ header }) =>
-      header.includes("course") ||
-      header.includes("program") ||
-      header.includes("major") ||
-      header.includes("subject"),
-    )
-    .map(({ index }) => index);
-
-const detectHeaderRow = (normalizedHeaders: string[]) =>
-  normalizedHeaders.includes("alpha2") && normalizedHeaders.includes("name");
-
-const buildSyntheticHeaders = (columnCount: number, hasFlagUrlColumn: boolean) => {
-  const headers = ["alpha2", "name", "web_pages"];
-  const startIndex = hasFlagUrlColumn ? 4 : 3;
-  if (hasFlagUrlColumn) {
-    headers.push("flag_url");
-  }
-  for (let i = startIndex; i < columnCount; i += 1) {
-    headers.push(`course_${i - (hasFlagUrlColumn ? 3 : 2)}`);
-  }
-  return headers;
-};
-
-const parseCsv = (csvText: string): CsvRow[] => {
-  const lines = csvText.split(/\r?\n/).map((line) => line.trim()).filter(Boolean);
-  if (!lines.length) {
-    return [];
-  }
-
-  const firstCols = parseCsvLine(lines[0]);
-  const firstNormalized = firstCols.map((header) => normalize(header));
-  const hasHeader = detectHeaderRow(firstNormalized);
-  const hasFlagUrlColumn = !hasHeader && isLikelyFlagUrl(firstCols[3]);
-  const headers = hasHeader
-    ? firstNormalized
-    : buildSyntheticHeaders(firstCols.length, hasFlagUrlColumn).map((header) => normalize(header));
-  const dataLines = hasHeader ? lines.slice(1) : lines;
-
-  const alpha2Index = headers.indexOf("alpha2");
-  const nameIndex = headers.indexOf("name");
-  const webPagesIndex = headers.indexOf("web_pages");
-  const flagUrlIndex = headers.indexOf("flag_url");
-  const courseColumnIndexes = extractCourseColumns(headers);
-
-  return dataLines
-    .map((line) => parseCsvLine(line))
-    .map((cols) => ({
-      countryCode: (cols[alpha2Index] || "").toUpperCase(),
-      name: cols[nameIndex] || "",
-      website: cols[webPagesIndex] || "",
-      flagUrl: flagUrlIndex >= 0 ? cols[flagUrlIndex] || "" : "",
-      courses: courseColumnIndexes.flatMap((index) => splitCourses(cols[index] || "")),
-    }))
-    .filter((row) => row.countryCode && row.name)
-    .map((row) => ({
-      ...row,
-      courses: Array.from(new Set(row.courses)),
-    }));
-};
-
-const buildUniversity = (row: CsvRow, id: string): CsvUniversity => {
-  const key = `${row.countryCode}-${row.name}`;
+const mapUniversity = (row: BackendUniversity): CsvUniversity => {
+  const code = inferCountryCode(row.alpha2, row.country);
+  const key = `${row.id}-${row.country}-${row.name}`;
   const hash = hashCode(key);
-  const primaryCourse = row.courses[0] || "N/A";
+  const courseList = Array.isArray(row.courses) ? row.courses.filter(Boolean) : [];
+  const primaryCourse = courseList[0] || "N/A";
   const tuitionValue = 8000 + (hash % 55) * 1000;
 
   return {
-    id,
-    countryCode: row.countryCode,
-    countryName: countryNameFromCode(row.countryCode),
-    flag: toFlagEmoji(row.countryCode),
-    countryFlagUrl: row.flagUrl || getFlagImageUrl(row.countryCode),
+    id: row.id,
+    countryCode: code,
+    countryName: row.country,
+    flag: toFlagEmoji(code),
+    countryFlagUrl: row.flag_url || toFlagImageUrl(code),
     name: row.name,
-    website: row.website,
-    logoUrl: getLogoFromWebsite(row.website),
+    website: row.web_pages || "",
+    logoUrl: row.logo_url || getLogoFromWebsite(row.web_pages || ""),
     course: primaryCourse,
     courseSlug: primaryCourse === "N/A" ? "" : slugify(primaryCourse),
-    courses: row.courses,
+    courses: courseList,
     score: 70 + (hash % 30),
     tuition: `$${tuitionValue.toLocaleString()}/year`,
     ranking: `Top ${10 + (hash % 250)}`,
     duration: DURATION_POOL[hash % DURATION_POOL.length],
     intake: INTAKE_POOL[hash % INTAKE_POOL.length],
-    description: `${row.name} in ${countryNameFromCode(row.countryCode)} offers programs from CSV course data.`,
+    description: row.description || `${row.name} in ${row.country} offers multiple programs.`,
   };
 };
 
-const readCsvText = async (): Promise<{ text: string; mtimeMs: number }> => {
-  for (const candidate of csvCandidates()) {
-    try {
-      const fileStat = await stat(candidate);
-      const text = await readFile(candidate, "utf8");
-      return { text, mtimeMs: fileStat.mtimeMs };
-    } catch {
-      continue;
-    }
+const fetchAllUniversities = async (): Promise<CsvUniversity[]> => {
+  const response = await fetch(`${API_BASE_URL}/api/universities`, { cache: "no-store" });
+  if (!response.ok) {
+    throw new Error("Failed to fetch universities");
   }
-  throw new Error("universities.csv not found in backend/src/uploads");
+  const payload = (await response.json()) as { data?: BackendUniversity[] };
+  const rows = Array.isArray(payload.data) ? payload.data : [];
+  return rows.map(mapUniversity);
 };
 
 export const getUniversities = async (): Promise<CsvUniversity[]> => {
-  const { text, mtimeMs } = await readCsvText();
-  if (cachedUniversities && cachedMtimeMs === mtimeMs) {
-    return cachedUniversities;
-  }
-
-  const parsed = parseCsv(text);
-  const idCounts = new Map<string, number>();
-  cachedUniversities = parsed.map((row) => {
-    const baseId = slugify(`${row.countryCode}-${row.name}`);
-    const seen = idCounts.get(baseId) ?? 0;
-    idCounts.set(baseId, seen + 1);
-    const uniqueId = seen === 0 ? baseId : `${baseId}-${seen + 1}`;
-    return buildUniversity(row, uniqueId);
-  });
-  cachedMtimeMs = mtimeMs;
-  return cachedUniversities;
+  return fetchAllUniversities();
 };
 
 export const getCountries = async (): Promise<CountrySummary[]> => {
@@ -312,10 +167,7 @@ export const getCountries = async (): Promise<CountrySummary[]> => {
 
 export const getCourses = async (): Promise<CourseSummary[]> => {
   const universities = await getUniversities();
-  const map = new Map<
-    string,
-    CourseSummary & { countrySet: Set<string> }
-  >();
+  const map = new Map<string, CourseSummary & { countrySet: Set<string> }>();
 
   for (const uni of universities) {
     for (const courseName of uni.courses) {
@@ -357,10 +209,19 @@ export const getUniversitiesByCountry = async (countryCode: string) => {
 
 export const getUniversitiesByCourse = async (courseSlug: string) => {
   const universities = await getUniversities();
-  return universities.filter((item) => item.courseSlug === courseSlug);
+  return universities.filter(
+    (item) => item.courseSlug === courseSlug || item.courses.some((course) => slugify(course) === courseSlug),
+  );
 };
 
 export const getUniversityById = async (id: string) => {
-  const universities = await getUniversities();
-  return universities.find((item) => item.id === id) || null;
+  const response = await fetch(`${API_BASE_URL}/api/universities/${id}`, { cache: "no-store" });
+  if (!response.ok) {
+    return null;
+  }
+  const payload = (await response.json()) as { data?: BackendUniversity };
+  if (!payload.data) {
+    return null;
+  }
+  return mapUniversity(payload.data);
 };
