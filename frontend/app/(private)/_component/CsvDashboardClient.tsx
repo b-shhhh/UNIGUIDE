@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import dynamic from "next/dynamic";
 import { useMemo, useState, useEffect } from "react";
 import type { CountrySummary, CourseSummary, CsvUniversity } from "@/lib/csv-universities";
 import { fetchSavedUniversityIds, SAVED_UNIVERSITIES_UPDATE_EVENT, toggleUniversitySaved } from "@/lib/saved-universities";
@@ -11,30 +12,13 @@ type Props = {
   courses: CourseSummary[];
 };
 
-type ChatMessage = {
-  role: "user" | "assistant";
-  text: string;
-  results?: Array<{
-    id: string;
-    name: string;
-    country: string;
-    courses: string[];
-    tuition: string;
-    viewDetailsUrl: string;
-  }>;
-};
+const DashboardChatbot = dynamic(() => import("./DashboardChatbot"), { ssr: false });
+const INITIAL_VISIBLE_COURSES = 24;
+const VISIBLE_COURSE_STEP = 24;
 
 export default function CsvDashboardClient({ universities, countries, courses }: Props) {
   const [query, setQuery] = useState("");
-  const [chatInput, setChatInput] = useState("");
-  const [chatLoading, setChatLoading] = useState(false);
-  const [chatOpen, setChatOpen] = useState(false);
-  const [chatMessages, setChatMessages] = useState<ChatMessage[]>([
-    {
-      role: "assistant",
-      text: "Tell me what you want to study and I will find universities for you.",
-    },
-  ]);
+  const [visibleCourseCount, setVisibleCourseCount] = useState(INITIAL_VISIBLE_COURSES);
   const [savedIds, setSavedIds] = useState<string[]>([]);
   const [savingId, setSavingId] = useState<string | null>(null);
 
@@ -65,6 +49,10 @@ export default function CsvDashboardClient({ universities, countries, courses }:
     };
   }, []);
 
+  useEffect(() => {
+    setVisibleCourseCount(INITIAL_VISIBLE_COURSES);
+  }, [courses.length]);
+
   const filteredUniversities = useMemo(() => {
     const needle = query.trim().toLowerCase();
     if (!needle) {
@@ -84,12 +72,13 @@ export default function CsvDashboardClient({ universities, countries, courses }:
       .slice(0, 3);
   }, [filteredUniversities]);
 
+  const visibleCourses = useMemo(() => courses.slice(0, visibleCourseCount), [courses, visibleCourseCount]);
+
   const onToggleSaved = async (uni: CsvUniversity) => {
     const key = savedKeyFor(uni);
     const aliases = [uni.id, uni.dbId].filter(Boolean) as string[];
 
     setSavingId(uni.id);
-    // Optimistic toggle on all known aliases so button updates immediately.
     setSavedIds((prev) => {
       const unique = Array.from(new Set(prev));
       const currentlySaved = aliases.some((id) => unique.includes(id));
@@ -104,66 +93,6 @@ export default function CsvDashboardClient({ universities, countries, courses }:
       setSavedIds(result.ids);
     } finally {
       setSavingId(null);
-    }
-  };
-
-  const handleChatAsk = async () => {
-    const raw = chatInput.trim();
-    if (!raw || chatLoading) return;
-
-    const next = [...chatMessages, { role: "user" as const, text: raw }];
-    setChatMessages(next);
-    setChatInput("");
-    setChatLoading(true);
-
-    try {
-      const response = await fetch("/api/chatbot", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          message: raw,
-          history: next.map((msg) => ({
-            role: msg.role,
-            content: msg.text,
-            recommendationIds: msg.results?.map((uni) => uni.id) || [],
-          })),
-        }),
-      });
-
-      if (!response.ok) {
-        throw new Error("Failed to ask chatbot");
-      }
-
-      const payload = (await response.json()) as {
-        answer?: string;
-        results?: Array<{
-          id: string;
-          name: string;
-          country: string;
-          courses: string[];
-          tuition: string;
-          viewDetailsUrl: string;
-        }>;
-      };
-
-      setChatMessages((prev) => [
-        ...prev,
-        {
-          role: "assistant",
-          text: payload.answer || "I found some matching universities for you.",
-          results: payload.results?.length ? payload.results : undefined,
-        },
-      ]);
-    } catch {
-      setChatMessages((prev) => [
-        ...prev,
-        {
-          role: "assistant",
-          text: "I could not process that right now. Please try again.",
-        },
-      ]);
-    } finally {
-      setChatLoading(false);
     }
   };
 
@@ -222,7 +151,7 @@ export default function CsvDashboardClient({ universities, countries, courses }:
             <p className="text-xs font-bold uppercase tracking-[0.08em] text-[#5f7590]">{courses.length} total</p>
           </div>
           <div className="flex gap-1 overflow-x-auto pb-1">
-            {courses.map((course) => (
+            {visibleCourses.map((course) => (
               <Link
                 key={course.slug}
                 href={`/homepage/courses/${course.slug}`}
@@ -234,6 +163,28 @@ export default function CsvDashboardClient({ universities, countries, courses }:
               </Link>
             ))}
           </div>
+          {courses.length > INITIAL_VISIBLE_COURSES ? (
+            <div className="mt-3 flex items-center gap-2">
+              {visibleCourseCount < courses.length ? (
+                <button
+                  type="button"
+                  onClick={() => setVisibleCourseCount((prev) => Math.min(prev + VISIBLE_COURSE_STEP, courses.length))}
+                  className="rounded-md border border-[#d8e5f8] px-3 py-1 text-xs font-semibold text-[#1a2b44] hover:bg-[#f5f9ff]"
+                >
+                  Show more
+                </button>
+              ) : null}
+              {visibleCourseCount > INITIAL_VISIBLE_COURSES ? (
+                <button
+                  type="button"
+                  onClick={() => setVisibleCourseCount(INITIAL_VISIBLE_COURSES)}
+                  className="rounded-md border border-[#d8e5f8] px-3 py-1 text-xs font-semibold text-[#1a2b44] hover:bg-[#f5f9ff]"
+                >
+                  Show less
+                </button>
+              ) : null}
+            </div>
+          ) : null}
         </article>
       </section>
 
@@ -303,76 +254,7 @@ export default function CsvDashboardClient({ universities, countries, courses }:
         </div>
       </section>
 
-      <button
-        type="button"
-        onClick={() => setChatOpen((prev) => !prev)}
-        aria-label={chatOpen ? "Close chatbot" : "Open chatbot"}
-        title={chatOpen ? "Close chatbot" : "Open chatbot"}
-        className="fixed bottom-5 right-5 z-40 flex h-16 w-16 items-center justify-center rounded-full bg-[#4A90E2] text-3xl text-white shadow-lg transition-transform hover:scale-105 hover:bg-[#357ABD]"
-      >
-        🎓
-      </button>
-
-      {chatOpen ? (
-        <section className="fixed bottom-20 right-5 z-40 w-[min(92vw,390px)] rounded-2xl border border-[#d8e5f8] bg-white p-4 shadow-2xl">
-          <h3 className="text-lg font-bold text-[#1a2b44]">AI Chatbot</h3>
-          <p className="mt-1 text-xs text-[#5f7590]">Ask naturally. I will find matching universities for you.</p>
-
-          <div className="mt-3 max-h-72 space-y-2 overflow-y-auto rounded-lg border border-[#d8e5f8] bg-[#f8fbff] p-3">
-            {chatMessages.map((message, index) => (
-              <div key={`chat-${index}`} className={message.role === "user" ? "text-right" : "text-left"}>
-                <div
-                  className={`inline-block max-w-[90%] rounded-lg text-xs ${
-                    message.role === "assistant" ? "bg-[#4A90E2] text-white" : "bg-[#E5E5EA] text-black"
-                  }`}
-                  style={{ padding: "12px", margin: "8px 0" }}
-                >
-                  {message.text}
-                </div>
-                {message.role === "assistant" && message.results?.length ? (
-                  <div className="mt-2 grid gap-2">
-                    {message.results.map((result) => (
-                      <article
-                        key={`chat-result-${result.id}`}
-                        className="rounded-md border border-[#d8e5f8] bg-white px-3 py-2 text-left"
-                      >
-                        <p className="text-xs font-semibold text-[#1a2b44]">{result.name}</p>
-                        <p className="text-[11px] text-[#5f7590]">Country: {result.country}</p>
-                        <p className="text-[11px] text-[#5f7590]">{result.tuition}</p>
-                      </article>
-                    ))}
-                  </div>
-                ) : null}
-              </div>
-            ))}
-            {chatLoading ? <p className="text-xs text-[#5f7590]">Assistant is thinking...</p> : null}
-          </div>
-
-          <div className="mt-3 flex flex-col gap-2 sm:flex-row">
-            <input
-              value={chatInput}
-              onChange={(event) => setChatInput(event.target.value)}
-              onKeyDown={(event) => {
-                if (event.key === "Enter") {
-                  void handleChatAsk();
-                }
-              }}
-              placeholder="Ask your query..."
-              className="h-10 w-full rounded-md border border-[#d8e5f8] px-3 text-sm outline-none"
-            />
-            <button
-              type="button"
-              disabled={chatLoading}
-              onClick={() => {
-                void handleChatAsk();
-              }}
-              className="h-10 rounded-md bg-[#4A90E2] px-4 text-xs font-bold uppercase tracking-[0.08em] text-white disabled:opacity-50"
-            >
-              Ask
-            </button>
-          </div>
-        </section>
-      ) : null}
+      <DashboardChatbot />
     </div>
   );
 }
