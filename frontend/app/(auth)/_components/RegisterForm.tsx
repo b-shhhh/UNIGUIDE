@@ -55,61 +55,66 @@ export default function RegisterForm() {
   };
 
   return (
-    <div className="rounded-[16px] border border-[#dbe8fb] bg-white p-8 shadow-[0_14px_34px_rgba(74,144,226,0.18)]">
-      <h2 className="text-center text-3xl font-bold text-[#333333]">Create Account</h2>
-      <p className="mt-2 text-center text-sm text-[#666666]">Sign up to find your perfect university</p>
+    <div className="rounded-3xl border border-sky-100 bg-white/95 p-6 shadow-[0_14px_34px_rgba(3,105,161,0.16)] sm:p-8">
+      <p className="inline-flex rounded-full border border-cyan-200 bg-cyan-50 px-3 py-1 text-[10px] font-bold uppercase tracking-[0.14em] text-cyan-800">
+        New Account
+      </p>
+      <h2 className="mt-4 text-3xl font-black tracking-tight text-slate-900">Create account</h2>
+      <p className="mt-2 text-sm text-slate-600">Sign up to build your university shortlist.</p>
 
       <form onSubmit={handleSubmit(onSubmit)} className="mt-6 flex flex-col gap-4">
-        <div className="flex flex-col gap-1">
-          <label className="text-[11px] font-semibold uppercase tracking-[0.12em] text-[#666666]">Full Name</label>
+        <div className="flex flex-col gap-1.5">
+          <label className="text-[11px] font-semibold uppercase tracking-[0.12em] text-slate-600">Full Name</label>
           <input
             type="text"
             placeholder="Your Name"
             {...register("name", { required: "Name is required" })}
-            className="h-11 w-full rounded-[8px] border border-[#c7d9f5] px-3 text-sm text-[#333333] outline-none focus:ring-2 focus:ring-[#4A90E2]/40"
+            className="h-12 w-full rounded-xl border border-sky-100 bg-sky-50/30 px-3 text-sm text-slate-900 outline-none transition focus:border-sky-300 focus:ring-4 focus:ring-sky-100"
           />
-          {errors.name && <p className="text-xs text-red-600">{errors.name.message}</p>}
+          {errors.name && <p className="text-xs text-rose-700">{errors.name.message}</p>}
         </div>
 
-        <div className="flex flex-col gap-1">
-          <label className="text-[11px] font-semibold uppercase tracking-[0.12em] text-[#666666]">Email</label>
+        <div className="flex flex-col gap-1.5">
+          <label className="text-[11px] font-semibold uppercase tracking-[0.12em] text-slate-600">Email</label>
           <input
             type="email"
             placeholder="example@gmail.com"
             {...register("email", { required: "Email is required" })}
-            className="h-11 w-full rounded-[8px] border border-[#c7d9f5] px-3 text-sm text-[#333333] outline-none focus:ring-2 focus:ring-[#4A90E2]/40"
+            className="h-12 w-full rounded-xl border border-sky-100 bg-sky-50/30 px-3 text-sm text-slate-900 outline-none transition focus:border-sky-300 focus:ring-4 focus:ring-sky-100"
           />
-          {errors.email && <p className="text-xs text-red-600">{errors.email.message}</p>}
+          {errors.email && <p className="text-xs text-rose-700">{errors.email.message}</p>}
         </div>
 
-        <div className="flex flex-col gap-1">
-          <label className="text-[11px] font-semibold uppercase tracking-[0.12em] text-[#666666]">Password</label>
-          <input
-            type="password"
-            placeholder="********"
-            {...register("password", { required: "Password is required" })}
-            className="h-11 w-full rounded-[8px] border border-[#c7d9f5] px-3 text-sm text-[#333333] outline-none focus:ring-2 focus:ring-[#4A90E2]/40"
-          />
-          {errors.password && <p className="text-xs text-red-600">{errors.password.message}</p>}
+        <div className="grid gap-4 sm:grid-cols-2">
+          <div className="flex flex-col gap-1.5">
+            <label className="text-[11px] font-semibold uppercase tracking-[0.12em] text-slate-600">Password</label>
+            <input
+              type="password"
+              placeholder="********"
+              {...register("password", { required: "Password is required" })}
+              className="h-12 w-full rounded-xl border border-sky-100 bg-sky-50/30 px-3 text-sm text-slate-900 outline-none transition focus:border-sky-300 focus:ring-4 focus:ring-sky-100"
+            />
+            {errors.password && <p className="text-xs text-rose-700">{errors.password.message}</p>}
+          </div>
+
+          <div className="flex flex-col gap-1.5">
+            <label className="text-[11px] font-semibold uppercase tracking-[0.12em] text-slate-600">Confirm Password</label>
+            <input
+              type="password"
+              placeholder="********"
+              {...register("confirmPassword", { required: "Confirm your password" })}
+              className="h-12 w-full rounded-xl border border-sky-100 bg-sky-50/30 px-3 text-sm text-slate-900 outline-none transition focus:border-sky-300 focus:ring-4 focus:ring-sky-100"
+            />
+            {errors.confirmPassword && <p className="text-xs text-rose-700">{errors.confirmPassword.message}</p>}
+          </div>
         </div>
 
-        <div className="flex flex-col gap-1">
-          <label className="text-[11px] font-semibold uppercase tracking-[0.12em] text-[#666666]">Confirm Password</label>
-          <input
-            type="password"
-            placeholder="********"
-            {...register("confirmPassword", { required: "Confirm your password" })}
-            className="h-11 w-full rounded-[8px] border border-[#c7d9f5] px-3 text-sm text-[#333333] outline-none focus:ring-2 focus:ring-[#4A90E2]/40"
-          />
-          {errors.confirmPassword && <p className="text-xs text-red-600">{errors.confirmPassword.message}</p>}
-        </div>
-
-        <div className="flex flex-col gap-1">
-          <label className="text-[11px] font-semibold uppercase tracking-[0.12em] text-[#666666]">Phone Number</label>
+        <div className="flex flex-col gap-1.5">
+          <label className="text-[11px] font-semibold uppercase tracking-[0.12em] text-slate-600">Phone Number</label>
           <div className="flex gap-2">
             <select
               {...register("countryCode")}
-              className="h-11 rounded-[8px] border border-[#c7d9f5] px-2 text-[12px] text-[#333333] outline-none"
+              className="h-12 rounded-xl border border-sky-100 bg-sky-50/30 px-2 text-[12px] text-slate-900 outline-none transition focus:border-sky-300"
             >
               <option value="+977">NP +977</option>
               <option value="+91">IN +91</option>
@@ -121,25 +126,25 @@ export default function RegisterForm() {
               type="tel"
               placeholder="9800000000"
               {...register("phone", { required: "Phone number is required" })}
-              className="h-11 w-full rounded-[8px] border border-[#c7d9f5] px-3 text-sm text-[#333333] outline-none focus:ring-2 focus:ring-[#4A90E2]/40"
+              className="h-12 w-full rounded-xl border border-sky-100 bg-sky-50/30 px-3 text-sm text-slate-900 outline-none transition focus:border-sky-300 focus:ring-4 focus:ring-sky-100"
             />
           </div>
-          {errors.phone && <p className="text-xs text-red-600">{errors.phone.message}</p>}
+          {errors.phone && <p className="text-xs text-rose-700">{errors.phone.message}</p>}
         </div>
 
-        {error && <p className="text-xs text-red-600">{error}</p>}
+        {error && <p className="text-xs text-rose-700">{error}</p>}
 
         <button
           type="submit"
           disabled={isSubmitting || pending}
-          className="mt-2 h-11 w-full rounded-[8px] bg-[#4A90E2] text-sm font-semibold uppercase tracking-[0.1em] text-white transition hover:bg-[#357ABD] disabled:opacity-50"
+          className="mt-2 h-12 w-full rounded-xl bg-sky-700 text-sm font-bold uppercase tracking-[0.1em] text-white transition hover:-translate-y-0.5 hover:bg-sky-800 disabled:cursor-not-allowed disabled:opacity-50"
         >
           {isSubmitting || pending ? "Registering..." : "Register"}
         </button>
 
-        <div className="mt-1 text-center text-xs text-[#666666]">
+        <div className="mt-1 text-center text-xs text-slate-600">
           Already have an account?{" "}
-          <Link href="/login" className="font-semibold uppercase text-[#4A90E2] hover:text-[#F5A623]">
+          <Link href="/login" className="font-semibold uppercase tracking-wide text-sky-700 hover:text-sky-900">
             Login
           </Link>
         </div>

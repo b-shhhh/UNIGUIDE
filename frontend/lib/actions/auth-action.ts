@@ -109,6 +109,11 @@ export const handleLogout = async () => {
   return redirect("/login");
 };
 
+export const handleAdminLogout = async () => {
+  await clearAuthCookies();
+  return redirect("/");
+};
+
 export async function handleUpdateProfile(profileData: FormData) {
   try {
     const result = await updateUserProfile(profileData);

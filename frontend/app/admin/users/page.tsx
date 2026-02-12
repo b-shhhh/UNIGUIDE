@@ -44,106 +44,118 @@ export default function AdminUsersPage() {
   };
 
   return (
-    <div className="space-y-4 rounded-xl border border-[#d8e5f8] bg-white p-5">
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <div>
-          <p className="text-xs font-bold uppercase tracking-[0.12em] text-[#5f7590]">Users</p>
-          <h2 className="text-2xl font-bold text-[#1a2b44]">Manage Users</h2>
+    <div className="space-y-5">
+      <section className="relative overflow-hidden rounded-3xl border border-sky-200/70 bg-gradient-to-br from-sky-700 via-cyan-700 to-sky-900 p-6 text-white shadow-[0_14px_36px_rgba(3,105,161,0.25)] sm:p-8">
+        <div className="pointer-events-none absolute -right-16 -top-8 h-48 w-48 rounded-full bg-cyan-200/25 blur-3xl" />
+        <div className="relative">
+          <p className="text-xs font-bold uppercase tracking-[0.12em] text-sky-100">Admin Users</p>
+          <h2 className="mt-2 text-2xl font-black tracking-tight sm:text-4xl">Manage user accounts</h2>
+          <p className="mt-2 text-sm text-sky-100">Review user data, edit profiles, and remove accounts when needed.</p>
         </div>
-        <input
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          placeholder="Search user..."
-          className="h-10 rounded-lg border border-[#c7d9f5] px-3 text-sm"
-        />
-        <button
-          type="button"
-          onClick={() => void load(1, search)}
-          className="rounded-lg bg-[#4A90E2] px-3 py-2 text-xs font-bold uppercase tracking-[0.08em] text-white"
-        >
-          Search
-        </button>
-      </div>
+      </section>
 
-      <div className="overflow-x-auto rounded-lg border border-[#e6eef9]">
-        <table className="min-w-full divide-y divide-[#e6eef9] text-sm">
-          <thead className="bg-[#f7faff]">
-            <tr>
-              <th className="px-3 py-2 text-left text-xs font-bold uppercase tracking-[0.08em] text-[#5f7590]">Name</th>
-              <th className="px-3 py-2 text-left text-xs font-bold uppercase tracking-[0.08em] text-[#5f7590]">Email</th>
-              <th className="px-3 py-2 text-left text-xs font-bold uppercase tracking-[0.08em] text-[#5f7590]">Phone</th>
-              <th className="px-3 py-2 text-right text-xs font-bold uppercase tracking-[0.08em] text-[#5f7590]">Actions</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-[#eef4ff] bg-white">
-            {users.map((user) => {
-              const id = getId(user);
-              return (
-                <tr key={id || Math.random()}>
-                  <td className="px-3 py-2">{String(user.fullName || "-")}</td>
-                  <td className="px-3 py-2">{String(user.email || "-")}</td>
-                  <td className="px-3 py-2">{String(user.phone || "-")}</td>
-                  <td className="px-3 py-2 text-right">
-                    <div className="flex justify-end gap-2">
-                      <Link
-                        href={`/admin/users/${id}`}
-                        className="rounded border border-[#d8e5f8] px-2.5 py-1.5 text-xs font-bold uppercase tracking-[0.08em] text-[#1a2b44]"
-                      >
-                        View
-                      </Link>
-                      <Link
-                        href={`/admin/users/${id}/edit`}
-                        className="rounded bg-[#4A90E2] px-2.5 py-1.5 text-xs font-bold uppercase tracking-[0.08em] text-white"
-                      >
-                        Edit
-                      </Link>
-                      <button
-                        type="button"
-                        onClick={() => void onDelete(id)}
-                        className="rounded bg-[#b91c1c] px-2.5 py-1.5 text-xs font-bold uppercase tracking-[0.08em] text-white"
-                      >
-                        Delete
-                      </button>
-                    </div>
+      <section className="space-y-4 rounded-2xl border border-sky-100 bg-white p-5 shadow-[0_8px_24px_rgba(15,23,42,0.05)]">
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <div>
+            <p className="text-xs font-bold uppercase tracking-[0.12em] text-slate-500">Users</p>
+            <h3 className="text-2xl font-black tracking-tight text-slate-900">Manage Users</h3>
+          </div>
+          <div className="flex flex-wrap items-center gap-2">
+            <input
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              placeholder="Search user..."
+              className="h-10 rounded-lg border border-sky-100 bg-sky-50/30 px-3 text-sm outline-none focus:border-sky-300 focus:ring-4 focus:ring-sky-100"
+            />
+            <button
+              type="button"
+              onClick={() => void load(1, search)}
+              className="rounded-lg bg-sky-700 px-3 py-2 text-xs font-bold uppercase tracking-[0.08em] text-white transition hover:bg-sky-800"
+            >
+              Search
+            </button>
+          </div>
+        </div>
+
+        <div className="overflow-x-auto rounded-xl border border-sky-100">
+          <table className="min-w-full divide-y divide-sky-100 text-sm">
+            <thead className="bg-sky-50/60">
+              <tr>
+                <th className="px-3 py-2 text-left text-xs font-bold uppercase tracking-[0.08em] text-slate-500">Name</th>
+                <th className="px-3 py-2 text-left text-xs font-bold uppercase tracking-[0.08em] text-slate-500">Email</th>
+                <th className="px-3 py-2 text-left text-xs font-bold uppercase tracking-[0.08em] text-slate-500">Phone</th>
+                <th className="px-3 py-2 text-right text-xs font-bold uppercase tracking-[0.08em] text-slate-500">Actions</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-sky-50 bg-white">
+              {users.map((user) => {
+                const id = getId(user);
+                return (
+                  <tr key={id || Math.random()}>
+                    <td className="px-3 py-2 text-slate-700">{String(user.fullName || "-")}</td>
+                    <td className="px-3 py-2 text-slate-700">{String(user.email || "-")}</td>
+                    <td className="px-3 py-2 text-slate-700">{String(user.phone || "-")}</td>
+                    <td className="px-3 py-2 text-right">
+                      <div className="flex justify-end gap-2">
+                        <Link
+                          href={`/admin/users/${id}`}
+                          className="rounded-lg border border-sky-200 bg-white px-2.5 py-1.5 text-xs font-bold uppercase tracking-[0.08em] text-slate-700 transition hover:bg-sky-50"
+                        >
+                          View
+                        </Link>
+                        <Link
+                          href={`/admin/users/${id}/edit`}
+                          className="rounded-lg bg-sky-700 px-2.5 py-1.5 text-xs font-bold uppercase tracking-[0.08em] text-white transition hover:bg-sky-800"
+                        >
+                          Edit
+                        </Link>
+                        <button
+                          type="button"
+                          onClick={() => void onDelete(id)}
+                          className="rounded-lg bg-rose-700 px-2.5 py-1.5 text-xs font-bold uppercase tracking-[0.08em] text-white transition hover:bg-rose-800"
+                        >
+                          Delete
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                );
+              })}
+              {!users.length ? (
+                <tr>
+                  <td colSpan={4} className="px-3 py-6 text-center text-sm text-slate-500">
+                    No users found.
                   </td>
                 </tr>
-              );
-            })}
-            {!users.length ? (
-              <tr>
-                <td colSpan={4} className="px-3 py-6 text-center text-sm text-[#5f7590]">
-                  No users found.
-                </td>
-              </tr>
-            ) : null}
-          </tbody>
-        </table>
-      </div>
+              ) : null}
+            </tbody>
+          </table>
+        </div>
 
-      <div className="flex items-center justify-between">
-        <button
-          type="button"
-          disabled={page <= 1}
-          onClick={() => void load(page - 1, search)}
-          className="rounded border border-[#d8e5f8] px-3 py-1.5 text-xs font-bold uppercase tracking-[0.08em] text-[#1a2b44] disabled:opacity-40"
-        >
-          Prev
-        </button>
-        <p className="text-sm text-[#5f7590]">
-          Page {page} / {totalPages}
-        </p>
-        <button
-          type="button"
-          disabled={page >= totalPages}
-          onClick={() => void load(page + 1, search)}
-          className="rounded border border-[#d8e5f8] px-3 py-1.5 text-xs font-bold uppercase tracking-[0.08em] text-[#1a2b44] disabled:opacity-40"
-        >
-          Next
-        </button>
-      </div>
+        <div className="flex items-center justify-between">
+          <button
+            type="button"
+            disabled={page <= 1}
+            onClick={() => void load(page - 1, search)}
+            className="rounded-lg border border-sky-200 bg-white px-3 py-1.5 text-xs font-bold uppercase tracking-[0.08em] text-slate-700 transition hover:bg-sky-50 disabled:opacity-40"
+          >
+            Prev
+          </button>
+          <p className="text-sm text-slate-500">
+            Page {page} / {totalPages}
+          </p>
+          <button
+            type="button"
+            disabled={page >= totalPages}
+            onClick={() => void load(page + 1, search)}
+            className="rounded-lg border border-sky-200 bg-white px-3 py-1.5 text-xs font-bold uppercase tracking-[0.08em] text-slate-700 transition hover:bg-sky-50 disabled:opacity-40"
+          >
+            Next
+          </button>
+        </div>
 
-      {message ? <p className="text-sm text-[#b91c1c]">{message}</p> : null}
+        {message ? <p className="text-sm font-medium text-rose-700">{message}</p> : null}
+      </section>
     </div>
   );
 }
-

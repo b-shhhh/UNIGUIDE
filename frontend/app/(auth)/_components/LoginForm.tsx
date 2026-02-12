@@ -24,7 +24,6 @@ export default function LoginPage() {
       const response = await handleLogin({ email, password });
       if (!response.success) throw new Error(response.message);
 
-      // Set user in context
       setUser(response.data);
       const role =
         response.data && typeof response.data === "object" && "role" in response.data
@@ -39,58 +38,61 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="rounded-[16px] border border-[#dbe8fb] bg-white p-8 shadow-[0_14px_34px_rgba(74,144,226,0.18)]">
-      <h2 className="text-center text-3xl font-bold text-[#333333]">Welcome Back</h2>
-      <p className="mt-2 text-center text-sm text-[#666666]">Sign in to continue your university search</p>
+    <div className="rounded-3xl border border-sky-100 bg-white/95 p-6 shadow-[0_14px_34px_rgba(3,105,161,0.16)] sm:p-8">
+      <p className="inline-flex rounded-full border border-sky-200 bg-sky-50 px-3 py-1 text-[10px] font-bold uppercase tracking-[0.14em] text-sky-800">
+        Account Access
+      </p>
+      <h2 className="mt-4 text-3xl font-black tracking-tight text-slate-900">Welcome back</h2>
+      <p className="mt-2 text-sm text-slate-600">Sign in to continue your university search.</p>
 
       <form onSubmit={handleSubmit} className="mt-6 flex flex-col gap-4">
-          <div className="flex flex-col gap-1">
-            <label className="text-[11px] font-semibold uppercase tracking-[0.12em] text-[#666666]">Email Address</label>
-            <input
-              type="email"
-              placeholder="name@university.edu"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              required
-              className="h-11 w-full rounded-[8px] border border-[#c7d9f5] px-3 text-sm text-[#333333] outline-none focus:ring-2 focus:ring-[#4A90E2]/40"
-            />
-          </div>
+        <div className="flex flex-col gap-1.5">
+          <label className="text-[11px] font-semibold uppercase tracking-[0.12em] text-slate-600">Email Address</label>
+          <input
+            type="email"
+            placeholder="name@university.edu"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            required
+            className="h-12 w-full rounded-xl border border-sky-100 bg-sky-50/30 px-3 text-sm text-slate-900 outline-none transition focus:border-sky-300 focus:ring-4 focus:ring-sky-100"
+          />
+        </div>
 
-          <div className="flex flex-col gap-1">
-            <label className="text-[11px] font-semibold uppercase tracking-[0.12em] text-[#666666]">Password</label>
-            <input
-              type="password"
-              placeholder="********"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              required
-              className="h-11 w-full rounded-[8px] border border-[#c7d9f5] px-3 text-sm text-[#333333] outline-none focus:ring-2 focus:ring-[#4A90E2]/40"
-            />
-          </div>
+        <div className="flex flex-col gap-1.5">
+          <label className="text-[11px] font-semibold uppercase tracking-[0.12em] text-slate-600">Password</label>
+          <input
+            type="password"
+            placeholder="********"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            required
+            className="h-12 w-full rounded-xl border border-sky-100 bg-sky-50/30 px-3 text-sm text-slate-900 outline-none transition focus:border-sky-300 focus:ring-4 focus:ring-sky-100"
+          />
+        </div>
 
-          {error && <p className="text-xs font-medium text-red-600">{error}</p>}
+        {error && <p className="text-xs font-semibold text-rose-700">{error}</p>}
 
-          <button
-            type="submit"
-            disabled={loading}
-            className="mt-2 h-11 w-full rounded-[8px] bg-[#4A90E2] text-sm font-semibold uppercase tracking-[0.1em] text-white transition hover:bg-[#357ABD] disabled:opacity-50"
-          >
-            {loading ? "Signing In..." : "Sign In"}
-          </button>
+        <button
+          type="submit"
+          disabled={loading}
+          className="mt-2 h-12 w-full rounded-xl bg-sky-700 text-sm font-bold uppercase tracking-[0.1em] text-white transition hover:-translate-y-0.5 hover:bg-sky-800 disabled:cursor-not-allowed disabled:opacity-50"
+        >
+          {loading ? "Signing In..." : "Sign In"}
+        </button>
 
-          <div className="mt-1 text-center text-xs text-[#666666]">
-            <Link href="/forget-password" className="font-semibold uppercase text-[#4A90E2] hover:text-[#F5A623]">
-              Forgot password?
-            </Link>
-          </div>
+        <div className="mt-1 text-center text-xs text-slate-600">
+          <Link href="/forget-password" className="font-semibold uppercase tracking-wide text-sky-700 hover:text-sky-900">
+            Forgot password?
+          </Link>
+        </div>
 
-          <div className="mt-1 text-center text-xs text-[#666666]">
-            Don&apos;t have an account?{" "}
-            <Link href="/register" className="font-semibold uppercase text-[#4A90E2] hover:text-[#F5A623]">
-              Sign up
-            </Link>
-          </div>
-        </form>
+        <div className="mt-1 text-center text-xs text-slate-600">
+          Don&apos;t have an account?{" "}
+          <Link href="/register" className="font-semibold uppercase tracking-wide text-sky-700 hover:text-sky-900">
+            Sign up
+          </Link>
+        </div>
+      </form>
     </div>
   );
 }

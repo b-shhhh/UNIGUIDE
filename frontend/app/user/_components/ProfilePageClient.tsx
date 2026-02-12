@@ -47,7 +47,6 @@ const getAvatarUrl = (avatar: string) => {
   if (/^https?:\/\//i.test(avatar)) return avatar;
 
   const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || "http://127.0.0.1:5050";
-  // Handle old stored absolute filesystem paths by extracting `/uploads/...`.
   const normalized = avatar.replace(/\\/g, "/");
   const uploadsIndex = normalized.toLowerCase().lastIndexOf("/uploads/");
   const resolvedPath = uploadsIndex >= 0 ? normalized.slice(uploadsIndex) : normalized;
@@ -109,121 +108,152 @@ export default function ProfilePageClient({ user }: { user: UserRecord }) {
 
   return (
     <div className="mx-auto w-full max-w-6xl space-y-6">
-      <section className="rounded-[8px] border border-[#4A90E2]/20 bg-[linear-gradient(120deg,#4A90E2_0%,#357ABD_100%)] p-6 text-white sm:p-8">
-        <p className="text-xs font-bold uppercase tracking-[0.12em] text-[#e9f2ff]">Profile Settings</p>
-        <h1 className="mt-2 text-2xl font-bold sm:text-4xl">Manage your account</h1>
-        <p className="mt-3 text-sm text-[#eaf2ff]">Upload profile photo, update your details, change password, logout, or delete your account.</p>
+      <section className="relative overflow-hidden rounded-3xl border border-sky-200/70 bg-gradient-to-br from-sky-700 via-cyan-700 to-sky-900 p-6 text-white shadow-[0_14px_36px_rgba(3,105,161,0.25)] sm:p-8">
+        <div className="pointer-events-none absolute -right-16 -top-10 h-48 w-48 rounded-full bg-cyan-200/25 blur-3xl" />
+        <div className="relative">
+          <p className="text-xs font-bold uppercase tracking-[0.12em] text-sky-100">Profile Settings</p>
+          <h1 className="mt-2 text-2xl font-black tracking-tight sm:text-4xl">Manage your account</h1>
+          <p className="mt-3 max-w-3xl text-sm text-sky-100">
+            Update your details, upload profile photo, change password, and manage account actions from one dashboard.
+          </p>
+        </div>
       </section>
 
       <section className="grid gap-4 lg:grid-cols-3">
-        <article className="rounded-[8px] border border-[#d8e5f8] bg-white p-5 shadow-[0_4px_8px_rgba(0,0,0,0.08)]">
-          <h2 className="text-lg font-bold text-[#333333]">Current Profile</h2>
+        <article className="rounded-2xl border border-sky-100 bg-white p-5 shadow-[0_8px_24px_rgba(15,23,42,0.05)]">
+          <h2 className="text-lg font-extrabold tracking-tight text-slate-900">Current Profile</h2>
           <div className="mt-4 flex items-center gap-4">
-            <div className="h-16 w-16 overflow-hidden rounded-full border border-[#1a2b44]/10 bg-[#eef4ff]">
+            <div className="h-16 w-16 overflow-hidden rounded-full border border-sky-200 bg-sky-50">
               {avatarUrl ? (
                 <img src={avatarUrl} alt="Profile image" className="h-full w-full object-cover" />
               ) : (
-                <div className="flex h-full w-full items-center justify-center text-xs font-bold text-[#666666]">No Photo</div>
+                <div className="flex h-full w-full items-center justify-center text-xs font-bold text-slate-500">No Photo</div>
               )}
             </div>
             <div>
-              <p className="font-semibold text-[#333333]">{displayName}</p>
-              <p className="text-sm text-[#666666]">{email || "No email available"}</p>
+              <p className="font-semibold text-slate-900">{displayName}</p>
+              <p className="text-sm text-slate-600">{email || "No email available"}</p>
             </div>
           </div>
-          <div className="mt-4 space-y-1 text-sm text-[#666666]">
+          <div className="mt-4 space-y-1 text-sm text-slate-600">
             <p>Phone: {phone || "Not set"}</p>
           </div>
-          {bio ? <p className="mt-4 text-sm text-[#666666]">{bio}</p> : null}
+          {bio ? <p className="mt-4 rounded-xl border border-sky-100 bg-sky-50/40 p-3 text-sm text-slate-700">{bio}</p> : null}
         </article>
 
-        <article className="rounded-[8px] border border-[#d8e5f8] bg-white p-5 shadow-[0_4px_8px_rgba(0,0,0,0.08)] lg:col-span-2">
+        <article className="rounded-2xl border border-sky-100 bg-white p-5 shadow-[0_8px_24px_rgba(15,23,42,0.05)] lg:col-span-2">
           <div className="mb-3 flex items-center justify-between">
-            <h2 className="text-lg font-bold text-[#333333]">Edit Info & Upload Picture</h2>
-            <Link href="/homepage" className="text-xs font-bold uppercase tracking-[0.08em] text-[#4A90E2] hover:text-[#F5A623]">
+            <h2 className="text-lg font-extrabold tracking-tight text-slate-900">Edit Info & Upload Picture</h2>
+            <Link href="/homepage" className="text-xs font-bold uppercase tracking-[0.08em] text-sky-700 hover:text-sky-900">
               Back to dashboard
             </Link>
           </div>
           <form action={profileFormAction} className="grid gap-3 sm:grid-cols-2">
-            <label className="text-sm font-semibold text-[#1a2b44]">
+            <label className="text-sm font-semibold text-slate-700">
               Full Name
               <input
                 name="fullName"
                 defaultValue={displayName === "User" ? "" : displayName}
-                className="mt-1 w-full rounded-lg border border-[#1a2b44]/20 px-3 py-2 text-sm"
+                className="mt-1 h-11 w-full rounded-xl border border-sky-100 bg-sky-50/30 px-3 text-sm outline-none transition focus:border-sky-300 focus:ring-4 focus:ring-sky-100"
               />
             </label>
-            <label className="text-sm font-semibold text-[#1a2b44]">
+            <label className="text-sm font-semibold text-slate-700">
               Email
-              <input name="email" type="email" defaultValue={email} className="mt-1 w-full rounded-lg border border-[#1a2b44]/20 px-3 py-2 text-sm" />
+              <input
+                name="email"
+                type="email"
+                defaultValue={email}
+                className="mt-1 h-11 w-full rounded-xl border border-sky-100 bg-sky-50/30 px-3 text-sm outline-none transition focus:border-sky-300 focus:ring-4 focus:ring-sky-100"
+              />
             </label>
-            <label className="text-sm font-semibold text-[#1a2b44]">
+            <label className="text-sm font-semibold text-slate-700">
               Phone
-              <input name="phone" defaultValue={phone} className="mt-1 w-full rounded-lg border border-[#1a2b44]/20 px-3 py-2 text-sm" />
+              <input
+                name="phone"
+                defaultValue={phone}
+                className="mt-1 h-11 w-full rounded-xl border border-sky-100 bg-sky-50/30 px-3 text-sm outline-none transition focus:border-sky-300 focus:ring-4 focus:ring-sky-100"
+              />
             </label>
-            <label className="text-sm font-semibold text-[#1a2b44] sm:col-span-2">
+            <label className="text-sm font-semibold text-slate-700 sm:col-span-2">
               Bio
-              <textarea name="bio" defaultValue={bio} rows={3} className="mt-1 w-full rounded-lg border border-[#1a2b44]/20 px-3 py-2 text-sm" />
+              <textarea
+                name="bio"
+                defaultValue={bio}
+                rows={3}
+                className="mt-1 w-full rounded-xl border border-sky-100 bg-sky-50/30 px-3 py-2 text-sm outline-none transition focus:border-sky-300 focus:ring-4 focus:ring-sky-100"
+              />
             </label>
-            <label className="text-sm font-semibold text-[#1a2b44] sm:col-span-2">
+            <label className="text-sm font-semibold text-slate-700 sm:col-span-2">
               Upload Profile Picture
               <input
                 name="profileImage"
                 type="file"
                 accept="image/*"
-                className="mt-1 block w-full rounded-lg border border-[#1a2b44]/20 px-3 py-2 text-sm"
+                className="mt-1 block h-11 w-full rounded-xl border border-sky-100 bg-sky-50/30 px-3 py-2 text-sm outline-none file:mr-3 file:rounded-lg file:border-0 file:bg-sky-100 file:px-2.5 file:py-1 file:text-xs file:font-semibold file:text-sky-800"
               />
             </label>
             <div className="sm:col-span-2">
               <button
                 type="submit"
                 disabled={profilePending}
-                className="rounded-[8px] bg-[#4A90E2] px-4 py-2 text-sm font-bold uppercase tracking-[0.08em] text-white hover:bg-[#357ABD] disabled:opacity-50"
+                className="rounded-xl bg-sky-700 px-4 py-2.5 text-sm font-bold uppercase tracking-[0.08em] text-white transition hover:bg-sky-800 disabled:opacity-50"
               >
                 {profilePending ? "Saving..." : "Save profile"}
               </button>
             </div>
           </form>
           {profileState.message ? (
-            <p className={`mt-3 text-sm ${profileState.success ? "text-[#0f766e]" : "text-[#b91c1c]"}`}>{profileState.message}</p>
+            <p className={`mt-3 text-sm font-medium ${profileState.success ? "text-teal-700" : "text-rose-700"}`}>{profileState.message}</p>
           ) : null}
         </article>
       </section>
 
       <section className="grid gap-4 lg:grid-cols-2">
-        <article className="rounded-[8px] border border-[#d8e5f8] bg-white p-5 shadow-[0_4px_8px_rgba(0,0,0,0.08)]">
-          <h2 className="text-lg font-bold text-[#333333]">Change Password</h2>
+        <article className="rounded-2xl border border-sky-100 bg-white p-5 shadow-[0_8px_24px_rgba(15,23,42,0.05)]">
+          <h2 className="text-lg font-extrabold tracking-tight text-slate-900">Change Password</h2>
           <form action={passwordFormAction} className="mt-3 space-y-3">
-            <label className="block text-sm font-semibold text-[#1a2b44]">
+            <label className="block text-sm font-semibold text-slate-700">
               Current Password
-              <input name="currentPassword" type="password" className="mt-1 w-full rounded-lg border border-[#1a2b44]/20 px-3 py-2 text-sm" />
+              <input
+                name="currentPassword"
+                type="password"
+                className="mt-1 h-11 w-full rounded-xl border border-sky-100 bg-sky-50/30 px-3 text-sm outline-none transition focus:border-sky-300 focus:ring-4 focus:ring-sky-100"
+              />
             </label>
-            <label className="block text-sm font-semibold text-[#1a2b44]">
+            <label className="block text-sm font-semibold text-slate-700">
               New Password
-              <input name="newPassword" type="password" className="mt-1 w-full rounded-lg border border-[#1a2b44]/20 px-3 py-2 text-sm" />
+              <input
+                name="newPassword"
+                type="password"
+                className="mt-1 h-11 w-full rounded-xl border border-sky-100 bg-sky-50/30 px-3 text-sm outline-none transition focus:border-sky-300 focus:ring-4 focus:ring-sky-100"
+              />
             </label>
-            <label className="block text-sm font-semibold text-[#1a2b44]">
+            <label className="block text-sm font-semibold text-slate-700">
               Confirm Password
-              <input name="confirmPassword" type="password" className="mt-1 w-full rounded-lg border border-[#1a2b44]/20 px-3 py-2 text-sm" />
+              <input
+                name="confirmPassword"
+                type="password"
+                className="mt-1 h-11 w-full rounded-xl border border-sky-100 bg-sky-50/30 px-3 text-sm outline-none transition focus:border-sky-300 focus:ring-4 focus:ring-sky-100"
+              />
             </label>
             <button
               type="submit"
               disabled={passwordPending}
-              className="rounded-[8px] bg-[#4A90E2] px-4 py-2 text-sm font-bold uppercase tracking-[0.08em] text-white hover:bg-[#357ABD] disabled:opacity-50"
+              className="rounded-xl bg-sky-700 px-4 py-2.5 text-sm font-bold uppercase tracking-[0.08em] text-white transition hover:bg-sky-800 disabled:opacity-50"
             >
               {passwordPending ? "Updating..." : "Change password"}
             </button>
           </form>
           {passwordState.message ? (
-            <p className={`mt-3 text-sm ${passwordState.success ? "text-[#0f766e]" : "text-[#b91c1c]"}`}>{passwordState.message}</p>
+            <p className={`mt-3 text-sm font-medium ${passwordState.success ? "text-teal-700" : "text-rose-700"}`}>{passwordState.message}</p>
           ) : null}
         </article>
 
-        <article className="rounded-[8px] border border-[#f7c99b]/40 bg-white p-5 shadow-[0_4px_8px_rgba(0,0,0,0.08)]">
-          <h2 className="text-lg font-bold text-[#333333]">Account Actions</h2>
+        <article className="rounded-2xl border border-amber-200 bg-white p-5 shadow-[0_8px_24px_rgba(15,23,42,0.05)]">
+          <h2 className="text-lg font-extrabold tracking-tight text-slate-900">Account Actions</h2>
           <div className="mt-3 flex flex-wrap gap-2">
             <form action={handleLogout}>
-              <button type="submit" className="rounded-[8px] bg-[#4A90E2] px-4 py-2 text-sm font-bold uppercase tracking-[0.08em] text-white hover:bg-[#357ABD]">
+              <button type="submit" className="rounded-xl bg-sky-700 px-4 py-2.5 text-sm font-bold uppercase tracking-[0.08em] text-white transition hover:bg-sky-800">
                 Logout
               </button>
             </form>
@@ -241,13 +271,13 @@ export default function ProfilePageClient({ user }: { user: UserRecord }) {
             <button
               type="submit"
               disabled={deletePending}
-              className="rounded-lg bg-[#b91c1c] px-4 py-2 text-sm font-bold uppercase tracking-[0.08em] text-white disabled:opacity-50"
+              className="rounded-xl bg-rose-700 px-4 py-2.5 text-sm font-bold uppercase tracking-[0.08em] text-white transition hover:bg-rose-800 disabled:opacity-50"
             >
               {deletePending ? "Deleting..." : "Delete Account"}
             </button>
           </form>
           {deleteState.message ? (
-            <p className={`mt-3 text-sm ${deleteState.success ? "text-[#0f766e]" : "text-[#b91c1c]"}`}>{deleteState.message}</p>
+            <p className={`mt-3 text-sm font-medium ${deleteState.success ? "text-teal-700" : "text-rose-700"}`}>{deleteState.message}</p>
           ) : null}
         </article>
       </section>

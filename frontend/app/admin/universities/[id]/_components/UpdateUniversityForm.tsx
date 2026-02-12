@@ -74,31 +74,31 @@ export default function UpdateUniversityForm({ universityId }: { universityId: s
 
   return (
     <form onSubmit={onSubmit} className="grid gap-3 sm:grid-cols-2">
-      <label className="text-xs font-bold uppercase tracking-[0.08em] text-[#5f7590]">
+      <label className="text-xs font-bold uppercase tracking-[0.08em] text-slate-500">
         Name
-        <input name="name" defaultValue={initial.name} className="mt-1 h-10 w-full rounded-lg border border-[#c7d9f5] px-3 text-sm" />
+        <input name="name" defaultValue={initial.name} className="mt-1 h-10 w-full rounded-lg border border-sky-100 bg-sky-50/30 px-3 text-sm outline-none focus:border-sky-300 focus:ring-4 focus:ring-sky-100" />
       </label>
-      <label className="text-xs font-bold uppercase tracking-[0.08em] text-[#5f7590]">
+      <label className="text-xs font-bold uppercase tracking-[0.08em] text-slate-500">
         Country
-        <input name="country" defaultValue={initial.country} className="mt-1 h-10 w-full rounded-lg border border-[#c7d9f5] px-3 text-sm" />
+        <input name="country" defaultValue={initial.country} className="mt-1 h-10 w-full rounded-lg border border-sky-100 bg-sky-50/30 px-3 text-sm outline-none focus:border-sky-300 focus:ring-4 focus:ring-sky-100" />
       </label>
-      <label className="text-xs font-bold uppercase tracking-[0.08em] text-[#5f7590] sm:col-span-2">
+      <label className="text-xs font-bold uppercase tracking-[0.08em] text-slate-500 sm:col-span-2">
         Courses
-        <input name="courses" defaultValue={initial.courses} className="mt-1 h-10 w-full rounded-lg border border-[#c7d9f5] px-3 text-sm" />
+        <input name="courses" defaultValue={initial.courses} className="mt-1 h-10 w-full rounded-lg border border-sky-100 bg-sky-50/30 px-3 text-sm outline-none focus:border-sky-300 focus:ring-4 focus:ring-sky-100" />
       </label>
-      <label className="text-xs font-bold uppercase tracking-[0.08em] text-[#5f7590] sm:col-span-2">
+      <label className="text-xs font-bold uppercase tracking-[0.08em] text-slate-500 sm:col-span-2">
         Description
-        <textarea name="description" defaultValue={initial.description} rows={3} className="mt-1 w-full rounded-lg border border-[#c7d9f5] px-3 py-2 text-sm" />
+        <textarea name="description" defaultValue={initial.description} rows={3} className="mt-1 w-full rounded-lg border border-sky-100 bg-sky-50/30 px-3 py-2 text-sm outline-none focus:border-sky-300 focus:ring-4 focus:ring-sky-100" />
       </label>
       <div className="sm:col-span-2 flex gap-2">
-        <button type="submit" className="rounded-lg bg-[#4A90E2] px-3 py-2 text-xs font-bold uppercase tracking-[0.08em] text-white">
+        <button type="submit" className="rounded-lg bg-sky-700 px-3 py-2 text-xs font-bold uppercase tracking-[0.08em] text-white transition hover:bg-sky-800">
           {loading ? "Updating..." : "Update University"}
         </button>
-        <button type="button" onClick={onDelete} className="rounded-lg bg-[#b91c1c] px-3 py-2 text-xs font-bold uppercase tracking-[0.08em] text-white">
+        <button type="button" onClick={onDelete} className="rounded-lg bg-rose-700 px-3 py-2 text-xs font-bold uppercase tracking-[0.08em] text-white transition hover:bg-rose-800">
           Delete
         </button>
       </div>
-      {message ? <p className="sm:col-span-2 text-sm text-[#5f7590]">{message}</p> : null}
+      {message ? <p className="sm:col-span-2 text-sm font-medium text-slate-600">{message}</p> : null}
     </form>
   );
 }

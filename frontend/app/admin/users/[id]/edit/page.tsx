@@ -63,52 +63,51 @@ export default function AdminEditUserPage() {
   };
 
   if (loading) {
-    return <div className="rounded-xl border border-[#d8e5f8] bg-white p-5 text-sm text-[#5f7590]">Loading user...</div>;
+    return <div className="rounded-2xl border border-sky-100 bg-white p-5 text-sm text-slate-500 shadow-[0_8px_24px_rgba(15,23,42,0.05)]">Loading user...</div>;
   }
 
   return (
-    <div className="space-y-4 rounded-xl border border-[#d8e5f8] bg-white p-5">
-      <p className="text-xs font-bold uppercase tracking-[0.12em] text-[#5f7590]">Edit</p>
-      <h2 className="text-2xl font-bold text-[#1a2b44]">Edit User</h2>
+    <div className="space-y-4 rounded-2xl border border-sky-100 bg-white p-5 shadow-[0_8px_24px_rgba(15,23,42,0.05)]">
+      <p className="text-xs font-bold uppercase tracking-[0.12em] text-slate-500">Edit</p>
+      <h2 className="text-2xl font-black tracking-tight text-slate-900">Edit User</h2>
       <form onSubmit={onSubmit} className="grid gap-3 sm:grid-cols-2">
-        <label className="text-xs font-bold uppercase tracking-[0.08em] text-[#5f7590]">
+        <label className="text-xs font-bold uppercase tracking-[0.08em] text-slate-500">
           Full Name
-          <input value={form.fullName} onChange={(e) => setForm((p) => ({ ...p, fullName: e.target.value }))} className="mt-1 h-10 w-full rounded-lg border border-[#c7d9f5] px-3 text-sm" />
+          <input value={form.fullName} onChange={(e) => setForm((p) => ({ ...p, fullName: e.target.value }))} className="mt-1 h-10 w-full rounded-lg border border-sky-100 bg-sky-50/30 px-3 text-sm outline-none focus:border-sky-300 focus:ring-4 focus:ring-sky-100" />
         </label>
-        <label className="text-xs font-bold uppercase tracking-[0.08em] text-[#5f7590]">
+        <label className="text-xs font-bold uppercase tracking-[0.08em] text-slate-500">
           Email
-          <input value={form.email} onChange={(e) => setForm((p) => ({ ...p, email: e.target.value }))} className="mt-1 h-10 w-full rounded-lg border border-[#c7d9f5] px-3 text-sm" />
+          <input value={form.email} onChange={(e) => setForm((p) => ({ ...p, email: e.target.value }))} className="mt-1 h-10 w-full rounded-lg border border-sky-100 bg-sky-50/30 px-3 text-sm outline-none focus:border-sky-300 focus:ring-4 focus:ring-sky-100" />
         </label>
-        <label className="text-xs font-bold uppercase tracking-[0.08em] text-[#5f7590]">
+        <label className="text-xs font-bold uppercase tracking-[0.08em] text-slate-500">
           Phone
-          <input value={form.phone} onChange={(e) => setForm((p) => ({ ...p, phone: e.target.value }))} className="mt-1 h-10 w-full rounded-lg border border-[#c7d9f5] px-3 text-sm" />
+          <input value={form.phone} onChange={(e) => setForm((p) => ({ ...p, phone: e.target.value }))} className="mt-1 h-10 w-full rounded-lg border border-sky-100 bg-sky-50/30 px-3 text-sm outline-none focus:border-sky-300 focus:ring-4 focus:ring-sky-100" />
         </label>
-        <label className="text-xs font-bold uppercase tracking-[0.08em] text-[#5f7590]">
+        <label className="text-xs font-bold uppercase tracking-[0.08em] text-slate-500">
           Role
-          <select value={form.role} onChange={(e) => setForm((p) => ({ ...p, role: e.target.value }))} className="mt-1 h-10 w-full rounded-lg border border-[#c7d9f5] px-3 text-sm">
+          <select value={form.role} onChange={(e) => setForm((p) => ({ ...p, role: e.target.value }))} className="mt-1 h-10 w-full rounded-lg border border-sky-100 bg-sky-50/30 px-3 text-sm outline-none focus:border-sky-300 focus:ring-4 focus:ring-sky-100">
             <option value="user">user</option>
             <option value="admin">admin</option>
           </select>
         </label>
-        <label className="text-xs font-bold uppercase tracking-[0.08em] text-[#5f7590]">
+        <label className="text-xs font-bold uppercase tracking-[0.08em] text-slate-500">
           Country
-          <input value={form.country} onChange={(e) => setForm((p) => ({ ...p, country: e.target.value }))} className="mt-1 h-10 w-full rounded-lg border border-[#c7d9f5] px-3 text-sm" />
+          <input value={form.country} onChange={(e) => setForm((p) => ({ ...p, country: e.target.value }))} className="mt-1 h-10 w-full rounded-lg border border-sky-100 bg-sky-50/30 px-3 text-sm outline-none focus:border-sky-300 focus:ring-4 focus:ring-sky-100" />
         </label>
-        <label className="text-xs font-bold uppercase tracking-[0.08em] text-[#5f7590] sm:col-span-2">
+        <label className="text-xs font-bold uppercase tracking-[0.08em] text-slate-500 sm:col-span-2">
           Bio
-          <textarea value={form.bio} onChange={(e) => setForm((p) => ({ ...p, bio: e.target.value }))} rows={3} className="mt-1 w-full rounded-lg border border-[#c7d9f5] px-3 py-2 text-sm" />
+          <textarea value={form.bio} onChange={(e) => setForm((p) => ({ ...p, bio: e.target.value }))} rows={3} className="mt-1 w-full rounded-lg border border-sky-100 bg-sky-50/30 px-3 py-2 text-sm outline-none focus:border-sky-300 focus:ring-4 focus:ring-sky-100" />
         </label>
         <div className="sm:col-span-2 flex items-center gap-2">
-          <button type="submit" disabled={saving} className="rounded-lg bg-[#4A90E2] px-3 py-2 text-xs font-bold uppercase tracking-[0.08em] text-white disabled:opacity-50">
+          <button type="submit" disabled={saving} className="rounded-lg bg-sky-700 px-3 py-2 text-xs font-bold uppercase tracking-[0.08em] text-white transition hover:bg-sky-800 disabled:opacity-50">
             {saving ? "Saving..." : "Save Changes"}
           </button>
-          <Link href={`/admin/users/${id}`} className="text-sm font-semibold text-[#4A90E2]">
+          <Link href={`/admin/users/${id}`} className="text-sm font-semibold text-sky-700 hover:text-sky-900">
             Cancel
           </Link>
         </div>
       </form>
-      {message ? <p className="text-sm text-[#b91c1c]">{message}</p> : null}
+      {message ? <p className="text-sm font-medium text-rose-700">{message}</p> : null}
     </div>
   );
 }
-

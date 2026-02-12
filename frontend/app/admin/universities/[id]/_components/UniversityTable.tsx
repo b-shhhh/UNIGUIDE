@@ -11,40 +11,40 @@ type Row = {
 
 export default function UniversityTable({ rows, onDelete }: { rows: Row[]; onDelete: (id: string) => Promise<void> }) {
   return (
-    <div className="overflow-x-auto rounded-lg border border-[#e6eef9]">
-      <table className="min-w-full divide-y divide-[#e6eef9] text-sm">
-        <thead className="bg-[#f7faff]">
+    <div className="overflow-x-auto rounded-xl border border-sky-100">
+      <table className="min-w-full divide-y divide-sky-100 text-sm">
+        <thead className="bg-sky-50/60">
           <tr>
-            <th className="px-3 py-2 text-left text-xs font-bold uppercase tracking-[0.08em] text-[#5f7590]">Name</th>
-            <th className="px-3 py-2 text-left text-xs font-bold uppercase tracking-[0.08em] text-[#5f7590]">Country</th>
-            <th className="px-3 py-2 text-left text-xs font-bold uppercase tracking-[0.08em] text-[#5f7590]">Courses</th>
-            <th className="px-3 py-2 text-right text-xs font-bold uppercase tracking-[0.08em] text-[#5f7590]">Actions</th>
+            <th className="px-3 py-2 text-left text-xs font-bold uppercase tracking-[0.08em] text-slate-500">Name</th>
+            <th className="px-3 py-2 text-left text-xs font-bold uppercase tracking-[0.08em] text-slate-500">Country</th>
+            <th className="px-3 py-2 text-left text-xs font-bold uppercase tracking-[0.08em] text-slate-500">Courses</th>
+            <th className="px-3 py-2 text-right text-xs font-bold uppercase tracking-[0.08em] text-slate-500">Actions</th>
           </tr>
         </thead>
-        <tbody className="divide-y divide-[#eef4ff] bg-white">
+        <tbody className="divide-y divide-sky-50 bg-white">
           {rows.map((row) => (
             <tr key={row.id}>
-              <td className="px-3 py-2 text-[#1a2b44]">{row.name}</td>
-              <td className="px-3 py-2 text-[#1a2b44]">{row.country}</td>
-              <td className="px-3 py-2 text-[#1a2b44]">{row.courses}</td>
+              <td className="px-3 py-2 text-slate-700">{row.name}</td>
+              <td className="px-3 py-2 text-slate-700">{row.country}</td>
+              <td className="px-3 py-2 text-slate-700">{row.courses}</td>
               <td className="px-3 py-2 text-right">
                 <div className="flex justify-end gap-2">
                   <Link
                     href={`/admin/universities/${row.id}`}
-                    className="rounded border border-[#d8e5f8] px-2.5 py-1.5 text-xs font-bold uppercase tracking-[0.08em] text-[#1a2b44]"
+                    className="rounded-lg border border-sky-200 bg-white px-2.5 py-1.5 text-xs font-bold uppercase tracking-[0.08em] text-slate-700 transition hover:bg-sky-50"
                   >
                     View
                   </Link>
                   <Link
                     href={`/admin/universities/${row.id}`}
-                    className="rounded bg-[#4A90E2] px-2.5 py-1.5 text-xs font-bold uppercase tracking-[0.08em] text-white"
+                    className="rounded-lg bg-sky-700 px-2.5 py-1.5 text-xs font-bold uppercase tracking-[0.08em] text-white transition hover:bg-sky-800"
                   >
                     Edit
                   </Link>
                   <button
                     type="button"
                     onClick={() => void onDelete(row.id)}
-                    className="rounded bg-[#b91c1c] px-2.5 py-1.5 text-xs font-bold uppercase tracking-[0.08em] text-white"
+                    className="rounded-lg bg-rose-700 px-2.5 py-1.5 text-xs font-bold uppercase tracking-[0.08em] text-white transition hover:bg-rose-800"
                   >
                     Delete
                   </button>
@@ -54,7 +54,7 @@ export default function UniversityTable({ rows, onDelete }: { rows: Row[]; onDel
           ))}
           {!rows.length ? (
             <tr>
-              <td colSpan={4} className="px-3 py-6 text-center text-sm text-[#5f7590]">
+              <td colSpan={4} className="px-3 py-6 text-center text-sm text-slate-500">
                 No universities found.
               </td>
             </tr>

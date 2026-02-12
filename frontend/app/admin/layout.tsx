@@ -16,12 +16,17 @@ export default async function AdminLayout({ children }: { children: ReactNode })
   }
 
   return (
-    <div className="min-h-screen bg-[#f6f9ff] text-[#1a2b44]">
+    <div className="flex min-h-screen flex-col bg-[#f6f9ff] text-[#1a2b44]">
       <Header />
-      <main className="mx-auto grid w-full max-w-7xl gap-4 px-4 py-6 sm:px-6 lg:grid-cols-[220px_minmax(0,1fr)] lg:px-8">
+      <main className="mx-auto grid w-full max-w-7xl flex-1 gap-4 px-4 py-6 sm:px-6 lg:grid-cols-[220px_minmax(0,1fr)] lg:px-8">
         <Sidebar />
         <section className="min-w-0">{children}</section>
       </main>
+      <footer className="border-t border-sky-200/70 bg-white/80 backdrop-blur-sm">
+        <div className="mx-auto w-full max-w-7xl px-4 py-5 text-xs text-slate-600 sm:px-6 lg:px-8">
+          <p>&copy; {new Date().getFullYear()} UniGuide Admin. All rights reserved.</p>
+        </div>
+      </footer>
     </div>
   );
 }
