@@ -9,58 +9,100 @@ export default function LandingPage() {
 
   return (
     <main
-      className="relative flex min-h-screen items-center justify-center overflow-hidden bg-[linear-gradient(130deg,#e0f2fe_0%,#dbeafe_40%,#bfdbfe_100%)] px-4 py-10 text-slate-900"
+      className="relative isolate min-h-screen overflow-hidden bg-[#f3f7fb] px-4 py-8 text-slate-900 sm:px-6 sm:py-12"
       style={{ fontFamily: '"Manrope", "Segoe UI", sans-serif' }}
     >
+      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_8%_10%,rgba(14,165,233,0.2),transparent_35%),radial-gradient(circle_at_86%_85%,rgba(2,132,199,0.16),transparent_40%),linear-gradient(135deg,#f8fbff_0%,#eef6ff_45%,#e6f1ff_100%)]" />
+      <div className="pointer-events-none absolute inset-0 opacity-40 [background-image:linear-gradient(rgba(14,116,144,0.08)_1px,transparent_1px),linear-gradient(90deg,rgba(14,116,144,0.08)_1px,transparent_1px)] [background-size:42px_42px]" />
+      <div className="pointer-events-none absolute -left-24 top-24 h-64 w-64 rounded-full bg-cyan-300/40 blur-3xl" />
+      <div className="pointer-events-none absolute -right-24 bottom-12 h-72 w-72 rounded-full bg-sky-300/40 blur-3xl" />
 
-      <div className="pointer-events-none absolute -left-20 top-8 h-64 w-64 rounded-full bg-blue-300/40 blur-3xl" />
-      <div className="pointer-events-none absolute -right-24 bottom-0 h-72 w-72 rounded-full bg-sky-300/40 blur-3xl" />
-
-      <section className="relative w-full max-w-3xl rounded-3xl border border-blue-200/80 bg-white/90 p-8 text-center shadow-[0_20px_70px_rgba(37,99,235,0.22)] backdrop-blur-sm sm:p-12">
+      <section className="relative mx-auto grid w-full max-w-6xl gap-6 rounded-[2rem] border border-sky-100/80 bg-white/85 p-6 shadow-[0_22px_70px_rgba(3,105,161,0.17)] backdrop-blur-sm sm:p-10 lg:grid-cols-[1.15fr_0.85fr] lg:gap-10">
         {accountDeleted ? (
-          <div className="mb-5 rounded-xl border border-blue-200 bg-blue-50 px-4 py-3 text-sm font-semibold text-blue-900">
+          <div className="rounded-xl border border-cyan-200 bg-cyan-50 px-4 py-3 text-sm font-semibold text-cyan-900 lg:col-span-2">
             Account has been deleted successfully.
           </div>
         ) : null}
 
-        <div className="mx-auto mb-4 grid h-20 w-20 place-items-center rounded-2xl bg-blue-600/95 shadow-lg shadow-blue-700/30 cap-float">
-          <svg viewBox="0 0 64 64" className="h-11 w-11" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-            <path d="M4 24L32 12L60 24L32 36L4 24Z" fill="#EFF6FF" />
-            <path d="M16 31V40C16 45 23 50 32 50C41 50 48 45 48 40V31" stroke="#EFF6FF" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" />
-            <path d="M52 29V43" stroke="#EFF6FF" strokeWidth="3" strokeLinecap="round" className="cap-tassel" />
-            <circle cx="52" cy="46" r="3" fill="#DBEAFE" className="cap-tassel" />
-          </svg>
+        <div className="flex flex-col justify-between">
+          <div>
+            <p className="inline-flex rounded-full border border-sky-200 bg-white px-3 py-1 text-xs font-bold uppercase tracking-[0.14em] text-sky-800">
+              Student Platform
+            </p>
+
+            <h1
+              className="mt-4 max-w-xl text-4xl font-black leading-tight tracking-tight text-sky-950 sm:text-5xl"
+              style={{ fontFamily: '"Sora", "Trebuchet MS", sans-serif' }}
+            >
+              UniGuide makes university search feel clear, not chaotic.
+            </h1>
+
+            <p className="mt-5 max-w-2xl text-base leading-relaxed text-slate-700 sm:text-lg">
+              Compare universities, tuition, and study modes in one place. Build your shortlist faster and apply with confidence.
+            </p>
+          </div>
+
+          <div className="mt-7 flex flex-col items-start gap-3 sm:flex-row sm:items-center">
+            <Link
+              href="/register"
+              className="inline-flex min-w-[160px] items-center justify-center rounded-xl bg-sky-700 px-6 py-3 text-sm font-bold text-white transition hover:-translate-y-0.5 hover:bg-sky-800"
+            >
+              Get Started
+            </Link>
+            <Link
+              href="/login"
+              className="inline-flex min-w-[160px] items-center justify-center rounded-xl border border-sky-200 bg-sky-50 px-6 py-3 text-sm font-bold text-sky-900 transition hover:-translate-y-0.5 hover:bg-sky-100"
+            >
+              Login
+            </Link>
+          </div>
+
+          <div className="mt-7 grid max-w-xl grid-cols-3 gap-3">
+            <div className="rounded-2xl border border-sky-100 bg-white/95 px-4 py-3">
+              <p className="text-2xl font-extrabold text-sky-950">1000+</p>
+              <p className="mt-1 text-xs font-semibold uppercase tracking-wide text-slate-500">Universities</p>
+            </div>
+            <div className="rounded-2xl border border-sky-100 bg-white/95 px-4 py-3">
+              <p className="text-2xl font-extrabold text-sky-950">60+</p>
+              <p className="mt-1 text-xs font-semibold uppercase tracking-wide text-slate-500">Countries</p>
+            </div>
+            <div className="rounded-2xl border border-sky-100 bg-white/95 px-4 py-3">
+              <p className="text-2xl font-extrabold text-sky-950">24/7</p>
+              <p className="mt-1 text-xs font-semibold uppercase tracking-wide text-slate-500">Access</p>
+            </div>
+          </div>
         </div>
 
-        <p className="inline-flex rounded-full border border-blue-200 bg-blue-50 px-3 py-1 text-xs font-bold uppercase tracking-[0.16em] text-blue-800">
-          Student Platform
-        </p>
+        <div className="relative rounded-3xl border border-sky-100 bg-gradient-to-br from-sky-700 via-cyan-700 to-sky-900 p-[1px] shadow-[0_14px_34px_rgba(3,105,161,0.28)]">
+          <div className="h-full rounded-[calc(1.5rem-1px)] bg-white p-5 sm:p-6">
+            <div className="mb-4 inline-flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br from-sky-600 to-cyan-700 shadow-lg shadow-sky-700/25 cap-float">
+              <svg viewBox="0 0 64 64" className="h-8 w-8" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                <path d="M4 24L32 12L60 24L32 36L4 24Z" fill="#EFF6FF" />
+                <path d="M16 31V40C16 45 23 50 32 50C41 50 48 45 48 40V31" stroke="#EFF6FF" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" />
+                <path d="M52 29V43" stroke="#EFF6FF" strokeWidth="3" strokeLinecap="round" className="cap-tassel" />
+                <circle cx="52" cy="46" r="3" fill="#DBEAFE" className="cap-tassel" />
+              </svg>
+            </div>
 
-        <h1
-          className="mt-5 text-4xl font-black tracking-tight text-blue-950 sm:text-5xl"
-          style={{ fontFamily: '"Sora", "Trebuchet MS", sans-serif' }}
-        >
-          UniGuide
-        </h1>
+            <h2 className="text-2xl font-extrabold tracking-tight text-slate-900" style={{ fontFamily: '"Sora", "Trebuchet MS", sans-serif' }}>
+              Why students choose UniGuide
+            </h2>
 
-        <p className="mx-auto mt-5 max-w-2xl text-base leading-relaxed text-slate-700 sm:text-lg">
-          UniGuide helps students discover and compare universities worldwide. Explore programs, review tuition and study
-          modes, and move forward with confidence in your higher education journey.
-        </p>
-
-        <div className="mt-9 flex flex-col items-center justify-center gap-3 sm:flex-row">
-          <Link
-            href="/login"
-            className="inline-flex min-w-[150px] items-center justify-center rounded-xl bg-blue-700 px-6 py-3 text-sm font-bold text-white transition hover:-translate-y-0.5 hover:bg-blue-800"
-          >
-            Login
-          </Link>
-          <Link
-            href="/register"
-            className="inline-flex min-w-[150px] items-center justify-center rounded-xl border border-blue-200 bg-blue-50 px-6 py-3 text-sm font-bold text-blue-900 transition hover:-translate-y-0.5 hover:bg-blue-100"
-          >
-            Register
-          </Link>
+            <div className="mt-5 space-y-3">
+              <article className="rounded-2xl border border-sky-100 bg-sky-50/70 p-4">
+                <p className="text-sm font-bold text-sky-900">Smart comparison</p>
+                <p className="mt-1 text-sm text-slate-600">See fees, programs, and learning modes side by side.</p>
+              </article>
+              <article className="rounded-2xl border border-cyan-100 bg-cyan-50/70 p-4">
+                <p className="text-sm font-bold text-cyan-900">Decision confidence</p>
+                <p className="mt-1 text-sm text-slate-600">Use structured data to shortlist universities quickly.</p>
+              </article>
+              <article className="rounded-2xl border border-slate-200 bg-white p-4">
+                <p className="text-sm font-bold text-slate-800">Application ready</p>
+                <p className="mt-1 text-sm text-slate-600">Keep your research organized and ready for next steps.</p>
+              </article>
+            </div>
+          </div>
         </div>
       </section>
 
