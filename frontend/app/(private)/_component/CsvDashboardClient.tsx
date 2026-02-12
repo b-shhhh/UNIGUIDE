@@ -195,6 +195,7 @@ export default function CsvDashboardClient({ universities, countries, courses }:
               <Link
                 key={country.code}
                 href={`/homepage/countries/${country.code}`}
+                prefetch={false}
                 className="flex min-w-[108px] items-center justify-between rounded-md border border-[#d8e5f8] px-1.5 py-1 hover:bg-[#f5f9ff]"
               >
                 <span className="truncate text-[11px] font-semibold text-[#1a2b44]">
@@ -225,6 +226,7 @@ export default function CsvDashboardClient({ universities, countries, courses }:
               <Link
                 key={course.slug}
                 href={`/homepage/courses/${course.slug}`}
+                prefetch={false}
                 className="min-w-[220px] rounded-md border border-[#d8e5f8] px-2 py-1.5 hover:bg-[#f5f9ff]"
               >
                 <p className="truncate text-[11px] font-semibold text-[#1a2b44]">{course.name}</p>
@@ -248,7 +250,18 @@ export default function CsvDashboardClient({ universities, countries, courses }:
             return (
               <article key={uni.id} className="rounded-xl border border-[#d8e5f8] bg-[#fcfeff] p-4">
                 {uni.logoUrl ? (
-                  <img src={uni.logoUrl} alt={`${uni.name} logo`} width={34} height={34} className="mb-2 rounded" />
+                  <img
+                    src={uni.logoUrl}
+                    alt={`${uni.name} logo`}
+                    width={34}
+                    height={34}
+                    loading="lazy"
+                    decoding="async"
+                    onError={(event) => {
+                      event.currentTarget.style.display = "none";
+                    }}
+                    className="mb-2 rounded"
+                  />
                 ) : null}
                 <p className="text-base font-bold text-[#1a2b44]">{uni.name}</p>
                 <p className="mt-1 text-xs text-[#5f7590]">
@@ -268,6 +281,7 @@ export default function CsvDashboardClient({ universities, countries, courses }:
                 <div className="mt-3 flex items-center gap-2">
                   <Link
                     href={`/homepage/universities/${uni.id}`}
+                    prefetch={false}
                     className="rounded-lg bg-[#4A90E2] px-3 py-1.5 text-xs font-bold uppercase tracking-[0.08em] text-white hover:bg-[#357ABD]"
                   >
                     View Detail

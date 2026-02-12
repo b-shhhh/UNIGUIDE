@@ -61,7 +61,18 @@ export default function CsvSavedUniversitiesClient({ universities }: Props) {
             return (
             <article key={uni.id} className="rounded-xl border border-[#d8e5f8] bg-white p-4">
               {uni.logoUrl ? (
-                <img src={uni.logoUrl} alt={`${uni.name} logo`} width={32} height={32} className="mb-2 rounded" />
+                <img
+                  src={uni.logoUrl}
+                  alt={`${uni.name} logo`}
+                  width={32}
+                  height={32}
+                  loading="lazy"
+                  decoding="async"
+                  onError={(event) => {
+                    event.currentTarget.style.display = "none";
+                  }}
+                  className="mb-2 rounded"
+                />
               ) : null}
               <p className="text-base font-bold text-[#1a2b44]">{uni.name}</p>
               <p className="mt-1 text-xs text-[#5f7590]">
@@ -80,6 +91,7 @@ export default function CsvSavedUniversitiesClient({ universities }: Props) {
               <div className="mt-3 flex items-center gap-2">
                 <Link
                   href={`/homepage/universities/${uni.id}`}
+                  prefetch={false}
                   className="rounded-lg bg-[#4A90E2] px-3 py-1.5 text-xs font-bold uppercase tracking-[0.08em] text-white"
                 >
                   View Detail

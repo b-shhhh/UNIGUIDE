@@ -94,21 +94,11 @@ const toFlagImageUrl = (countryCode: string) => {
   return `https://flagcdn.com/w80/${code}.png`;
 };
 
-const getLogoFromWebsite = (website: string) => {
-  if (!website) return "";
-  try {
-    const url = new URL(website);
-    return `https://icons.duckduckgo.com/ip3/${url.hostname}.ico`;
-  } catch {
-    return "";
-  }
-};
-
-const normalizeLogoUrl = (logoUrl: string | undefined, website: string) => {
-  if (logoUrl && !/gstatic\.com\/faviconV2|google\.com\/s2\/favicons/i.test(logoUrl)) {
+const normalizeLogoUrl = (logoUrl: string | undefined) => {
+  if (logoUrl && !/gstatic\.com\/faviconV2|google\.com\/s2\/favicons|icons\.duckduckgo\.com\/ip3/i.test(logoUrl)) {
     return logoUrl;
   }
-  return getLogoFromWebsite(website);
+  return "";
 };
 
 const inferCountryCode = (alpha2: string | undefined, countryName: string) => {
@@ -136,7 +126,7 @@ const mapUniversity = (row: BackendUniversity): CsvUniversity => {
     countryFlagUrl: row.flag_url || toFlagImageUrl(code),
     name: row.name,
     website: row.web_pages || "",
-    logoUrl: normalizeLogoUrl(row.logo_url, row.web_pages || ""),
+    logoUrl: normalizeLogoUrl(row.logo_url),
     course: primaryCourse,
     courseSlug: primaryCourse === "N/A" ? "" : slugify(primaryCourse),
     courses: courseList,
@@ -154,7 +144,7 @@ const fetchAllUniversities = async (): Promise<CsvUniversity[]> => {
 
   for (const base of apiBaseCandidates()) {
     try {
-      const response = await fetch(`${base}/api/universities`, { cache: "no-store" });
+      const response = await fetch(`${base}/api/universities`, { next: { revalidate: 300 } });
       if (!response.ok) {
         errors.push(`${base} -> HTTP ${response.status}`);
         continue;
