@@ -97,14 +97,7 @@ export const saveUniversity = async (id: string): Promise<string[]> => {
     writeSavedUniversityIds(ids);
     return ids;
   } catch {
-    try {
-      await axios.put(API.SAVED_UNIVERSITY.ITEM(id), {});
-      const ids = await fetchRemoteSavedUniversityIds();
-      writeSavedUniversityIds(ids);
-      return ids;
-    } catch {
-      return optimistic;
-    }
+    return optimistic;
   }
 };
 

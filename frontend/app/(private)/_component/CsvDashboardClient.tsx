@@ -38,6 +38,14 @@ export default function CsvDashboardClient({ universities, countries, courses }:
   const [savedIds, setSavedIds] = useState<string[]>([]);
   const [savingId, setSavingId] = useState<string | null>(null);
 
+  const hasSavedAlias = (uni: CsvUniversity) =>
+    savedIds.includes(uni.id) || (uni.dbId ? savedIds.includes(uni.dbId) : false);
+
+  const preferredApiIdFor = (uni: CsvUniversity) => uni.dbId || uni.id;
+
+  const savedKeyFor = (uni: CsvUniversity) =>
+    savedIds.includes(uni.id) ? uni.id : uni.dbId && savedIds.includes(uni.dbId) ? uni.dbId : preferredApiIdFor(uni);
+
   useEffect(() => {
     let active = true;
     const syncSaved = async () => {
@@ -76,11 +84,27 @@ export default function CsvDashboardClient({ universities, countries, courses }:
       .slice(0, 3);
   }, [filteredUniversities]);
 
-  const onToggleSaved = async (id: string) => {
-    setSavingId(id);
-    const result = await toggleUniversitySaved(id);
-    setSavedIds(result.ids);
-    setSavingId(null);
+  const onToggleSaved = async (uni: CsvUniversity) => {
+    const key = savedKeyFor(uni);
+    const aliases = [uni.id, uni.dbId].filter(Boolean) as string[];
+
+    setSavingId(uni.id);
+    // Optimistic toggle on all known aliases so button updates immediately.
+    setSavedIds((prev) => {
+      const unique = Array.from(new Set(prev));
+      const currentlySaved = aliases.some((id) => unique.includes(id));
+      if (currentlySaved) {
+        return unique.filter((id) => !aliases.includes(id));
+      }
+      return Array.from(new Set([...unique, key]));
+    });
+
+    try {
+      const result = await toggleUniversitySaved(key);
+      setSavedIds(result.ids);
+    } finally {
+      setSavingId(null);
+    }
   };
 
   const handleChatAsk = async () => {
@@ -220,7 +244,7 @@ export default function CsvDashboardClient({ universities, countries, courses }:
         </div>
         <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
           {topRankedUniversities.map((uni) => {
-            const saved = savedIds.includes(uni.id);
+            const saved = hasSavedAlias(uni);
             return (
               <article key={uni.id} className="rounded-xl border border-[#d8e5f8] bg-[#fcfeff] p-4">
                 {uni.logoUrl ? (
@@ -251,7 +275,7 @@ export default function CsvDashboardClient({ universities, countries, courses }:
                   <button
                     type="button"
                     disabled={savingId === uni.id}
-                    onClick={() => onToggleSaved(uni.id)}
+                    onClick={() => onToggleSaved(uni)}
                     className={`rounded-lg px-3 py-1.5 text-xs font-bold uppercase tracking-[0.08em] ${
                       saved ? "bg-[#fee2e2] text-[#b91c1c]" : "bg-[#dbeafe] text-[#1d4ed8]"
                     }`}

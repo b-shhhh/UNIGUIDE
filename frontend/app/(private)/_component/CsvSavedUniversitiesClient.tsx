@@ -31,7 +31,7 @@ export default function CsvSavedUniversitiesClient({ universities }: Props) {
   }, []);
 
   const savedUniversities = useMemo(
-    () => universities.filter((item) => savedIds.includes(item.id)),
+    () => universities.filter((item) => savedIds.includes(item.id) || (item.dbId ? savedIds.includes(item.dbId) : false)),
     [universities, savedIds],
   );
 
@@ -52,7 +52,13 @@ export default function CsvSavedUniversitiesClient({ universities }: Props) {
         </section>
       ) : (
         <section className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
-          {savedUniversities.map((uni) => (
+          {savedUniversities.map((uni) => {
+            const savedKey = savedIds.includes(uni.id)
+              ? uni.id
+              : uni.dbId && savedIds.includes(uni.dbId)
+                ? uni.dbId
+                : (uni.dbId || uni.id);
+            return (
             <article key={uni.id} className="rounded-xl border border-[#d8e5f8] bg-white p-4">
               {uni.logoUrl ? (
                 <img src={uni.logoUrl} alt={`${uni.name} logo`} width={32} height={32} className="mb-2 rounded" />
@@ -81,7 +87,7 @@ export default function CsvSavedUniversitiesClient({ universities }: Props) {
                 <button
                   type="button"
                   onClick={async () => {
-                    const result = await toggleUniversitySaved(uni.id);
+                    const result = await toggleUniversitySaved(savedKey);
                     setSavedIds(result.ids);
                   }}
                   className="rounded-lg bg-[#fee2e2] px-3 py-1.5 text-xs font-bold uppercase tracking-[0.08em] text-[#b91c1c]"
@@ -90,7 +96,8 @@ export default function CsvSavedUniversitiesClient({ universities }: Props) {
                 </button>
               </div>
             </article>
-          ))}
+            );
+          })}
         </section>
       )}
     </div>

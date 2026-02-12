@@ -1,5 +1,6 @@
 export type CsvUniversity = {
   id: string;
+  dbId?: string;
   countryCode: string;
   countryName: string;
   flag: string;
@@ -37,6 +38,7 @@ export type CourseSummary = {
 
 type BackendUniversity = {
   id: string;
+  dbId?: string;
   alpha2?: string;
   country: string;
   name: string;
@@ -47,9 +49,19 @@ type BackendUniversity = {
   description?: string;
 };
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || "http://127.0.0.1:5050";
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || "";
 const DURATION_POOL = ["1 year", "1.5 years", "2 years", "3 years"] as const;
 const INTAKE_POOL = ["January", "February", "September", "October"] as const;
+
+const apiBaseCandidates = () => {
+  const fromEnv = API_BASE_URL.trim();
+  const candidates = [
+    fromEnv,
+    "http://127.0.0.1:5050",
+    "http://localhost:5050",
+  ].filter(Boolean);
+  return Array.from(new Set(candidates));
+};
 
 const slugify = (value: string) =>
   value
@@ -86,10 +98,17 @@ const getLogoFromWebsite = (website: string) => {
   if (!website) return "";
   try {
     const url = new URL(website);
-    return `https://www.google.com/s2/favicons?domain=${url.hostname}&sz=128`;
+    return `https://icons.duckduckgo.com/ip3/${url.hostname}.ico`;
   } catch {
     return "";
   }
+};
+
+const normalizeLogoUrl = (logoUrl: string | undefined, website: string) => {
+  if (logoUrl && !/gstatic\.com\/faviconV2|google\.com\/s2\/favicons/i.test(logoUrl)) {
+    return logoUrl;
+  }
+  return getLogoFromWebsite(website);
 };
 
 const inferCountryCode = (alpha2: string | undefined, countryName: string) => {
@@ -110,13 +129,14 @@ const mapUniversity = (row: BackendUniversity): CsvUniversity => {
 
   return {
     id: row.id,
+    dbId: row.dbId || undefined,
     countryCode: code,
     countryName: row.country,
     flag: toFlagEmoji(code),
     countryFlagUrl: row.flag_url || toFlagImageUrl(code),
     name: row.name,
     website: row.web_pages || "",
-    logoUrl: row.logo_url || getLogoFromWebsite(row.web_pages || ""),
+    logoUrl: normalizeLogoUrl(row.logo_url, row.web_pages || ""),
     course: primaryCourse,
     courseSlug: primaryCourse === "N/A" ? "" : slugify(primaryCourse),
     courses: courseList,
@@ -130,21 +150,34 @@ const mapUniversity = (row: BackendUniversity): CsvUniversity => {
 };
 
 const fetchAllUniversities = async (): Promise<CsvUniversity[]> => {
-  const response = await fetch(`${API_BASE_URL}/api/universities`, { cache: "no-store" });
-  if (!response.ok) {
-    throw new Error("Failed to fetch universities");
+  const errors: string[] = [];
+
+  for (const base of apiBaseCandidates()) {
+    try {
+      const response = await fetch(`${base}/api/universities`, { cache: "no-store" });
+      if (!response.ok) {
+        errors.push(`${base} -> HTTP ${response.status}`);
+        continue;
+      }
+      const payload = (await response.json()) as { data?: BackendUniversity[] };
+      const rows = Array.isArray(payload.data) ? payload.data : [];
+      return rows.map(mapUniversity);
+    } catch (error) {
+      errors.push(`${base} -> ${error instanceof Error ? error.message : "network error"}`);
+    }
   }
-  const payload = (await response.json()) as { data?: BackendUniversity[] };
-  const rows = Array.isArray(payload.data) ? payload.data : [];
-  return rows.map(mapUniversity);
+
+  if (process.env.NODE_ENV !== "production") {
+    console.warn("Failed to fetch universities from backend:", errors.join(" | "));
+  }
+  return [];
 };
 
 export const getUniversities = async (): Promise<CsvUniversity[]> => {
   return fetchAllUniversities();
 };
 
-export const getCountries = async (): Promise<CountrySummary[]> => {
-  const universities = await getUniversities();
+export const buildCountries = (universities: CsvUniversity[]): CountrySummary[] => {
   const map = new Map<string, CountrySummary>();
 
   for (const uni of universities) {
@@ -165,8 +198,12 @@ export const getCountries = async (): Promise<CountrySummary[]> => {
   return Array.from(map.values()).sort((a, b) => b.count - a.count);
 };
 
-export const getCourses = async (): Promise<CourseSummary[]> => {
+export const getCountries = async (): Promise<CountrySummary[]> => {
   const universities = await getUniversities();
+  return buildCountries(universities);
+};
+
+export const buildCourses = (universities: CsvUniversity[]): CourseSummary[] => {
   const map = new Map<string, CourseSummary & { countrySet: Set<string> }>();
 
   for (const uni of universities) {
@@ -201,6 +238,11 @@ export const getCourses = async (): Promise<CourseSummary[]> => {
     .sort((a, b) => b.count - a.count);
 };
 
+export const getCourses = async (): Promise<CourseSummary[]> => {
+  const universities = await getUniversities();
+  return buildCourses(universities);
+};
+
 export const getUniversitiesByCountry = async (countryCode: string) => {
   const universities = await getUniversities();
   const code = countryCode.toUpperCase();
@@ -215,13 +257,20 @@ export const getUniversitiesByCourse = async (courseSlug: string) => {
 };
 
 export const getUniversityById = async (id: string) => {
-  const response = await fetch(`${API_BASE_URL}/api/universities/${id}`, { cache: "no-store" });
-  if (!response.ok) {
-    return null;
+  for (const base of apiBaseCandidates()) {
+    try {
+      const response = await fetch(`${base}/api/universities/${id}`, { cache: "no-store" });
+      if (!response.ok) {
+        continue;
+      }
+      const payload = (await response.json()) as { data?: BackendUniversity };
+      if (!payload.data) {
+        return null;
+      }
+      return mapUniversity(payload.data);
+    } catch {
+      continue;
+    }
   }
-  const payload = (await response.json()) as { data?: BackendUniversity };
-  if (!payload.data) {
-    return null;
-  }
-  return mapUniversity(payload.data);
+  return null;
 };

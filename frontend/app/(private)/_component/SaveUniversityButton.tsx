@@ -5,9 +5,10 @@ import { fetchSavedUniversityIds, SAVED_UNIVERSITIES_UPDATE_EVENT, toggleUnivers
 
 type Props = {
   universityId: string;
+  universityDbId?: string;
 };
 
-export default function SaveUniversityButton({ universityId }: Props) {
+export default function SaveUniversityButton({ universityId, universityDbId }: Props) {
   const [savedIds, setSavedIds] = useState<string[]>([]);
   const [loading, setLoading] = useState(false);
 
@@ -29,11 +30,13 @@ export default function SaveUniversityButton({ universityId }: Props) {
     };
   }, []);
 
-  const isSaved = savedIds.includes(universityId);
+  const aliases = [universityId, universityDbId].filter(Boolean) as string[];
+  const requestId = universityDbId || universityId;
+  const isSaved = aliases.some((id) => savedIds.includes(id));
 
   const onToggle = async () => {
     setLoading(true);
-    const result = await toggleUniversitySaved(universityId);
+    const result = await toggleUniversitySaved(requestId);
     setSavedIds(result.ids);
     setLoading(false);
   };
@@ -51,4 +54,3 @@ export default function SaveUniversityButton({ universityId }: Props) {
     </button>
   );
 }
-

@@ -1,7 +1,9 @@
 import { University } from "../models/university.model";
+import mongoose from "mongoose";
 
 type UniversityApiItem = {
   id: string;
+  dbId: string;
   alpha2: string;
   country: string;
   name: string;
@@ -15,7 +17,8 @@ type UniversityApiItem = {
 const normalize = (value: string) => value.trim().toLowerCase();
 
 const mapUniversity = (uni: any): UniversityApiItem => ({
-  id: String(uni._id),
+  id: String(uni.sourceId || uni._id),
+  dbId: String(uni._id),
   alpha2: String(uni.alpha2 || "").toUpperCase(),
   country: String(uni.country || ""),
   name: String(uni.name || ""),
@@ -56,7 +59,11 @@ export const getUniversitiesService = async (country: string) => {
  * Get university details by ID
  */
 export const getUniversityDetailService = async (universityId: string) => {
-  const uni = await University.findById(universityId).lean();
+  const detailLookup: Array<Record<string, unknown>> = [{ sourceId: universityId }];
+  if (mongoose.Types.ObjectId.isValid(universityId)) {
+    detailLookup.push({ _id: universityId });
+  }
+  const uni = await University.findOne({ $or: detailLookup }).lean();
   if (!uni) throw new Error("University not found");
   return mapUniversity(uni);
 };

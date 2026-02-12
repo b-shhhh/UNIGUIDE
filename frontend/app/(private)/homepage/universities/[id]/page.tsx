@@ -48,7 +48,7 @@ export default async function UniversityDetailPage({ params }: Props) {
           >
             More in this course
           </Link>
-          <SaveUniversityButton universityId={university.id} />
+          <SaveUniversityButton universityId={university.id} universityDbId={university.dbId} />
         </div>
       </section>
 

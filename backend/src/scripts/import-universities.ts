@@ -26,7 +26,7 @@ async function importUniversitiesFromCsv() {
   let updated = 0;
 
   for (const row of rows) {
-    const sourceId = stableSourceId(row.alpha2, row.name, row.id);
+    const sourceId = row.id;
     const payload = {
       sourceId,
       alpha2: row.alpha2,
@@ -40,7 +40,11 @@ async function importUniversitiesFromCsv() {
     };
 
     const existing = await University.findOne({
-      $or: [{ sourceId }, { sourceId: legacySourceId(row.alpha2, row.name) }],
+      $or: [
+        { sourceId },
+        { sourceId: stableSourceId(row.alpha2, row.name, row.id) },
+        { sourceId: legacySourceId(row.alpha2, row.name) },
+      ],
     }).select("_id");
     if (existing) {
       await University.updateOne({ _id: existing._id }, payload);

@@ -1,11 +1,9 @@
 import CsvDashboardClient from "../_component/CsvDashboardClient";
-import { getCountries, getCourses, getUniversities } from "@/lib/csv-universities";
+import { buildCountries, buildCourses, getUniversities } from "@/lib/csv-universities";
 
 export default async function Homepage() {
-  const [universities, countries, courses] = await Promise.all([
-    getUniversities(),
-    getCountries(),
-    getCourses(),
-  ]);
+  const universities = await getUniversities();
+  const countries = buildCountries(universities);
+  const courses = buildCourses(universities);
   return <CsvDashboardClient universities={universities} countries={countries} courses={courses} />;
 }
