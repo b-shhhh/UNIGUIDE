@@ -14,6 +14,8 @@ export const API = {
         PROFILE: "/api/admin/profile",
         USERS: "/api/admin/users",
         USER: (id: string) => `/api/admin/users/${id}`,
+        UNIVERSITIES: "/api/admin/universities",
+        UNIVERSITY: (id: string) => `/api/admin/universities/${id}`,
     },
     RECOMMENDATION: {
         LIST: "/api/recommendations",
