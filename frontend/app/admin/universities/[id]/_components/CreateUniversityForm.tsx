@@ -1,12 +1,16 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { universitySchema } from "../../schema";
+import { adminCreateUniversity } from "@/lib/api/admin-universities";
 
 export default function CreateUniversityForm() {
   const [message, setMessage] = useState("");
+  const [loading, setLoading] = useState(false);
+  const router = useRouter();
 
-  const onSubmit = (event: React.FormEvent<HTMLFormElement>) => {
+  const onSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     const formData = new FormData(event.currentTarget);
     const payload = {
@@ -22,8 +26,17 @@ export default function CreateUniversityForm() {
       return;
     }
 
-    setMessage("University created (wire this to backend POST endpoint).");
+    setLoading(true);
+    const res = await adminCreateUniversity(result.data);
+    setLoading(false);
+    if (!res.success) {
+      setMessage(res.message || "Failed to create university");
+      return;
+    }
+
+    setMessage("University created successfully.");
     event.currentTarget.reset();
+    router.push("/admin/universities");
   };
 
   return (
@@ -46,11 +59,10 @@ export default function CreateUniversityForm() {
       </label>
       <div className="sm:col-span-2">
         <button type="submit" className="rounded-lg bg-[#4A90E2] px-3 py-2 text-xs font-bold uppercase tracking-[0.08em] text-white">
-          Create University
+          {loading ? "Creating..." : "Create University"}
         </button>
       </div>
       {message ? <p className="sm:col-span-2 text-sm text-[#5f7590]">{message}</p> : null}
     </form>
   );
 }
-

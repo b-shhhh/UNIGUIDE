@@ -9,7 +9,7 @@ type Row = {
   courses: string;
 };
 
-export default function UniversityTable({ rows }: { rows: Row[] }) {
+export default function UniversityTable({ rows, onDelete }: { rows: Row[]; onDelete: (id: string) => Promise<void> }) {
   return (
     <div className="overflow-x-auto rounded-lg border border-[#e6eef9]">
       <table className="min-w-full divide-y divide-[#e6eef9] text-sm">
@@ -41,6 +41,13 @@ export default function UniversityTable({ rows }: { rows: Row[] }) {
                   >
                     Edit
                   </Link>
+                  <button
+                    type="button"
+                    onClick={() => void onDelete(row.id)}
+                    className="rounded bg-[#b91c1c] px-2.5 py-1.5 text-xs font-bold uppercase tracking-[0.08em] text-white"
+                  >
+                    Delete
+                  </button>
                 </div>
               </td>
             </tr>
@@ -57,4 +64,3 @@ export default function UniversityTable({ rows }: { rows: Row[] }) {
     </div>
   );
 }
-
