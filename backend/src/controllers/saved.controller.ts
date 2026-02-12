@@ -21,6 +21,9 @@ export const saveUniversity = async (req: AuthRequest, res: Response) => {
     const universityId = Array.isArray(req.body.universityId)
       ? req.body.universityId[0]
       : req.body.universityId;
+    if (!universityId) {
+      return res.status(400).json({ success: false, message: "universityId is required" });
+    }
 
     const user = await saveUniversityService(userId, universityId);
 

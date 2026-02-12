@@ -1,6 +1,4 @@
 import { IUser, User } from "../models/user.model";
-import { University } from "../models/university.model";
-import mongoose from "mongoose";
 import bcrypt from "bcrypt";
 import {
   findUserById,
@@ -38,13 +36,11 @@ export const deleteAccount = async (userId: string): Promise<IUser | null> => {
 export const saveUniversityService = async (userId: string, universityId: string): Promise<IUser> => {
   const user = await User.findById(userId);
   if (!user) throw new Error("User not found");
+  if (!universityId) throw new Error("University ID is required");
 
-  const uniExists = await University.findById(universityId);
-  if (!uniExists) throw new Error("University not found");
-
-  const uniObjectId = new mongoose.Types.ObjectId(universityId);
-  if (!user.savedUniversities.includes(uniObjectId)) {
-    user.savedUniversities.push(uniObjectId);
+  user.savedUniversities = user.savedUniversities.map((id) => String(id));
+  if (!user.savedUniversities.includes(universityId)) {
+    user.savedUniversities.push(universityId);
     await user.save();
   }
 
@@ -53,7 +49,7 @@ export const saveUniversityService = async (userId: string, universityId: string
 
 // Get saved universities for a user
 export const getSavedUniversitiesService = async (userId: string) => {
-  const user = await User.findById(userId).populate("savedUniversities");
+  const user = await User.findById(userId);
   if (!user) throw new Error("User not found");
 
   return user.savedUniversities;
@@ -64,10 +60,9 @@ export const removeSavedUniversityService = async (userId: string, universityId:
   const user = await User.findById(userId);
   if (!user) throw new Error("User not found");
 
-  const uniObjectId = new mongoose.Types.ObjectId(universityId);
-  user.savedUniversities = user.savedUniversities.filter(
-    (id) => !id.equals(uniObjectId)
-  );
+  user.savedUniversities = user.savedUniversities
+    .map((id) => String(id))
+    .filter((id) => id !== universityId);
 
   await user.save();
   return user;

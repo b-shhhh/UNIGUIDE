@@ -9,7 +9,7 @@ export interface IUser extends Document {
   password: string;
   role: "user" | "admin";
   profilePic?: string;
-  savedUniversities: mongoose.Types.ObjectId[];
+  savedUniversities: string[];
    resetPasswordToken?: string;
   resetPasswordExpires?: Date;
 }
@@ -23,7 +23,7 @@ const userSchema = new Schema<IUser>({
   password: { type: String, required: true },
   role: { type: String, enum: ["user", "admin"], default: "user" },
   profilePic: { type: String },
-  savedUniversities: [{ type: Schema.Types.ObjectId, ref: "University" }],
+  savedUniversities: [{ type: String }],
   resetPasswordToken: { type: String },
   resetPasswordExpires: { type: Date }
 }, { timestamps: true });
