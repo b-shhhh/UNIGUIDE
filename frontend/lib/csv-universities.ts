@@ -5,12 +5,19 @@ export type CsvUniversity = {
   countryName: string;
   flag: string;
   countryFlagUrl: string;
+  state?: string;
+  city?: string;
   name: string;
   website: string;
   logoUrl: string;
   course: string;
   courseSlug: string;
   courses: string[];
+  courseCategory?: string;
+  degreeLevel?: string;
+  ieltsMin?: number | null;
+  satRequired?: boolean;
+  satMin?: number | null;
   score: number;
   tuition: string;
   ranking: string;
@@ -41,11 +48,18 @@ type BackendUniversity = {
   dbId?: string;
   alpha2?: string;
   country: string;
+  state?: string;
+  city?: string;
   name: string;
   web_pages?: string;
   flag_url?: string;
   logo_url?: string;
   courses: string[];
+  courseCategories?: string[];
+  degreeLevels?: string[];
+  ieltsMin?: number | null;
+  satRequired?: boolean;
+  satMin?: number | null;
   description?: string;
 };
 
@@ -116,6 +130,8 @@ const mapUniversity = (row: BackendUniversity): CsvUniversity => {
   const courseList = Array.isArray(row.courses) ? row.courses.filter(Boolean) : [];
   const primaryCourse = courseList[0] || "N/A";
   const tuitionValue = 8000 + (hash % 55) * 1000;
+  const courseCategory = Array.isArray(row.courseCategories) ? row.courseCategories[0] : undefined;
+  const degreeLevel = Array.isArray(row.degreeLevels) ? row.degreeLevels[0] : undefined;
 
   return {
     id: row.id,
@@ -124,18 +140,27 @@ const mapUniversity = (row: BackendUniversity): CsvUniversity => {
     countryName: row.country,
     flag: toFlagEmoji(code),
     countryFlagUrl: row.flag_url || toFlagImageUrl(code),
+    state: row.state,
+    city: row.city,
     name: row.name,
     website: row.web_pages || "",
     logoUrl: normalizeLogoUrl(row.logo_url),
     course: primaryCourse,
     courseSlug: primaryCourse === "N/A" ? "" : slugify(primaryCourse),
     courses: courseList,
+    courseCategory,
+    degreeLevel,
+    ieltsMin: typeof row.ieltsMin === "number" ? row.ieltsMin : null,
+    satRequired: row.satRequired,
+    satMin: typeof row.satMin === "number" ? row.satMin : null,
     score: 70 + (hash % 30),
     tuition: `$${tuitionValue.toLocaleString()}/year`,
     ranking: `Top ${10 + (hash % 250)}`,
     duration: DURATION_POOL[hash % DURATION_POOL.length],
     intake: INTAKE_POOL[hash % INTAKE_POOL.length],
-    description: row.description || `${row.name} in ${row.country} offers multiple programs.`,
+    description:
+      row.description ||
+      `${row.name} in ${row.country}${row.city ? `, ${row.city}` : ""} offers ${courseCategory || primaryCourse} (${degreeLevel || "program"}) programs.`,
   };
 };
 

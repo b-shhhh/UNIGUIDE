@@ -9,7 +9,14 @@ type ChatMessage = {
     id: string;
     name: string;
     country: string;
+    state?: string;
+    city?: string;
     courses: string[];
+    courseCategory?: string;
+    degreeLevel?: string;
+    ieltsMin?: number | null;
+    satRequired?: boolean;
+    satMin?: number | null;
     tuition: string;
     viewDetailsUrl: string;
   }>;
@@ -119,7 +126,25 @@ export default function DashboardChatbot() {
                     {message.results.map((result) => (
                       <article key={`chat-result-${result.id}`} className="rounded-md border border-[#d8e5f8] bg-white px-3 py-2 text-left">
                         <p className="text-xs font-semibold text-[#1a2b44]">{result.name}</p>
-                        <p className="text-[11px] text-[#5f7590]">Country: {result.country}</p>
+                        <p className="text-[11px] text-[#5f7590]">
+                          Country: {result.country}
+                          {result.state ? `, ${result.state}` : ""}
+                          {result.city ? `, ${result.city}` : ""}
+                        </p>
+                        {result.courseCategory ? (
+                          <p className="text-[11px] text-[#5f7590]">Category: {result.courseCategory}</p>
+                        ) : null}
+                        {result.degreeLevel ? (
+                          <p className="text-[11px] text-[#5f7590]">Degree: {result.degreeLevel}</p>
+                        ) : null}
+                        {result.ieltsMin !== null && result.ieltsMin !== undefined ? (
+                          <p className="text-[11px] text-[#5f7590]">IELTS ≥ {result.ieltsMin}</p>
+                        ) : null}
+                        {result.satRequired !== undefined ? (
+                          <p className="text-[11px] text-[#5f7590]">
+                            SAT: {result.satRequired ? `Required${result.satMin ? ` (≥${result.satMin})` : ""}` : "Not required"}
+                          </p>
+                        ) : null}
                         <p className="text-[11px] text-[#5f7590]">{result.tuition}</p>
                       </article>
                     ))}

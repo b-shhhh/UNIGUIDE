@@ -18,9 +18,20 @@ const VISIBLE_COURSE_STEP = 24;
 
 export default function CsvDashboardClient({ universities, countries, courses }: Props) {
   const [query, setQuery] = useState("");
+  const [countryFilter, setCountryFilter] = useState<string>("all");
+  const [courseFilter, setCourseFilter] = useState<string>("all");
+  const [degreeFilter, setDegreeFilter] = useState<string>("all");
+  const [satOnly, setSatOnly] = useState(false);
+  const [minIelts, setMinIelts] = useState<string>("");
   const [visibleCourseCount, setVisibleCourseCount] = useState(INITIAL_VISIBLE_COURSES);
   const [savedIds, setSavedIds] = useState<string[]>([]);
   const [savingId, setSavingId] = useState<string | null>(null);
+
+  const slugify = (value: string) =>
+    value
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, "-")
+      .replace(/^-|-$/g, "");
 
   const hasSavedAlias = (uni: CsvUniversity) =>
     savedIds.includes(uni.id) || (uni.dbId ? savedIds.includes(uni.dbId) : false);
@@ -53,13 +64,48 @@ export default function CsvDashboardClient({ universities, countries, courses }:
     setVisibleCourseCount(INITIAL_VISIBLE_COURSES);
   }, [courses.length]);
 
+  const degreeOptions = useMemo(
+    () => Array.from(new Set(universities.map((uni) => uni.degreeLevel).filter(Boolean))).sort(),
+    [universities],
+  );
+
+  const courseOptions = useMemo(() => courses.map((course) => ({ slug: course.slug, name: course.name })), [courses]);
+
   const filteredUniversities = useMemo(() => {
     const needle = query.trim().toLowerCase();
-    if (!needle) {
-      return universities;
-    }
-    return universities.filter((uni) => `${uni.name} ${uni.countryName} ${uni.course}`.toLowerCase().includes(needle));
-  }, [query, universities]);
+    const minIeltsValue = minIelts.trim() ? Number(minIelts) : null;
+
+    return universities.filter((uni) => {
+      if (needle) {
+        const haystack = `${uni.name} ${uni.countryName} ${uni.course} ${uni.courseCategory || ""} ${uni.degreeLevel || ""} ${uni.city || ""} ${uni.state || ""}`.toLowerCase();
+        if (!haystack.includes(needle)) return false;
+      }
+
+      if (countryFilter !== "all" && uni.countryCode !== countryFilter) {
+        return false;
+      }
+
+      if (courseFilter !== "all") {
+        const hasCourse = uni.courses.some((course) => slugify(course) === courseFilter);
+        if (!hasCourse) return false;
+      }
+
+      if (degreeFilter !== "all") {
+        if (!uni.degreeLevel || slugify(uni.degreeLevel) !== degreeFilter) return false;
+      }
+
+      if (satOnly && uni.satRequired !== true) {
+        return false;
+      }
+
+      if (minIeltsValue !== null && Number.isFinite(minIeltsValue)) {
+        if (uni.ieltsMin === null || uni.ieltsMin === undefined) return false;
+        if (uni.ieltsMin < minIeltsValue) return false;
+      }
+
+      return true;
+    });
+  }, [query, universities, countryFilter, courseFilter, degreeFilter, satOnly, minIelts]);
 
   const topRankedUniversities = useMemo(() => {
     const readRank = (ranking: string) => {
@@ -69,7 +115,7 @@ export default function CsvDashboardClient({ universities, countries, courses }:
 
     return [...filteredUniversities]
       .sort((a, b) => readRank(a.ranking) - readRank(b.ranking))
-      .slice(0, 3);
+      .slice(0, 5);
   }, [filteredUniversities]);
 
   const visibleCourses = useMemo(() => courses.slice(0, visibleCourseCount), [courses, visibleCourseCount]);
@@ -128,6 +174,74 @@ export default function CsvDashboardClient({ universities, countries, courses }:
               <p className="text-lg font-black">{courses.length}</p>
               <p className="text-[10px] font-semibold uppercase tracking-[0.08em] text-sky-100">Courses</p>
             </div>
+          </div>
+
+          <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+            <select
+              value={countryFilter}
+              onChange={(event) => setCountryFilter(event.target.value)}
+              className="h-11 rounded-lg border border-white/35 bg-white/90 px-3 text-sm font-medium text-slate-800 outline-none transition focus:border-cyan-300 focus:ring-2 focus:ring-cyan-200"
+            >
+              <option value="all">All countries</option>
+              {countries.map((country) => (
+                <option key={country.code} value={country.code}>
+                  {country.name}
+                </option>
+              ))}
+            </select>
+
+            <select
+              value={courseFilter}
+              onChange={(event) => setCourseFilter(event.target.value)}
+              className="h-11 rounded-lg border border-white/35 bg-white/90 px-3 text-sm font-medium text-slate-800 outline-none transition focus:border-cyan-300 focus:ring-2 focus:ring-cyan-200"
+            >
+              <option value="all">All courses</option>
+              {courseOptions.map((course) => (
+                <option key={course.slug} value={course.slug}>
+                  {course.name}
+                </option>
+              ))}
+            </select>
+
+            <select
+              value={degreeFilter}
+              onChange={(event) => setDegreeFilter(event.target.value)}
+              className="h-11 rounded-lg border border-white/35 bg-white/90 px-3 text-sm font-medium text-slate-800 outline-none transition focus:border-cyan-300 focus:ring-2 focus:ring-cyan-200"
+            >
+              <option value="all">All degree levels</option>
+              {degreeOptions.map((degree) => (
+                <option key={degree} value={slugify(degree)}>
+                  {degree}
+                </option>
+              ))}
+            </select>
+
+            <div className="flex items-center gap-2 rounded-lg border border-white/35 bg-white/90 px-3 py-2 text-sm text-slate-800">
+              <label className="flex-1 text-xs font-semibold uppercase tracking-[0.08em] text-slate-500">IELTS min</label>
+              <input
+                type="number"
+                min={0}
+                step={0.1}
+                value={minIelts}
+                onChange={(event) => setMinIelts(event.target.value)}
+                className="h-8 w-20 rounded-md border border-slate-200 px-2 text-sm outline-none focus:border-cyan-400 focus:ring-2 focus:ring-cyan-100"
+              />
+            </div>
+          </div>
+
+          <div className="mt-3 flex flex-wrap items-center gap-3 text-xs font-semibold text-sky-50">
+            <label className="flex items-center gap-2">
+              <input
+                type="checkbox"
+                checked={satOnly}
+                onChange={(event) => setSatOnly(event.target.checked)}
+                className="h-4 w-4 rounded border-white/40 bg-white/70 text-cyan-700 focus:ring-cyan-300"
+              />
+              Require SAT score
+            </label>
+            <span className="rounded-full border border-white/20 bg-white/10 px-3 py-1 text-[11px] tracking-[0.08em]">
+              Showing {filteredUniversities.length} results
+            </span>
           </div>
         </div>
       </section>
@@ -248,6 +362,16 @@ export default function CsvDashboardClient({ universities, countries, courses }:
                 </p>
                 <p className="mt-1 text-xs font-medium text-slate-600">{uni.ranking}</p>
                 <p className="mt-1 text-xs font-semibold text-cyan-700">AI score: {uni.score}%</p>
+                {uni.courseCategory ? <p className="mt-1 text-xs text-slate-600">Category: {uni.courseCategory}</p> : null}
+                {uni.degreeLevel ? <p className="mt-1 text-xs text-slate-600">Degree: {uni.degreeLevel}</p> : null}
+                {uni.ieltsMin !== null && uni.ieltsMin !== undefined ? (
+                  <p className="mt-1 text-xs text-slate-600">IELTS min: {uni.ieltsMin}</p>
+                ) : null}
+                {uni.satRequired !== undefined ? (
+                  <p className="mt-1 text-xs text-slate-600">
+                    SAT: {uni.satRequired ? `Required${uni.satMin ? ` (≥${uni.satMin})` : ""}` : "Not required"}
+                  </p>
+                ) : null}
                 <div className="mt-3 flex items-center gap-2">
                   <Link
                     href={`/homepage/universities/${uni.id}`}

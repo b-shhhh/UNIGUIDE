@@ -6,11 +6,18 @@ type UniversityApiItem = {
   dbId: string;
   alpha2: string;
   country: string;
+  state?: string;
+  city?: string;
   name: string;
   web_pages?: string;
   flag_url?: string;
   logo_url?: string;
   courses: string[];
+  courseCategories?: string[];
+  degreeLevels?: string[];
+  ieltsMin?: number | null;
+  satRequired?: boolean;
+  satMin?: number | null;
   description?: string;
 };
 
@@ -21,11 +28,22 @@ const mapUniversity = (uni: any): UniversityApiItem => ({
   dbId: String(uni._id),
   alpha2: String(uni.alpha2 || "").toUpperCase(),
   country: String(uni.country || ""),
+  state: uni.state || undefined,
+  city: uni.city || undefined,
   name: String(uni.name || ""),
   web_pages: uni.web_pages || undefined,
   flag_url: uni.flag_url || undefined,
   logo_url: uni.logo_url || undefined,
   courses: Array.isArray(uni.courses) ? uni.courses.map((course: unknown) => String(course)).filter(Boolean) : [],
+  courseCategories: Array.isArray(uni.courseCategories)
+    ? uni.courseCategories.map((item: unknown) => String(item)).filter(Boolean)
+    : undefined,
+  degreeLevels: Array.isArray(uni.degreeLevels)
+    ? uni.degreeLevels.map((item: unknown) => String(item)).filter(Boolean)
+    : undefined,
+  ieltsMin: typeof uni.ieltsMin === "number" ? uni.ieltsMin : null,
+  satRequired: typeof uni.satRequired === "boolean" ? uni.satRequired : undefined,
+  satMin: typeof uni.satMin === "number" ? uni.satMin : null,
   description: uni.description || undefined,
 });
 

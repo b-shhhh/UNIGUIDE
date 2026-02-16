@@ -31,11 +31,18 @@ async function importUniversitiesFromCsv() {
       sourceId,
       alpha2: row.alpha2,
       country: row.country,
+      state: row.state,
+      city: row.city,
       name: row.name,
       web_pages: row.web_pages,
       flag_url: row.flag_url,
       logo_url: row.logo_url,
       courses: Array.from(new Set((row.courses || []).map((course) => course.trim()).filter(Boolean))),
+      courseCategories: row.courseCategory ? [row.courseCategory] : [],
+      degreeLevels: row.degreeLevel ? [row.degreeLevel] : [],
+      ieltsMin: row.ieltsMin ?? null,
+      satRequired: row.satRequired ?? undefined,
+      satMin: row.satMin ?? null,
       description: `${row.name} in ${row.country} offers programs from imported data.`,
     };
 
