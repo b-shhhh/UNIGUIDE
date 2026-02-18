@@ -1,137 +1,44 @@
-import axios from "@/lib/api/axios";
-import { API } from "@/lib/api/endpoints";
+import { removeSavedUniversity, saveUniversity, listSavedIds } from "./api/saved";
 
-const SAVED_UNIVERSITY_IDS_KEY = "uniguide_saved_university_ids";
-const UPDATE_EVENT_NAME = "saved-universities-updated";
-const SAVED_ENDPOINT = process.env.NEXT_PUBLIC_SAVED_UNIVERSITIES_ENDPOINT || API.SAVED_UNIVERSITY.LIST;
+export const SAVED_UNIVERSITIES_UPDATE_EVENT = "saved-universities-update";
 
-const dedupe = (ids: string[]) => Array.from(new Set(ids.filter(Boolean)));
+const STORAGE_KEY = "saved_university_ids";
 
-const hasBrowserAuthToken = () => {
-  if (typeof document === "undefined") {
-    return false;
-  }
-
-  return document.cookie.split("; ").some((item) => item.startsWith("auth_token="));
-};
-
-const parseIdList = (payload: unknown): string[] => {
-  if (Array.isArray(payload)) {
-    return dedupe(
-      payload
-        .map((item) => {
-          if (typeof item === "string") {
-            return item;
-          }
-          if (typeof item === "object" && item !== null) {
-            const record = item as Record<string, unknown>;
-            const rawId = record.universityId ?? record.id ?? record.university_id;
-            return typeof rawId === "string" ? rawId : "";
-          }
-          return "";
-        })
-        .filter(Boolean),
-    );
-  }
-
-  if (typeof payload === "object" && payload !== null) {
-    const record = payload as Record<string, unknown>;
-    return parseIdList(record.data ?? record.savedUniversityIds ?? record.ids ?? record.items ?? []);
-  }
-
-  return [];
-};
-
-export const readSavedUniversityIds = (): string[] => {
-  if (typeof window === "undefined") {
-    return [];
-  }
-
-  try {
-    const raw = localStorage.getItem(SAVED_UNIVERSITY_IDS_KEY);
-    if (!raw) {
-      return [];
-    }
-    const parsed = JSON.parse(raw);
-    return parseIdList(parsed);
-  } catch {
-    return [];
-  }
-};
-
-const writeSavedUniversityIds = (ids: string[]) => {
-  if (typeof window === "undefined") {
-    return;
-  }
-  const safeIds = dedupe(ids);
-  localStorage.setItem(SAVED_UNIVERSITY_IDS_KEY, JSON.stringify(safeIds));
-  window.dispatchEvent(new Event(UPDATE_EVENT_NAME));
-};
-
-const fetchRemoteSavedUniversityIds = async (): Promise<string[]> => {
-  if (!hasBrowserAuthToken()) {
-    return [];
-  }
-  const response = await axios.get(SAVED_ENDPOINT);
-  return parseIdList(response.data);
+const syncLocal = (ids: string[]) => {
+  if (typeof window === "undefined") return;
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(ids));
+  window.dispatchEvent(new Event(SAVED_UNIVERSITIES_UPDATE_EVENT));
 };
 
 export const fetchSavedUniversityIds = async (): Promise<string[]> => {
-  try {
-    const ids = await fetchRemoteSavedUniversityIds();
-    writeSavedUniversityIds(ids);
-    return ids;
-  } catch {
-    return readSavedUniversityIds();
-  }
-};
-
-export const saveUniversity = async (id: string): Promise<string[]> => {
-  const cached = readSavedUniversityIds();
-  const optimistic = dedupe([...cached, id]);
-  writeSavedUniversityIds(optimistic);
-
-  try {
-    await axios.post(SAVED_ENDPOINT, { universityId: id });
-    const ids = await fetchRemoteSavedUniversityIds();
-    writeSavedUniversityIds(ids);
-    return ids;
-  } catch {
-    return optimistic;
-  }
-};
-
-export const unsaveUniversity = async (id: string): Promise<string[]> => {
-  const cached = readSavedUniversityIds();
-  const optimistic = cached.filter((savedId) => savedId !== id);
-  writeSavedUniversityIds(optimistic);
-
-  try {
-    await axios.delete(API.SAVED_UNIVERSITY.ITEM(id));
-    const ids = await fetchRemoteSavedUniversityIds();
-    writeSavedUniversityIds(ids);
-    return ids;
-  } catch {
-    try {
-      await axios.delete(SAVED_ENDPOINT, { data: { universityId: id } });
-      const ids = await fetchRemoteSavedUniversityIds();
-      writeSavedUniversityIds(ids);
-      return ids;
-    } catch {
-      return optimistic;
+  if (typeof window !== "undefined") {
+    const cached = localStorage.getItem(STORAGE_KEY);
+    if (cached) {
+      try {
+        return JSON.parse(cached) as string[];
+      } catch {
+        // ignore parse error
+      }
     }
   }
+  const ids = await listSavedIds();
+  if (typeof window !== "undefined") {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(ids));
+  }
+  return ids;
 };
 
 export const toggleUniversitySaved = async (id: string) => {
-  const current = readSavedUniversityIds();
-  if (current.includes(id)) {
-    const next = await unsaveUniversity(id);
-    return { saved: false, ids: next };
+  const current = await fetchSavedUniversityIds();
+  const isSaved = current.includes(id);
+  let nextIds = current;
+  if (isSaved) {
+    const res = await removeSavedUniversity(id);
+    nextIds = res.data || [];
+  } else {
+    const res = await saveUniversity(id);
+    nextIds = res.data || [];
   }
-
-  const next = await saveUniversity(id);
-  return { saved: true, ids: next };
+  syncLocal(nextIds);
+  return { ids: nextIds, saved: !isSaved };
 };
-
-export const SAVED_UNIVERSITIES_UPDATE_EVENT = UPDATE_EVENT_NAME;

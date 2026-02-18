@@ -87,6 +87,22 @@ export const getUniversityDetailService = async (universityId: string) => {
 };
 
 /**
+ * Get multiple university details by comma-separated ids
+ */
+export const getUniversitiesByIdsService = async (ids: string[]) => {
+  const lookups: Array<Record<string, unknown>> = [];
+  const sourceIds = ids.filter((id) => !mongoose.Types.ObjectId.isValid(id));
+  const objectIds = ids.filter((id) => mongoose.Types.ObjectId.isValid(id));
+
+  if (sourceIds.length) lookups.push({ sourceId: { $in: sourceIds } });
+  if (objectIds.length) lookups.push({ _id: { $in: objectIds } });
+
+  if (!lookups.length) return [];
+  const universities = await University.find({ $or: lookups }).lean();
+  return universities.map(mapUniversity);
+};
+
+/**
  * Get all courses, or filter by course name
  */
 export const getCoursesService = async (courseName?: string) => {

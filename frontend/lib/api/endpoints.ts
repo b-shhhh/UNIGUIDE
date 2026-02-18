@@ -23,5 +23,8 @@ export const API = {
     SAVED_UNIVERSITY: {
         LIST: "/api/saved-universities",
         ITEM: (id: string) => `/api/saved-universities/${id}`,
-    }
+    },
+    UNIVERSITIES: "/api/universities",
+    COURSES: "/api/courses"
+}
 }

@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { listCourses, coursesByCountry, courseDetails } from "../controllers/course.controller";
+import { listCourses, coursesByCountry, courseDetails, countriesByCourse } from "../controllers/course.controller";
 
 const router = Router();
 
@@ -11,5 +11,8 @@ router.get("/country/:country", coursesByCountry);
 
 // Get course details by ID
 router.get("/:id", courseDetails);
+
+// Get countries that offer a course
+router.get("/:id/countries", countriesByCourse);
 
 export default router;

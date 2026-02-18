@@ -80,12 +80,15 @@ export default function UniversitiesPage() {
           <div>
             <p className="text-xs font-bold uppercase tracking-[0.12em] text-slate-500">Universities</p>
             <h3 className="text-2xl font-black tracking-tight text-slate-900">Manage Universities</h3>
+            <p className="mt-1 text-xs text-slate-500">
+              Search by university, course, country, state/city, or course category.
+            </p>
           </div>
           <div className="flex flex-wrap items-center gap-2">
             <input
               value={search}
               onChange={(event) => setSearch(event.target.value)}
-              placeholder="Search university..."
+              placeholder="Type: MIT, Data Science, Australia, Victoria, Engineering..."
               className="h-10 rounded-lg border border-sky-100 bg-sky-50/30 px-3 text-sm outline-none focus:border-sky-300 focus:ring-4 focus:ring-sky-100"
             />
             <button
