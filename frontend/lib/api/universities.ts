@@ -53,6 +53,15 @@ export const listUniversitiesByCountry = async (country: string) => {
   }
 };
 
+export const listAllUniversities = async () => {
+  try {
+    const response = await axios.get(API.UNIVERSITIES);
+    return response.data as ApiResult<Record<string, unknown>[]>;
+  } catch (error) {
+    return toError(error, "Failed to fetch universities") as ApiResult<Record<string, unknown>[]>;
+  }
+};
+
 export const getUniversity = async (id: string) => {
   try {
     const response = await axios.get(`${API.UNIVERSITIES}/${encodeURIComponent(id)}`);
