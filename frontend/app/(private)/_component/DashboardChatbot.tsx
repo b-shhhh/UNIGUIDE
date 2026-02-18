@@ -29,7 +29,15 @@ export default function DashboardChatbot() {
   const [chatMessages, setChatMessages] = useState<ChatMessage[]>([
     {
       role: "assistant",
-      text: "Tell me what you want to study and I will find universities for you.",
+      text: [
+        "I can help with:",
+        "• Country suggestions (best/affordable/PR friendly)",
+        "• Top 50 universities by country",
+        "• IELTS / SAT requirements",
+        "• Course guidance by country",
+        "",
+        "Try: “Best country for IT?”, “Top 50 universities in UK”, “Minimum IELTS for USA”, or “Best country for Nursing”.",
+      ].join("\n"),
     },
   ]);
 
@@ -164,7 +172,7 @@ export default function DashboardChatbot() {
                   void handleChatAsk();
                 }
               }}
-              placeholder="Ask your query..."
+              placeholder="Ask about countries, top 50 universities, IELTS/SAT, or courses..."
               className="h-10 w-full rounded-md border border-[#d8e5f8] px-3 text-sm outline-none"
             />
             <button

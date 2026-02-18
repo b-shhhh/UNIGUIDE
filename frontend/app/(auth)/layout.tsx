@@ -28,25 +28,14 @@ export default function AuthLayout({ children }: { children: ReactNode }) {
                 </div>
               </div>
 
-              <h1 className="mt-8 max-w-sm text-3xl font-black leading-tight sm:text-4xl">Find the right university with less guesswork.</h1>
+              <h1 className="mt-8 max-w-sm text-3xl font-black leading-tight sm:text-4xl">
+                Top Countries. Top 50 Universities. One Smart Choice.
+              </h1>
               <p className="mt-4 max-w-md text-sm leading-relaxed text-sky-100">
-                Compare universities, tuition, and courses in one focused dashboard built for students making real decisions.
+                Explore curated universities and courses, shortlist your favorites, and apply with confidence.
               </p>
 
-              <div className="mt-8 grid max-w-md grid-cols-3 gap-3 text-center">
-                <div className="rounded-xl border border-white/20 bg-white/10 px-3 py-3">
-                  <p className="text-xl font-black">1000+</p>
-                  <p className="mt-1 text-[10px] font-semibold uppercase tracking-wide text-sky-100">Universities</p>
-                </div>
-                <div className="rounded-xl border border-white/20 bg-white/10 px-3 py-3">
-                  <p className="text-xl font-black">60+</p>
-                  <p className="mt-1 text-[10px] font-semibold uppercase tracking-wide text-sky-100">Countries</p>
-                </div>
-                <div className="rounded-xl border border-white/20 bg-white/10 px-3 py-3">
-                  <p className="text-xl font-black">24/7</p>
-                  <p className="mt-1 text-[10px] font-semibold uppercase tracking-wide text-sky-100">Access</p>
-                </div>
-              </div>
+              <div className="mt-6" />
             </div>
           </aside>
 

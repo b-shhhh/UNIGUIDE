@@ -9,10 +9,10 @@ router.get("/", listCourses);
 // Get courses available in a specific country
 router.get("/country/:country", coursesByCountry);
 
+// Get countries that offer a course (place before :id)
+router.get("/:id/countries", countriesByCourse);
+
 // Get course details by ID
 router.get("/:id", courseDetails);
-
-// Get countries that offer a course
-router.get("/:id/countries", countriesByCourse);
 
 export default router;

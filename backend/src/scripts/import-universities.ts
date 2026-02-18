@@ -64,8 +64,28 @@ async function readCsv(filePath: string): Promise<CsvRow[]> {
 
 const toNumber = (value: string | undefined) => {
   if (!value) return null;
-  const num = Number(String(value).replace(/[^\d.]/g, ""));
+  const num = Number(String(value).replace(/[^\d.-]/g, ""));
   return Number.isFinite(num) ? num : null;
+};
+
+const getFirst = (row: CsvRow, keys: string[]): string | undefined => {
+  for (const key of keys) {
+    const direct = row[key];
+    if (direct !== undefined && String(direct).trim()) return direct;
+    const lower = row[key.toLowerCase()];
+    if (lower !== undefined && String(lower).trim()) return lower;
+    const upper = row[key.toUpperCase()];
+    if (upper !== undefined && String(upper).trim()) return upper;
+  }
+  return undefined;
+};
+
+const toBool = (value: string | undefined) => {
+  if (!value) return undefined;
+  const v = String(value).trim().toLowerCase();
+  if (["1", "true", "yes", "y"].includes(v)) return true;
+  if (["0", "false", "no", "n"].includes(v)) return false;
+  return undefined;
 };
 
 dotenv.config();
@@ -81,35 +101,52 @@ dotenv.config();
 
   const rows = await readCsv(filePath);
   let count = 0;
-  for (const row of rows) {
-    const courses = String(row["Popular Courses / Degrees"] || "")
+  for (const [rowIndex, row] of rows.entries()) {
+    const sourceId = String(
+      getFirst(row, ["S/N", "\ufeffS/N", "id", "sourceId"]) || rowIndex + 1
+    ).trim();
+
+    const name = getFirst(row, ["University", "university", "name"]) || "";
+    const country = getFirst(row, ["Country", "country"]) || "";
+    const alpha2 = (getFirst(row, ["Country Code", "alpha2"]) || "").toUpperCase();
+    const state = getFirst(row, ["State", "state"]) || undefined;
+    const city = getFirst(row, ["City", "city"]) || undefined;
+    const website = getFirst(row, ["Official Website", "website", "web_pages"]);
+    const flagUrl = getFirst(row, ["Country Flag URL", "country_flag"]);
+    const logoUrl = getFirst(row, ["University Logo URL", "university_logo"]);
+
+    const courses = String(
+      getFirst(row, ["Popular Courses / Degrees", "PopularCourses", "courses", "course"]) || ""
+    )
       .split(",")
       .map((item) => item.trim())
       .filter(Boolean);
-    const degreeLevels = String(row["Degree Levels"] || "")
+
+    const degreeLevels = String(getFirst(row, ["Degree Levels", "degree_level", "degree_levels"]) || "")
       .split(",")
       .map((item) => item.trim())
       .filter(Boolean);
 
     await University.findOneAndUpdate(
-      { sourceId: row["S/N"] || row["id"] },
+      { sourceId },
       {
-        sourceId: row["S/N"] || row["id"],
-        alpha2: (row["Country Code"] || row["alpha2"] || "").toUpperCase(),
-        name: row["University"] || row["name"],
-        country: row["Country"] || row["country"],
-        state: row["State"] || row["state"],
-        city: row["City"] || row["city"],
-        web_pages: row["Official Website"] || row["website"],
-        flag_url: row["Country Flag URL"] || row["flag_url"],
-        logo_url: row["University Logo URL"] || row["logo_url"],
+        sourceId,
+        alpha2,
+        name,
+        country,
+        state,
+        city,
+        web_pages: website,
+        flag_url: flagUrl,
+        logo_url: logoUrl,
         courses,
         degreeLevels: degreeLevels.length ? degreeLevels : undefined,
-        ieltsMin: toNumber(row["Typical IELTS"]),
-        satMin: toNumber(row["Typical SAT (Accepted)"]),
-        description: row["Description"] || undefined,
+        ieltsMin: toNumber(getFirst(row, ["Typical IELTS", "ielts_min"])),
+        satRequired: toBool(getFirst(row, ["SAT Required", "sat_required"])),
+        satMin: toNumber(getFirst(row, ["Typical SAT (Accepted)", "sat_min"])),
+        description: getFirst(row, ["Description", "description"]) || undefined,
       },
-      { new: true, upsert: true, setDefaultsOnInsert: true }
+      { returnDocument: "after", upsert: true, setDefaultsOnInsert: true }
     );
     count += 1;
   }

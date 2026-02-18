@@ -3,18 +3,32 @@
 import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import { listUniversitiesByCountry } from "@/lib/api/universities";
-import UniversityCard from "../../_component/UniversityCard";
+import UniversityCard from "../../../_component/UniversityCard";
+
+type University = {
+  id: string;
+  dbId?: string;
+  name: string;
+  country: string;
+  state?: string;
+  city?: string;
+  flag_url?: string;
+  logo_url?: string;
+  courses?: string[];
+  description?: string;
+};
 
 export default function CountryPage() {
   const params = useParams<{ slug: string }>();
   const country = decodeURIComponent(params.slug || "");
-  const [universities, setUniversities] = useState<any[]>([]);
+  const [universities, setUniversities] = useState<University[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const load = async () => {
       const res = await listUniversitiesByCountry(country);
-      setUniversities((res.data as any[]) || []);
+      const rows = ((res.data as University[]) || []).filter((u) => String(u.name || "").trim());
+      setUniversities(rows);
       setLoading(false);
     };
     if (country) void load();
@@ -33,7 +47,7 @@ export default function CountryPage() {
       ) : (
         <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
           {universities.map((uni) => (
-            <UniversityCard key={uni.id} university={uni as any} />
+            <UniversityCard key={uni.id} university={uni} />
           ))}
         </div>
       )}

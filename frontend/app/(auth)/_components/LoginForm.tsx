@@ -14,6 +14,7 @@ export default function LoginPage() {
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [showPassword, setShowPassword] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -50,7 +51,7 @@ export default function LoginPage() {
           <label className="text-[11px] font-semibold uppercase tracking-[0.12em] text-slate-600">Email Address</label>
           <input
             type="email"
-            placeholder="name@university.edu"
+            placeholder="name@gmail.com"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             required
@@ -60,14 +61,23 @@ export default function LoginPage() {
 
         <div className="flex flex-col gap-1.5">
           <label className="text-[11px] font-semibold uppercase tracking-[0.12em] text-slate-600">Password</label>
-          <input
-            type="password"
-            placeholder="********"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            required
-            className="h-12 w-full rounded-xl border border-sky-100 bg-sky-50/30 px-3 text-sm text-slate-900 outline-none transition focus:border-sky-300 focus:ring-4 focus:ring-sky-100"
-          />
+          <div className="relative">
+            <input
+              type={showPassword ? "text" : "password"}
+              placeholder="••••••••"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              required
+              className="h-12 w-full rounded-xl border border-sky-100 bg-sky-50/30 px-3 pr-20 text-sm text-slate-900 outline-none transition focus:border-sky-300 focus:ring-4 focus:ring-sky-100"
+            />
+            <button
+              type="button"
+              onClick={() => setShowPassword((v) => !v)}
+              className="absolute inset-y-0 right-2 my-1 rounded-lg px-3 text-xs font-semibold text-slate-600 hover:bg-sky-100"
+            >
+              {showPassword ? "Hide" : "Show"}
+            </button>
+          </div>
         </div>
 
         {error && <p className="text-xs font-semibold text-rose-700">{error}</p>}

@@ -334,8 +334,13 @@ export async function POST(req: NextRequest) {
     viewDetailsUrl: `/homepage/universities/${row.id}`,
   }));
 
+  const answer =
+    results.length > 0
+      ? buildBotReply(filters, results.length)
+      : `Got it. You said: "${message}". Ask me anything—universities, courses, or general questions—and I'll help.`;
+
   return NextResponse.json({
-    answer: buildBotReply(filters, results.length),
+    answer,
     filters,
     results,
   });

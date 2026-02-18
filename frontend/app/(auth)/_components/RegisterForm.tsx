@@ -11,7 +11,6 @@ type RegisterFormData = {
   email: string;
   password: string;
   confirmPassword: string;
-  countryCode: string;
   phone: string;
 };
 
@@ -22,11 +21,13 @@ export default function RegisterForm() {
     handleSubmit,
     formState: { errors, isSubmitting },
   } = useForm<RegisterFormData>({
-    defaultValues: { name: "", email: "", countryCode: "+977", phone: "", password: "", confirmPassword: "" },
+    defaultValues: { name: "", email: "", phone: "", password: "", confirmPassword: "" },
   });
 
   const [pending] = useTransition();
   const [error, setError] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirm, setShowConfirm] = useState(false);
 
   const onSubmit = async (data: RegisterFormData) => {
     setError("");
@@ -40,7 +41,7 @@ export default function RegisterForm() {
       fullName: data.name,
       email: data.email,
       phone: data.phone,
-      countryCode: data.countryCode,
+      countryCode: "+977",
       password: data.password,
     };
 
@@ -78,7 +79,7 @@ export default function RegisterForm() {
           <label className="text-[11px] font-semibold uppercase tracking-[0.12em] text-slate-600">Email</label>
           <input
             type="email"
-            placeholder="example@gmail.com"
+            placeholder="name@gmail.com"
             {...register("email", { required: "Email is required" })}
             className="h-12 w-full rounded-xl border border-sky-100 bg-sky-50/30 px-3 text-sm text-slate-900 outline-none transition focus:border-sky-300 focus:ring-4 focus:ring-sky-100"
           />
@@ -88,40 +89,51 @@ export default function RegisterForm() {
         <div className="grid gap-4 sm:grid-cols-2">
           <div className="flex flex-col gap-1.5">
             <label className="text-[11px] font-semibold uppercase tracking-[0.12em] text-slate-600">Password</label>
-            <input
-              type="password"
-              placeholder="********"
-              {...register("password", { required: "Password is required" })}
-              className="h-12 w-full rounded-xl border border-sky-100 bg-sky-50/30 px-3 text-sm text-slate-900 outline-none transition focus:border-sky-300 focus:ring-4 focus:ring-sky-100"
-            />
+            <div className="relative">
+              <input
+                type={showPassword ? "text" : "password"}
+                placeholder="••••••••"
+                {...register("password", { required: "Password is required" })}
+                className="h-12 w-full rounded-xl border border-sky-100 bg-sky-50/30 px-3 pr-20 text-sm text-slate-900 outline-none transition focus:border-sky-300 focus:ring-4 focus:ring-sky-100"
+              />
+              <button
+                type="button"
+                onClick={() => setShowPassword((v) => !v)}
+                className="absolute inset-y-0 right-2 my-1 rounded-lg px-3 text-xs font-semibold text-slate-600 hover:bg-sky-100"
+              >
+                {showPassword ? "Hide" : "Show"}
+              </button>
+            </div>
             {errors.password && <p className="text-xs text-rose-700">{errors.password.message}</p>}
           </div>
 
           <div className="flex flex-col gap-1.5">
             <label className="text-[11px] font-semibold uppercase tracking-[0.12em] text-slate-600">Confirm Password</label>
-            <input
-              type="password"
-              placeholder="********"
-              {...register("confirmPassword", { required: "Confirm your password" })}
-              className="h-12 w-full rounded-xl border border-sky-100 bg-sky-50/30 px-3 text-sm text-slate-900 outline-none transition focus:border-sky-300 focus:ring-4 focus:ring-sky-100"
-            />
+            <div className="relative">
+              <input
+                type={showConfirm ? "text" : "password"}
+                placeholder="••••••••"
+                {...register("confirmPassword", { required: "Confirm your password" })}
+                className="h-12 w-full rounded-xl border border-sky-100 bg-sky-50/30 px-3 pr-20 text-sm text-slate-900 outline-none transition focus:border-sky-300 focus:ring-4 focus:ring-sky-100"
+              />
+              <button
+                type="button"
+                onClick={() => setShowConfirm((v) => !v)}
+                className="absolute inset-y-0 right-2 my-1 rounded-lg px-3 text-xs font-semibold text-slate-600 hover:bg-sky-100"
+              >
+                {showConfirm ? "Hide" : "Show"}
+              </button>
+            </div>
             {errors.confirmPassword && <p className="text-xs text-rose-700">{errors.confirmPassword.message}</p>}
           </div>
         </div>
 
         <div className="flex flex-col gap-1.5">
-          <label className="text-[11px] font-semibold uppercase tracking-[0.12em] text-slate-600">Phone Number</label>
+          <label className="text-[11px] font-semibold uppercase tracking-[0.12em] text-slate-600">Phone Number (NP +977)</label>
           <div className="flex gap-2">
-            <select
-              {...register("countryCode")}
-              className="h-12 rounded-xl border border-sky-100 bg-sky-50/30 px-2 text-[12px] text-slate-900 outline-none transition focus:border-sky-300"
-            >
-              <option value="+977">NP +977</option>
-              <option value="+91">IN +91</option>
-              <option value="+1">US +1</option>
-              <option value="+44">UK +44</option>
-              <option value="+86">CN +86</option>
-            </select>
+            <div className="flex h-12 items-center rounded-xl border border-sky-100 bg-sky-50/60 px-3 text-xs font-semibold text-slate-700">
+              NP&nbsp;+977
+            </div>
             <input
               type="tel"
               placeholder="9800000000"

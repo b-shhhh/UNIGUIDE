@@ -38,8 +38,7 @@ export default function LandingPage() {
             </h1>
 
             <p className="mt-5 max-w-2xl text-base leading-relaxed text-slate-700 sm:text-lg">
-              Compare universities, tuition, and study modes in one place. Build your shortlist faster and apply with confidence.
-            </p>
+Top Countries. Top 50 Universities. One Smart Choice            </p>
           </div>
 
           <div className="mt-7 flex flex-col items-start gap-3 sm:flex-row sm:items-center">
@@ -82,25 +81,6 @@ export default function LandingPage() {
                 <path d="M52 29V43" stroke="#EFF6FF" strokeWidth="3" strokeLinecap="round" className="cap-tassel" />
                 <circle cx="52" cy="46" r="3" fill="#DBEAFE" className="cap-tassel" />
               </svg>
-            </div>
-
-            <h2 className="text-2xl font-extrabold tracking-tight text-slate-900" style={{ fontFamily: '"Sora", "Trebuchet MS", sans-serif' }}>
-              Why students choose UniGuide
-            </h2>
-
-            <div className="mt-5 space-y-3">
-              <article className="rounded-2xl border border-sky-100 bg-sky-50/70 p-4">
-                <p className="text-sm font-bold text-sky-900">Smart comparison</p>
-                <p className="mt-1 text-sm text-slate-600">See fees, programs, and learning modes side by side.</p>
-              </article>
-              <article className="rounded-2xl border border-cyan-100 bg-cyan-50/70 p-4">
-                <p className="text-sm font-bold text-cyan-900">Decision confidence</p>
-                <p className="mt-1 text-sm text-slate-600">Use structured data to shortlist universities quickly.</p>
-              </article>
-              <article className="rounded-2xl border border-slate-200 bg-white p-4">
-                <p className="text-sm font-bold text-slate-800">Application ready</p>
-                <p className="mt-1 text-sm text-slate-600">Keep your research organized and ready for next steps.</p>
-              </article>
             </div>
           </div>
         </div>

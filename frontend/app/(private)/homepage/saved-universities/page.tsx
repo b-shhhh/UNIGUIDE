@@ -5,9 +5,25 @@ import { fetchSavedUniversityIds, SAVED_UNIVERSITIES_UPDATE_EVENT } from "@/lib/
 import { getUniversitiesByIds } from "@/lib/api/universities";
 import UniversityCard from "../../_component/UniversityCard";
 
+type University = {
+  id: string;
+  dbId?: string;
+  alpha2?: string;
+  name: string;
+  country: string;
+  state?: string;
+  city?: string;
+  flag_url?: string;
+  logo_url?: string;
+  courses?: string[];
+  description?: string;
+};
+
 export default function SavedUniversitiesPage() {
   const [loading, setLoading] = useState(true);
-  const [items, setItems] = useState<any[]>([]);
+  const [items, setItems] = useState<University[]>([]);
+  const flagFor = (alpha2?: string) => (alpha2 ? `https://flagcdn.com/${alpha2.toLowerCase()}.svg` : undefined);
+  const clean = (value?: string) => (value && value.trim() ? value.trim() : undefined);
 
   const load = async () => {
     setLoading(true);
@@ -18,20 +34,30 @@ export default function SavedUniversitiesPage() {
       return;
     }
     const res = await getUniversitiesByIds(ids);
-    setItems(Array.isArray(res.data) ? res.data : []);
+    setItems(
+      Array.isArray(res.data)
+        ? (res.data as University[]).map((u) => ({
+            ...u,
+            flag_url: clean(u.flag_url) || flagFor(u.alpha2),
+            logo_url: clean(u.logo_url),
+          }))
+        : []
+    );
     setLoading(false);
   };
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     void load();
-    const handler = () => void load();
+    const handler = () => {
+      void load();
+    };
     window.addEventListener("storage", handler);
     window.addEventListener(SAVED_UNIVERSITIES_UPDATE_EVENT, handler);
     return () => {
       window.removeEventListener("storage", handler);
       window.removeEventListener(SAVED_UNIVERSITIES_UPDATE_EVENT, handler);
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   if (loading) {
@@ -52,7 +78,7 @@ export default function SavedUniversitiesPage() {
 
       <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
         {items.map((uni) => (
-          <UniversityCard key={uni.id} university={uni as any} />
+          <UniversityCard key={uni.id} university={uni} />
         ))}
       </div>
     </div>

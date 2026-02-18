@@ -1,19 +1,21 @@
 "use client";
-
-import Image from "next/image";
-import Link from "next/link";
-
 type Props = {
   name: string;
   flagUrl?: string;
   count?: number;
+  onClick?: () => void;
 };
 
-export default function CountryCard({ name, flagUrl, count }: Props) {
+export default function CountryCard({ name, flagUrl, count, onClick }: Props) {
+  const Wrapper: React.ElementType = onClick ? "button" : "a";
+  const props = onClick
+    ? { onClick }
+    : { href: `/homepage/countries/${encodeURIComponent(name)}` };
+
   return (
-    <Link
-      href={`/homepage/countries/${encodeURIComponent(name)}`}
-      className="group flex items-center justify-between gap-3 rounded-xl border border-slate-100 bg-white p-4 shadow-sm transition hover:-translate-y-1 hover:shadow-md"
+    <Wrapper
+      {...props}
+      className="group flex w-full items-center justify-between gap-3 rounded-xl border border-slate-100 bg-white p-4 text-left shadow-sm transition hover:-translate-y-1 hover:shadow-md"
     >
       <div className="flex items-center gap-3">
         {flagUrl ? (
@@ -32,6 +34,6 @@ export default function CountryCard({ name, flagUrl, count }: Props) {
         </div>
       </div>
       <span className="text-slate-400 transition group-hover:text-slate-600">→</span>
-    </Link>
+    </Wrapper>
   );
 }

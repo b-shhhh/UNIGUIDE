@@ -26,5 +26,4 @@ export const API = {
     },
     UNIVERSITIES: "/api/universities",
     COURSES: "/api/courses"
-}
-}
+};
