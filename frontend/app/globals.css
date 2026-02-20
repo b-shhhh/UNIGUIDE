@@ -1,16 +1,17 @@
 @import "tailwindcss";
 
 :root {
-  --color-primary: #4a90e2;
-  --color-primary-hover: #357abd;
-  --color-secondary: #ffffff;
-  --color-accent: #f5a623;
-  --color-text: #333333;
-  --color-text-secondary: #666666;
+  /* Updated palette inspired by the provided teal gradient */
+  --color-primary: #0c7ca0;
+  --color-primary-hover: #085f7a;
+  --color-secondary: #0a3955; /* deep background tone */
+  --color-accent: #14b8d4; /* bright teal accent */
+  --color-text: #eef6fb;
+  --color-text-secondary: #c7deea;
   --radius-default: 8px;
   --space-default: 16px;
   --space-card: 24px;
-  --shadow-card: 0 4px 8px rgba(0, 0, 0, 0.1);
+  --shadow-card: 0 10px 30px rgba(0, 54, 82, 0.25);
 }
 
 * {
@@ -23,7 +24,7 @@ body {
   padding: 0;
   min-height: 100%;
   font-family: Inter, Roboto, "Segoe UI", Arial, sans-serif;
-  background: var(--color-secondary);
+  background: linear-gradient(135deg, #0b7a98 0%, #0a4e73 45%, #0a3955 100%);
   color: var(--color-text);
   scroll-behavior: smooth;
 }

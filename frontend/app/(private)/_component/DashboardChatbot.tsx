@@ -1,193 +1,140 @@
+// components/DashboardChatbot.tsx
 "use client";
+import { useState, useRef, useEffect } from "react";
 
-import { useState } from "react";
-
-type ChatMessage = {
-  role: "user" | "assistant";
+interface Message {
+  sender: "user" | "bot";
   text: string;
-  results?: Array<{
-    id: string;
-    name: string;
-    country: string;
-    state?: string;
-    city?: string;
-    courses: string[];
-    courseCategory?: string;
-    degreeLevel?: string;
-    ieltsMin?: number | null;
-    satRequired?: boolean;
-    satMin?: number | null;
-    tuition: string;
-    viewDetailsUrl: string;
-  }>;
-};
+}
 
-export default function DashboardChatbot() {
-  const [chatInput, setChatInput] = useState("");
-  const [chatLoading, setChatLoading] = useState(false);
-  const [chatOpen, setChatOpen] = useState(false);
-  const [chatMessages, setChatMessages] = useState<ChatMessage[]>([
-    {
-      role: "assistant",
-      text: [
-        "I can help with:",
-        "• Country suggestions (best/affordable/PR friendly)",
-        "• Top 50 universities by country",
-        "• IELTS / SAT requirements",
-        "• Course guidance by country",
-        "",
-        "Try: “Best country for IT?”, “Top 50 universities in UK”, “Minimum IELTS for USA”, or “Best country for Nursing”.",
-      ].join("\n"),
-    },
-  ]);
+const DashboardChatbot = () => {
+  const [messages, setMessages] = useState<Message[]>([]);
+  const [input, setInput] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [open, setOpen] = useState(false);
+  const chatEndRef = useRef<HTMLDivElement>(null);
 
-  const handleChatAsk = async () => {
-    const raw = chatInput.trim();
-    if (!raw || chatLoading) return;
+  const scrollToBottom = () => {
+    chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  };
 
-    const next = [...chatMessages, { role: "user" as const, text: raw }];
-    setChatMessages(next);
-    setChatInput("");
-    setChatLoading(true);
+  useEffect(() => {
+    scrollToBottom();
+  }, [messages]);
+
+  const handleSend = async () => {
+    if (!input.trim()) return;
+
+    const userMsg: Message = { sender: "user", text: input };
+    setMessages((prev) => [...prev, userMsg]);
+    setInput("");
+    setLoading(true);
 
     try {
-      const response = await fetch("/api/chatbot", {
+      const res = await fetch("/api/chatbot", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          message: raw,
-          history: next.map((msg) => ({
-            role: msg.role,
-            content: msg.text,
-            recommendationIds: msg.results?.map((uni) => uni.id) || [],
-          })),
-        }),
+        body: JSON.stringify({ message: input }),
       });
 
-      if (!response.ok) {
-        throw new Error("Failed to ask chatbot");
-      }
-
-      const payload = (await response.json()) as {
-        answer?: string;
-        results?: Array<{
-          id: string;
-          name: string;
-          country: string;
-          courses: string[];
-          tuition: string;
-          viewDetailsUrl: string;
-        }>;
-      };
-
-      setChatMessages((prev) => [
-        ...prev,
-        {
-          role: "assistant",
-          text: payload.answer || "I found some matching universities for you.",
-          results: payload.results?.length ? payload.results : undefined,
-        },
-      ]);
-    } catch {
-      setChatMessages((prev) => [
-        ...prev,
-        {
-          role: "assistant",
-          text: "I could not process that right now. Please try again.",
-        },
-      ]);
+      const data = await res.json();
+      const botMsg: Message = { sender: "bot", text: data.reply };
+      setMessages((prev) => [...prev, botMsg]);
+    } catch (err) {
+      const botMsg: Message = { sender: "bot", text: "Oops! Something went wrong." };
+      setMessages((prev) => [...prev, botMsg]);
     } finally {
-      setChatLoading(false);
+      setLoading(false);
     }
+  };
+
+  const handleKeyPress = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === "Enter") handleSend();
   };
 
   return (
     <>
-      <button
-        type="button"
-        onClick={() => setChatOpen((prev) => !prev)}
-        aria-label={chatOpen ? "Close chatbot" : "Open chatbot"}
-        title={chatOpen ? "Close chatbot" : "Open chatbot"}
-        className="fixed bottom-5 right-5 z-40 flex h-16 w-16 items-center justify-center rounded-full bg-[#4A90E2] text-sm font-bold uppercase text-white shadow-lg transition-transform hover:scale-105 hover:bg-[#357ABD]"
-      >
-        AI
-      </button>
+      {/* Floating toggle button */}
+      {!open && (
+        <button
+          onClick={() => setOpen(true)}
+          className="fixed bottom-6 right-6 h-14 w-14 rounded-full bg-gradient-to-br from-blue-600 to-indigo-600 text-white shadow-lg hover:scale-105 transition-transform duration-150 flex items-center justify-center"
+          aria-label="Open chatbot"
+        >
+          <span className="text-2xl" aria-hidden>
+            🎓
+          </span>
+        </button>
+      )}
 
-      {chatOpen ? (
-        <section className="fixed bottom-20 right-5 z-40 w-[min(92vw,390px)] rounded-2xl border border-[#d8e5f8] bg-white p-4 shadow-2xl">
-          <h3 className="text-lg font-bold text-[#1a2b44]">AI Chatbot</h3>
-          <p className="mt-1 text-xs text-[#5f7590]">Ask naturally. I will find matching universities for you.</p>
+      {open && (
+        <div className="fixed bottom-6 right-6 w-96 max-w-[92vw] h-[520px] bg-white shadow-2xl rounded-2xl border border-slate-200 flex flex-col overflow-hidden">
+          <header className="flex items-center justify-between px-4 py-3 bg-gradient-to-r from-blue-600 to-indigo-600 text-white">
+            <div className="flex items-center gap-2">
+              <span className="text-2xl" aria-hidden>
+                🎓
+              </span>
+              <div className="leading-tight">
+                <p className="font-semibold">UniGuide Assistant</p>
+                <p className="text-xs opacity-80">Ask about universities, courses, IELTS/SAT</p>
+              </div>
+            </div>
+            <button
+              onClick={() => setOpen(false)}
+              className="text-white/80 hover:text-white text-xl leading-none px-2"
+              aria-label="Close chatbot"
+            >
+              ×
+            </button>
+          </header>
 
-          <div className="mt-3 max-h-72 space-y-2 overflow-y-auto rounded-lg border border-[#d8e5f8] bg-[#f8fbff] p-3">
-            {chatMessages.map((message, index) => (
-              <div key={`chat-${index}`} className={message.role === "user" ? "text-right" : "text-left"}>
-                <div
-                  className={`inline-block max-w-[90%] rounded-lg text-xs ${
-                    message.role === "assistant" ? "bg-[#4A90E2] text-white" : "bg-[#E5E5EA] text-black"
-                  }`}
-                  style={{ padding: "12px", margin: "8px 0" }}
-                >
-                  {message.text}
-                </div>
-                {message.role === "assistant" && message.results?.length ? (
-                  <div className="mt-2 grid gap-2">
-                    {message.results.map((result) => (
-                      <article key={`chat-result-${result.id}`} className="rounded-md border border-[#d8e5f8] bg-white px-3 py-2 text-left">
-                        <p className="text-xs font-semibold text-[#1a2b44]">{result.name}</p>
-                        <p className="text-[11px] text-[#5f7590]">
-                          Country: {result.country}
-                          {result.state ? `, ${result.state}` : ""}
-                          {result.city ? `, ${result.city}` : ""}
-                        </p>
-                        {result.courseCategory ? (
-                          <p className="text-[11px] text-[#5f7590]">Category: {result.courseCategory}</p>
-                        ) : null}
-                        {result.degreeLevel ? (
-                          <p className="text-[11px] text-[#5f7590]">Degree: {result.degreeLevel}</p>
-                        ) : null}
-                        {result.ieltsMin !== null && result.ieltsMin !== undefined ? (
-                          <p className="text-[11px] text-[#5f7590]">IELTS ≥ {result.ieltsMin}</p>
-                        ) : null}
-                        {result.satRequired !== undefined ? (
-                          <p className="text-[11px] text-[#5f7590]">
-                            SAT: {result.satRequired ? `Required${result.satMin ? ` (≥${result.satMin})` : ""}` : "Not required"}
-                          </p>
-                        ) : null}
-                        <p className="text-[11px] text-[#5f7590]">{result.tuition}</p>
-                      </article>
-                    ))}
-                  </div>
-                ) : null}
+          <div className="flex-1 overflow-y-auto px-4 py-3 space-y-2 bg-slate-50">
+            {messages.length === 0 && (
+              <div className="text-sm text-slate-500">
+                Try: “Universities in Canada that accept IELTS 6.5” or “MBA in Germany with SAT optional”.
+              </div>
+            )}
+            {messages.map((msg, idx) => (
+              <div
+                key={idx}
+                className={`max-w-[90%] rounded-xl px-3 py-2 text-sm ${
+                  msg.sender === "user"
+                    ? "ml-auto bg-blue-600 text-white"
+                    : "mr-auto bg-white border border-slate-200 text-slate-800 shadow-sm"
+                }`}
+              >
+                {msg.text.split("\n").map((line, i) => (
+                  <p key={i}>{line}</p>
+                ))}
               </div>
             ))}
-            {chatLoading ? <p className="text-xs text-[#5f7590]">Assistant is thinking...</p> : null}
+            <div ref={chatEndRef} />
           </div>
 
-          <div className="mt-3 flex flex-col gap-2 sm:flex-row">
-            <input
-              value={chatInput}
-              onChange={(event) => setChatInput(event.target.value)}
-              onKeyDown={(event) => {
-                if (event.key === "Enter") {
-                  void handleChatAsk();
-                }
-              }}
-              placeholder="Ask about countries, top 50 universities, IELTS/SAT, or courses..."
-              className="h-10 w-full rounded-md border border-[#d8e5f8] px-3 text-sm outline-none"
-            />
-            <button
-              type="button"
-              disabled={chatLoading}
-              onClick={() => {
-                void handleChatAsk();
-              }}
-              className="h-10 rounded-md bg-[#4A90E2] px-4 text-xs font-bold uppercase tracking-[0.08em] text-white disabled:opacity-50"
-            >
-              Ask
-            </button>
+          <div className="border-t border-slate-200 bg-white px-4 py-3">
+            <div className="flex gap-2">
+              <input
+                type="text"
+                className="flex-1 border border-slate-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                placeholder="Ask about country, course, IELTS/SAT…"
+                value={input}
+                onChange={(e) => setInput(e.target.value)}
+                onKeyDown={handleKeyPress}
+                disabled={loading}
+              />
+              <button
+                className="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-semibold disabled:opacity-60 disabled:cursor-not-allowed"
+                onClick={handleSend}
+                disabled={loading}
+              >
+                {loading ? "…" : "Send"}
+              </button>
+            </div>
           </div>
-        </section>
-      ) : null}
+        </div>
+      )}
     </>
   );
-}
+};
+
+export default DashboardChatbot;

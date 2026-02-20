@@ -9,7 +9,6 @@ import { University } from "../models/university.model";
 
 type CsvRow = Record<string, string>;
 
-// Very small CSV reader that supports quoted fields; avoids extra deps.
 async function readCsv(filePath: string): Promise<CsvRow[]> {
   const rows: CsvRow[] = [];
   const input = fs.createReadStream(filePath, { encoding: "utf8" });
@@ -127,25 +126,28 @@ dotenv.config();
       .map((item) => item.trim())
       .filter(Boolean);
 
+    const update: Record<string, unknown> = {
+      sourceId,
+      name,
+      country,
+      web_pages: website,
+      flag_url: flagUrl,
+      logo_url: logoUrl,
+      courses,
+      degreeLevels: degreeLevels.length ? degreeLevels : undefined,
+      ieltsMin: toNumber(getFirst(row, ["Typical IELTS", "ielts_min"])),
+      satRequired: toBool(getFirst(row, ["SAT Required", "sat_required"])),
+      satMin: toNumber(getFirst(row, ["Typical SAT (Accepted)", "sat_min"])),
+      description: getFirst(row, ["Description", "description"]) || undefined,
+    };
+
+    if (alpha2) update.alpha2 = alpha2;
+    if (state) update.state = state;
+    if (city) update.city = city;
+
     await University.findOneAndUpdate(
       { sourceId },
-      {
-        sourceId,
-        alpha2,
-        name,
-        country,
-        state,
-        city,
-        web_pages: website,
-        flag_url: flagUrl,
-        logo_url: logoUrl,
-        courses,
-        degreeLevels: degreeLevels.length ? degreeLevels : undefined,
-        ieltsMin: toNumber(getFirst(row, ["Typical IELTS", "ielts_min"])),
-        satRequired: toBool(getFirst(row, ["SAT Required", "sat_required"])),
-        satMin: toNumber(getFirst(row, ["Typical SAT (Accepted)", "sat_min"])),
-        description: getFirst(row, ["Description", "description"]) || undefined,
-      },
+      update,
       { returnDocument: "after", upsert: true, setDefaultsOnInsert: true }
     );
     count += 1;
@@ -154,3 +156,4 @@ dotenv.config();
   console.log(`Imported/updated ${count} universities`);
   await mongoose.connection.close();
 })();
+

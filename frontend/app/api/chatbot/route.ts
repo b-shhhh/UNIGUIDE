@@ -1,347 +1,195 @@
+// app/api/chatbot/route.ts
 import { NextRequest, NextResponse } from "next/server";
+import { MongoClient } from "mongodb";
+// Using Gemini via REST to avoid extra dependencies
 
-type ChatTurn = {
-  role: "user" | "assistant";
-  content: string;
-};
+// Ensure env var matches .env.local (MONGODB_URI)
+const client = new MongoClient(process.env.MONGODB_URI ?? "");
 
-type ParsedFilters = {
-  country?: string;
-  course?: string;
-  course_category?: string;
-  degree_level?: string;
-  budget?: number | string;
-  min_ielts?: number;
-  min_gpa?: number;
-  min_sat?: number;
-  intake?: string;
-  mode?: "online" | "offline" | "both";
-  sat_required?: boolean;
-  city?: string;
-  state?: string;
-};
+const isQuotaError = (err: any) =>
+  err?.status === 429 ||
+  err?.code === "insufficient_quota" ||
+  err?.response?.status === 429;
 
-type BackendUniversity = {
-  id: string;
-  alpha2: string;
-  country: string;
-  state?: string;
-  city?: string;
-  name: string;
-  web_pages?: string;
-  flag_url?: string;
-  logo_url?: string;
-  courses: string[];
-  courseCategories?: string[];
-  degreeLevels?: string[];
-  ieltsMin?: number | null;
-  satRequired?: boolean;
-  satMin?: number | null;
-};
+// Attempts to extract a JSON object from Gemini text replies (which may include fences like ```json ... ```).
+const extractJson = (text: string): any => {
+  const trimmed = text.trim();
+  const fenceMatch = trimmed.match(/```(?:json)?\s*([\s\S]*?)```/i);
+  const candidate = fenceMatch ? fenceMatch[1].trim() : trimmed;
 
-type ChatResultCard = {
-  id: string;
-  name: string;
-  country: string;
-  state?: string;
-  city?: string;
-  courses: string[];
-  courseCategory?: string;
-  degreeLevel?: string;
-  ieltsMin?: number | null;
-  satRequired?: boolean;
-  satMin?: number | null;
-  tuition: string;
-  viewDetailsUrl: string;
-};
-
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || "http://127.0.0.1:5050";
-const OPENAI_API_URL = "https://api.openai.com/v1/chat/completions";
-
-const normalize = (value: string) => value.trim().toLowerCase();
-
-const hashCode = (value: string) => {
-  let hash = 0;
-  for (let i = 0; i < value.length; i += 1) {
-    hash = (hash << 5) - hash + value.charCodeAt(i);
-    hash |= 0;
-  }
-  return Math.abs(hash);
-};
-
-const syntheticTuition = (id: string) => {
-  const value = 8000 + (hashCode(id) % 55) * 1000;
-  return `$${value.toLocaleString()}/year`;
-};
-
-const parseTuitionNumber = (text: string) => {
-  const match = text.match(/\$([\d,]+)/);
-  if (!match) return Number.POSITIVE_INFINITY;
-  return Number(match[1].replace(/,/g, ""));
-};
-
-const parseBudgetRange = (budget?: number | string) => {
-  if (typeof budget === "number") {
-    return { min: null as number | null, max: budget };
-  }
-  if (!budget) {
-    return { min: null as number | null, max: null as number | null };
-  }
-
-  const raw = String(budget).trim().toLowerCase();
-  if (raw === "low") return { min: null as number | null, max: 15000 };
-
-  if (raw.startsWith("<")) {
-    const max = Number(raw.slice(1));
-    return { min: null as number | null, max: Number.isFinite(max) ? max : null };
-  }
-
-  if (raw.includes("-")) {
-    const [low, high] = raw.split("-").map((item) => Number(item.trim()));
-    return {
-      min: Number.isFinite(low) ? low : null,
-      max: Number.isFinite(high) ? high : null,
-    };
-  }
-
-  const exact = Number(raw);
-  if (Number.isFinite(exact)) return { min: null as number | null, max: exact };
-  return { min: null as number | null, max: null as number | null };
-};
-
-const extractFiltersWithOpenAI = async (message: string): Promise<ParsedFilters> => {
-  const apiKey = process.env.OPENAI_API_KEY;
-  if (!apiKey) return {};
-
-  const prompt = `
-You are an AI that extracts structured search filters from user messages for a university finder app.
-Return valid JSON only. Allowed keys: country, state, city, course, course_category, degree_level, budget, min_ielts, min_sat, min_gpa, sat_required, intake, mode.
-Rules:
-- mode must be one of: online, offline, both
-- booleans must be true or false (e.g., sat_required)
-- min_ielts, min_sat and min_gpa must be numbers
-- budget may be number or string forms like "<15000", "5000-15000", "low"
-- if not present, omit key
-User message: ${message}
-`.trim();
-
-  const response = await fetch(OPENAI_API_URL, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${apiKey}`,
-    },
-    body: JSON.stringify({
-      model: "gpt-4o-mini",
-      temperature: 0,
-      messages: [
-        { role: "system", content: "Return only JSON object with the allowed keys." },
-        { role: "user", content: prompt },
-      ],
-      response_format: { type: "json_object" },
-    }),
-  });
-
-  if (!response.ok) return {};
-  const data = (await response.json()) as { choices?: Array<{ message?: { content?: string } }> };
-  const content = data.choices?.[0]?.message?.content?.trim();
-  if (!content) return {};
+  // Find first {...} block if still contains extra prose
+  const braceMatch = candidate.match(/{[\s\S]*}/);
+  const jsonString = braceMatch ? braceMatch[0] : candidate;
 
   try {
-    const parsed = JSON.parse(content) as ParsedFilters;
-    return parsed && typeof parsed === "object" ? parsed : {};
+    return JSON.parse(jsonString);
   } catch {
     return {};
   }
 };
 
-const extractFiltersFallback = (message: string, rows: BackendUniversity[]): ParsedFilters => {
-  const text = normalize(message);
-  const countries = Array.from(new Set(rows.map((row) => row.country)));
-  const courses = Array.from(new Set(rows.flatMap((row) => row.courses)));
-  const categories = Array.from(new Set(rows.flatMap((row) => row.courseCategories || [])));
-  const degrees = Array.from(new Set(rows.flatMap((row) => row.degreeLevels || [])));
+const callGemini = async (prompt: string) => {
+  const apiKey = process.env.GEMINI_API_KEY;
+  if (!apiKey) throw new Error("Missing GEMINI_API_KEY");
 
-  const country = countries.find((name) => text.includes(normalize(name)));
-  const course = courses.find((name) => text.includes(normalize(name)));
-  const course_category = categories.find((name) => text.includes(normalize(name)));
-  const degree_level = degrees.find((name) => text.includes(normalize(name)));
+  // Allow overriding model via env; default to a currently available model
+  const model = process.env.GEMINI_MODEL || "gemini-2.5-flash";
+  const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;
 
-  const under = text.match(/(?:under|below|less than|max|upto|up to)\s*\$?\s*(\d+(?:[.,]\d+)?)\s*(k)?/i);
-  let budget: ParsedFilters["budget"] = undefined;
-  if (under) {
-    const val = Number(under[1].replace(/,/g, "")) * (under[2] ? 1000 : 1);
-    if (Number.isFinite(val)) budget = `<${val}`;
-  } else if (/(affordable|cheap|low budget|low tuition)/i.test(text)) {
-    budget = "low";
-  }
-
-  const ieltsMatch = text.match(/ielts\s*(?:>=|above|minimum|min)?\s*(\d+(?:\.\d+)?)/i);
-  const min_ielts = ieltsMatch ? Number(ieltsMatch[1]) : undefined;
-
-  const satMention = /(sat)/i.test(message);
-  const sat_required = satMention ? true : undefined;
-  const satScoreMatch = text.match(/sat\s*(?:>=|above|min|min\.?|minimum)?\s*(\d{3,4})/i);
-  const min_sat = satScoreMatch ? Number(satScoreMatch[1]) : undefined;
-
-  return {
-    country,
-    course,
-    course_category,
-    degree_level,
-    budget,
-    min_ielts,
-    min_sat,
-    sat_required,
-  };
-};
-
-const fetchAllUniversitiesFromBackend = async (): Promise<BackendUniversity[]> => {
-  const response = await fetch(`${API_BASE_URL}/api/universities`, { cache: "no-store" });
-  if (!response.ok) {
-    throw new Error("Failed to fetch universities from backend");
-  }
-  const payload = (await response.json()) as { data?: BackendUniversity[] };
-  return Array.isArray(payload.data) ? payload.data : [];
-};
-
-const applyFilters = (rows: BackendUniversity[], filters: ParsedFilters) => {
-  const countryNeedle = filters.country ? normalize(filters.country) : "";
-  const courseNeedle = filters.course ? normalize(filters.course) : "";
-  const categoryNeedle = filters.course_category ? normalize(filters.course_category) : "";
-  const degreeNeedle = filters.degree_level ? normalize(filters.degree_level) : "";
-  const cityNeedle = filters.city ? normalize(filters.city) : "";
-  const stateNeedle = filters.state ? normalize(filters.state) : "";
-  const budget = parseBudgetRange(filters.budget);
-
-  return rows.filter((row) => {
-    if (countryNeedle && !normalize(row.country).includes(countryNeedle)) {
-      return false;
-    }
-
-    if (courseNeedle) {
-      const hasCourse = row.courses.some((course) => normalize(course).includes(courseNeedle));
-      if (!hasCourse) return false;
-    }
-
-    if (categoryNeedle) {
-      const categories = row.courseCategories || [];
-      const hasCategory = categories.some((cat) => normalize(cat).includes(categoryNeedle));
-      if (!hasCategory) return false;
-    }
-
-    if (degreeNeedle) {
-      const degrees = row.degreeLevels || [];
-      const hasDegree = degrees.some((deg) => normalize(deg).includes(degreeNeedle));
-      if (!hasDegree) return false;
-    }
-
-    if (cityNeedle && (!row.city || !normalize(row.city).includes(cityNeedle))) {
-      return false;
-    }
-
-    if (stateNeedle && (!row.state || !normalize(row.state).includes(stateNeedle))) {
-      return false;
-    }
-
-    if (filters.sat_required && row.satRequired !== true) {
-      return false;
-    }
-
-    if (filters.min_sat && row.satMin && row.satMin < filters.min_sat) {
-      return false;
-    }
-
-    if (filters.min_ielts && row.ieltsMin !== null && row.ieltsMin !== undefined && row.ieltsMin < filters.min_ielts) {
-      return false;
-    }
-
-    const tuitionNumber = parseTuitionNumber(syntheticTuition(row.id));
-    if (budget.min !== null && tuitionNumber < budget.min) return false;
-    if (budget.max !== null && tuitionNumber > budget.max) return false;
-
-    return true;
+  const resp = await fetch(url, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      contents: [{ parts: [{ text: prompt }] }],
+      generationConfig: { temperature: 0 },
+    }),
   });
-};
 
-const scoreRows = (rows: BackendUniversity[], message: string, filters: ParsedFilters) => {
-  const tokens = normalize(message)
-    .replace(/[^a-z0-9\s]/g, " ")
-    .split(/\s+/)
-    .filter(Boolean);
-
-  return rows
-    .map((row) => {
-      const haystack = `${row.name} ${row.country} ${row.courses.join(" ")} ${(row.courseCategories || []).join(" ")} ${(row.degreeLevels || []).join(" ")} ${row.city || ""} ${row.state || ""}`.toLowerCase();
-      const tokenScore = tokens.reduce((acc, token) => (haystack.includes(token) ? acc + 1 : acc), 0);
-      const courseBoost = filters.course && row.courses.some((course) => normalize(course).includes(normalize(filters.course!))) ? 3 : 0;
-      const categoryBoost =
-        filters.course_category && (row.courseCategories || []).some((cat) => normalize(cat).includes(normalize(filters.course_category!)))
-          ? 2
-          : 0;
-      return { row, score: tokenScore + courseBoost + categoryBoost };
-    })
-    .sort((a, b) => b.score - a.score)
-    .map((item) => item.row);
-};
-
-const buildBotReply = (filters: ParsedFilters, count: number) => {
-  const parts: string[] = [];
-  if (filters.country) parts.push(`country: ${filters.country}`);
-  if (filters.course) parts.push(`course: ${filters.course}`);
-  if (filters.course_category) parts.push(`category: ${filters.course_category}`);
-  if (filters.degree_level) parts.push(`degree: ${filters.degree_level}`);
-  if (filters.budget !== undefined) parts.push(`budget: ${filters.budget}`);
-  if (filters.min_ielts !== undefined) parts.push(`IELTS >= ${filters.min_ielts}`);
-  if (filters.min_sat !== undefined) parts.push(`SAT >= ${filters.min_sat}`);
-  if (filters.min_gpa !== undefined) parts.push(`GPA >= ${filters.min_gpa}`);
-  if (filters.intake) parts.push(`intake: ${filters.intake}`);
-  if (filters.mode) parts.push(`mode: ${filters.mode}`);
-  if (filters.sat_required) parts.push("SAT required");
-
-  if (!parts.length) {
-    return count ? `Found ${count} universities.` : "No matches found.";
+  if (!resp.ok) {
+    const errorBody = await resp.text();
+    const err = new Error(`Gemini error: ${resp.status} ${resp.statusText} - ${errorBody}`);
+    // mimic quota detection for UI
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    // @ts-ignore
+    err.status = resp.status;
+    // mark 404 to let caller fall back
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    // @ts-ignore
+    err.notFound = resp.status === 404;
+    throw err;
   }
-  return `Applied filters (${parts.join(", ")}). Found ${count} universities.`;
+
+  const data = await resp.json();
+  return data;
 };
+
+async function fetchUniversities(filters: any) {
+  try {
+    await client.connect();
+    const db = client.db("university_guide");
+    const collection = db.collection("universities");
+
+    const query: any = {};
+
+    if (filters.country) query.country = { $regex: new RegExp(filters.country, "i") };
+    if (filters.course)
+      query.courses = { $elemMatch: { $regex: new RegExp(filters.course, "i") } };
+    if (filters.university)
+      query.name = { $regex: new RegExp(filters.university, "i") };
+    if (filters.degree_level)
+      query.degreeLevels = { $elemMatch: { $regex: new RegExp(filters.degree_level, "i") } };
+    if (filters.ielts_min) query.ieltsMin = { $lte: parseFloat(filters.ielts_min) };
+    if (filters.sat_min) query.satMin = { $lte: parseFloat(filters.sat_min) };
+
+    const results = await collection.find(query).limit(10).toArray();
+    return results;
+  } catch (err) {
+    console.error("Mongo error:", err);
+    return [];
+  } finally {
+    await client.close();
+  }
+}
 
 export async function POST(req: NextRequest) {
-  const body = (await req.json()) as { message?: string; history?: ChatTurn[] };
-  const message = String(body.message || "").trim();
-  if (!message) {
-    return NextResponse.json({ answer: "Please enter a message.", filters: {}, results: [] });
+  try {
+    const { message } = await req.json();
+
+    // 1️⃣ Call Gemini to extract intent & entities
+    const prompt = `
+You are a university search assistant.
+Extract the user's intent and filters from their message.
+Respond ONLY with raw JSON (no markdown, no code fences).
+Schema:
+{
+  "intent": "search_universities",
+  "country": "<country name or empty>",
+  "course": "<course/major/subject or empty>",
+  "degree_level": "<Bachelor|Master|PhD|MBA|... or empty>",
+  "university": "<university name if specified or empty>",
+  "ielts_min": <number or null>,
+  "sat_min": <number or null>
+}
+If information is not provided, return empty string for text fields and null for numbers.
+
+User: "${message}"
+    `;
+
+    let filters = {};
+    try {
+      const geminiResp = await callGemini(prompt);
+      const aiText = geminiResp?.candidates?.[0]?.content?.parts?.[0]?.text ?? "{}";
+      filters = extractJson(aiText);
+    } catch (err: any) {
+      // If Gemini is down, 404 (model missing), or over quota, fall back to a very simple regex-based filter extraction
+      if (isQuotaError(err) || err?.status === 429 || err?.notFound) {
+        console.warn("Gemini availability/model issue, falling back to regex extraction.");
+      } else {
+        console.error("Gemini error or JSON parse error:", err);
+      }
+
+      const lower = message.toLowerCase();
+      const possibleDegrees = ["bachelor", "master", "phd", "mba", "msc", "bsc"];
+      const degree_level = possibleDegrees.find((d) => lower.includes(d)) || "";
+      const countryMatch = message.match(/\b(?:in|for)\s+([A-Z][a-zA-Z]+)/);
+      const uniMatch = message.match(/\b(university|college|uni)\s+of\s+([A-Z][\w\s]+)/i);
+      const ieltsMatch = message.match(/ielts\s*([0-9.]+)/i);
+      const satMatch = message.match(/sat\s*([0-9]+)/i);
+
+      filters = {
+        intent: "search_universities",
+        country: countryMatch ? countryMatch[1] : "",
+        university: uniMatch ? uniMatch[2].trim() : "",
+        course: "",
+        degree_level,
+        ielts_min: ieltsMatch ? Number(ieltsMatch[1]) : null,
+        sat_min: satMatch ? Number(satMatch[1]) : null,
+      };
+    }
+
+    const hasFilters =
+      (filters as any).country ||
+      (filters as any).course ||
+      (filters as any).degree_level ||
+      (filters as any).university;
+    if (!hasFilters) {
+      return NextResponse.json({
+        reply:
+          "Please tell me at least a country, course/major, or degree level so I can search universities.",
+        universities: [],
+      });
+    }
+
+    // 2️⃣ Fetch from MongoDB
+    const universities = await fetchUniversities(filters);
+
+    // 3️⃣ Format response for frontend
+    let reply = "";
+    if (universities.length === 0) {
+      reply =
+        "No universities found with those filters. Try specifying a country, course, and degree level.";
+    } else {
+      reply = "Here are some universities I found:\n\n";
+      universities.forEach((uni: any, idx: number) => {
+        const name = uni.name ?? "Unnamed";
+        const country = uni.country ?? "Country N/A";
+        const degree = Array.isArray(uni.degreeLevels)
+          ? uni.degreeLevels.join(", ")
+          : uni.degree_level ?? "N/A";
+        const ielts = uni.ieltsMin ?? uni.ielts_min ?? "N/A";
+        const sat =
+          uni.satRequired === true || uni.sat_required === true
+            ? uni.satMin ?? uni.sat_min ?? "N/A"
+            : uni.satRequired === false || uni.sat_required === false
+            ? "optional"
+            : "N/A";
+        reply += `${idx + 1}. ${name} — ${country} (${degree}) · IELTS ${ielts} · SAT ${sat}\n`;
+      });
+    }
+
+    return NextResponse.json({ reply, universities });
+  } catch (err) {
+    console.error("Error:", err);
+    return NextResponse.json({ reply: "Something went wrong.", universities: [] });
   }
-
-  const backendRows = await fetchAllUniversitiesFromBackend();
-  const aiFilters = await extractFiltersWithOpenAI(message);
-  const filters = Object.keys(aiFilters).length ? aiFilters : extractFiltersFallback(message, backendRows);
-  const filtered = applyFilters(backendRows, filters);
-  const ranked = scoreRows(filtered, message, filters).slice(0, 8);
-
-  const results: ChatResultCard[] = ranked.map((row) => ({
-    id: row.id,
-    name: row.name,
-    country: row.country,
-    state: row.state,
-    city: row.city,
-    courses: row.courses,
-    courseCategory: row.courseCategories?.[0],
-    degreeLevel: row.degreeLevels?.[0],
-    ieltsMin: row.ieltsMin ?? null,
-    satRequired: row.satRequired,
-    satMin: row.satMin ?? null,
-    tuition: syntheticTuition(row.id),
-    viewDetailsUrl: `/homepage/universities/${row.id}`,
-  }));
-
-  const answer =
-    results.length > 0
-      ? buildBotReply(filters, results.length)
-      : `Got it. You said: "${message}". Ask me anything—universities, courses, or general questions—and I'll help.`;
-
-  return NextResponse.json({
-    answer,
-    filters,
-    results,
-  });
 }
