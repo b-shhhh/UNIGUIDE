@@ -31,6 +31,7 @@ const DashboardChatbot = () => {
     setLoading(true);
 
     try {
+      const apiBase = (process.env.NEXT_PUBLIC_API_URL || "").replace(/\/$/, "");
       const res = await fetch("/api/chatbot", {
         method: "POST",
         headers: { "Content-Type": "application/json" },

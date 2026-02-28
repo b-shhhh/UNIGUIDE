@@ -1,3 +1,4 @@
+// app/api/chatbot/route.ts
 import { NextRequest, NextResponse } from "next/server";
 import { MongoClient } from "mongodb";
 // Using Gemini via REST to avoid extra dependencies
