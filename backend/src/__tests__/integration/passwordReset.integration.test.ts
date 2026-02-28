@@ -4,9 +4,15 @@ jest.mock("../../database/mongodb", () => ({
   connectDatabase: jest.fn().mockResolvedValue(undefined),
 }));
 
-jest.mock("mongoose", () => ({
-  connection: { readyState: 1 },
-}));
+// Stub unrelated routers to prevent handler resolution errors
+jest.mock("../../routes/user.route", () => ({ __esModule: true, default: require("express").Router() }));
+jest.mock("../../routes/university.route", () => ({ __esModule: true, default: require("express").Router() }));
+jest.mock("../../routes/course.route", () => ({ __esModule: true, default: require("express").Router() }));
+jest.mock("../../routes/saved.routes", () => ({ __esModule: true, default: require("express").Router() }));
+jest.mock("../../routes/recommendation.route", () => ({ __esModule: true, default: require("express").Router() }));
+jest.mock("../../routes/admin/admin.route", () => ({ __esModule: true, default: require("express").Router() }));
+jest.mock("../../routes/admin/university.route", () => ({ __esModule: true, default: require("express").Router() }));
+jest.mock("../../routes/admin/user.route", () => ({ __esModule: true, default: require("express").Router() }));
 
 jest.mock("../../middlewares/auth.middleware", () => ({
   authMiddleware: (_req: any, _res: any, next: any) => next(),

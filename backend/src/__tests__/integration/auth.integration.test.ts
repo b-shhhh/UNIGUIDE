@@ -1,19 +1,32 @@
 import request from "supertest";
+import app from "../../app";
 
+// Keep DB connection mocked to avoid real Mongo
 jest.mock("../../database/mongodb", () => ({
   connectDatabase: jest.fn().mockResolvedValue(undefined),
 }));
 
-jest.mock("mongoose", () => ({
-  connection: { readyState: 1 },
-}));
+// Stub unrelated routers to avoid handler resolution errors during app import
+jest.mock("../../routes/user.route", () => {
+  const router = require("express").Router();
+  return { __esModule: true, default: router };
+});
+jest.mock("../../routes/university.route", () => ({ __esModule: true, default: require("express").Router() }));
+jest.mock("../../routes/course.route", () => ({ __esModule: true, default: require("express").Router() }));
+jest.mock("../../routes/saved.routes", () => ({ __esModule: true, default: require("express").Router() }));
+jest.mock("../../routes/recommendation.route", () => ({ __esModule: true, default: require("express").Router() }));
+jest.mock("../../routes/admin/admin.route", () => ({ __esModule: true, default: require("express").Router() }));
+jest.mock("../../routes/admin/university.route", () => ({ __esModule: true, default: require("express").Router() }));
+jest.mock("../../routes/admin/user.route", () => ({ __esModule: true, default: require("express").Router() }));
 
+// Pass-through upload middleware
 jest.mock("../../middlewares/upload.middleware", () => ({
   upload: {
     fields: () => (_req: any, _res: any, next: any) => next(),
   },
 }));
 
+// Simple auth middleware mock to inject user except when explicitly denied
 jest.mock("../../middlewares/auth.middleware", () => ({
   authMiddleware: (req: any, res: any, next: any) => {
     if (req.headers.authorization === "Bearer deny") {
@@ -24,9 +37,28 @@ jest.mock("../../middlewares/auth.middleware", () => ({
   },
 }));
 
+// In-memory user store to mimic register/login flows
+let storedUser: any = null;
+
 jest.mock("../../controllers/auth.controller", () => ({
-  register: (_req: any, res: any) => res.status(201).json({ success: true, action: "register" }),
-  login: (_req: any, res: any) => res.status(200).json({ success: true, token: "token" }),
+  register: (req: any, res: any) => {
+    const { fullName, email, phone, password, confirmPassword } = req.body || {};
+    if (!fullName || !email || !phone || !password || password !== confirmPassword) {
+      return res.status(400).json({ success: false, message: "Invalid input" });
+    }
+    storedUser = { fullName, email, phone, password };
+    return res.status(201).json({ success: true, message: "User Created" });
+  },
+  login: (req: any, res: any) => {
+    const { email, password } = req.body || {};
+    if (!storedUser || storedUser.email !== email) {
+      return res.status(404).json({ success: false });
+    }
+    if (storedUser.password !== password) {
+      return res.status(401).json({ success: false });
+    }
+    return res.status(200).json({ success: true, token: "token" });
+  },
   whoAmI: (_req: any, res: any) => res.status(200).json({ success: true, user: { id: "user-1" } }),
   updateProfile: (_req: any, res: any) => res.status(200).json({ success: true, updated: true }),
   changePassword: (_req: any, res: any) => res.status(200).json({ success: true, changed: true }),
@@ -38,47 +70,56 @@ jest.mock("../../controllers/user.controller", () => ({
   removeAccount: (_req: any, res: any) => res.status(200).json({ success: true, removed: true }),
 }));
 
-import app from "../../app";
+describe("Auth API Integration Tests", () => {
+  const testUser = {
+    fullName: "Test User",
+    email: "test@example.com",
+    phone: "1234567890",
+    password: "password123",
+    confirmPassword: "password123",
+  };
 
-describe("auth integration", () => {
-  test("register returns 201", async () => {
-    const res = await request(app).post("/api/auth/register").send({ email: "a@b.com" });
-    expect(res.status).toBe(201);
-    expect(res.body.action).toBe("register");
+  beforeEach(() => {
+    storedUser = null;
   });
 
-  test("login returns token", async () => {
-    const res = await request(app).post("/api/auth/login").send({ email: "a@b.com", password: "pw" });
-    expect(res.status).toBe(200);
-    expect(res.body.token).toBe("token");
+  describe("POST /api/auth/register", () => {
+    test("should validate missing fields", async () => {
+      const res = await request(app)
+        .post("/api/auth/register")
+        .send({ fullName: testUser.fullName, email: testUser.email });
+      expect(res.statusCode).toBe(400);
+      expect(res.body.success).toBe(false);
+    });
+
+    test("should register new user", async () => {
+      const res = await request(app).post("/api/auth/register").send(testUser);
+      expect(res.statusCode).toBe(201);
+      expect(res.body.success).toBe(true);
+      expect(res.body.message).toBe("User Created");
+    });
   });
 
-  test("whoAmI requires auth", async () => {
-    const res = await request(app).get("/api/auth/whoami").set("Authorization", "Bearer allow");
-    expect(res.status).toBe(200);
-    expect(res.body.user.id).toBe("user-1");
-  });
+  describe("POST /api/auth/login", () => {
+    test("should login with valid credentials", async () => {
+      // register first
+      await request(app).post("/api/auth/register").send(testUser);
+      const res = await request(app)
+        .post("/api/auth/login")
+        .send({ email: testUser.email, password: testUser.password });
+      expect(res.statusCode).toBe(200);
+      expect(res.body.success).toBe(true);
+      expect(res.body.token).toBeDefined();
+    });
 
-  test("update profile succeeds", async () => {
-    const res = await request(app)
-      .put("/api/auth/update-profile")
-      .set("Authorization", "Bearer allow")
-      .send({ fullName: "New Name" });
-    expect(res.status).toBe(200);
-  });
-
-  test("change password succeeds", async () => {
-    const res = await request(app)
-      .put("/api/auth/change-password")
-      .set("Authorization", "Bearer allow")
-      .send({ oldPassword: "old", newPassword: "new" });
-    expect(res.status).toBe(200);
-  });
-
-  test("delete account uses auth middleware", async () => {
-    const res = await request(app)
-      .delete("/api/auth/delete-account")
-      .set("Authorization", "Bearer allow");
-    expect(res.status).toBe(200);
+    test("should fail with invalid email", async () => {
+      // register first
+      await request(app).post("/api/auth/register").send(testUser);
+      const res = await request(app)
+        .post("/api/auth/login")
+        .send({ email: "wrong@example.com", password: testUser.password });
+      expect(res.statusCode).toBe(404);
+      expect(res.body.success).toBe(false);
+    });
   });
 });

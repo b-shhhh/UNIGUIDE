@@ -1,4 +1,3 @@
-// Deterministic uuid mock for stable snapshots
 module.exports = {
-  v4: () => "00000000-0000-4000-8000-000000000000"
+    v4: () => 'test-uuid-1234-5678-90ab-cdef',
 };

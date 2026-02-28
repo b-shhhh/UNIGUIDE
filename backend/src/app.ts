@@ -45,13 +45,15 @@ app.use("/uploads", express.static(uploadDir));
 app.use(express.json({ limit: "1mb" }));
 app.use(express.urlencoded({ extended: true, limit: "1mb" }));
 
-// Connect to MongoDB
-connectDatabase()
-  .then(() => console.log("MongoDB connected"))
-  .catch((err) => {
-    console.error("MongoDB connection failed:", err);
-    process.exit(1);
-  });
+// Connect to MongoDB (skip during test runs)
+if (process.env.NODE_ENV !== "test") {
+  connectDatabase()
+    .then(() => console.log("MongoDB connected"))
+    .catch((err) => {
+      console.error("MongoDB connection failed:", err);
+      process.exit(1);
+    });
+}
 
 app.get("/health", (_req, res) => {
   res.status(200).json({ success: true, status: "ok", uptime: process.uptime() });

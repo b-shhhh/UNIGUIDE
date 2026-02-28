@@ -4,10 +4,6 @@ jest.mock("../../database/mongodb", () => ({
   connectDatabase: jest.fn().mockResolvedValue(undefined),
 }));
 
-jest.mock("mongoose", () => ({
-  connection: { readyState: 1 },
-}));
-
 jest.mock("../../middlewares/auth.middleware", () => ({
   authMiddleware: (req: any, res: any, next: any) => {
     const token = req.headers.authorization || "";

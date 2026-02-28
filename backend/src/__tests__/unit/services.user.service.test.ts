@@ -21,12 +21,17 @@ jest.mock("../../models/user.model", () => ({
   }
 }));
 
-jest.mock("../../models/university.model", () => ({
-  University: {
-    findOne: jest.fn(),
-    find: jest.fn()
-  }
-}));
+jest.mock("../../models/university.model", () => {
+  const chainableSelect = (result: any) => ({
+    select: jest.fn().mockResolvedValue(result)
+  });
+  return {
+    University: {
+      findOne: jest.fn(() => chainableSelect(null)),
+      find: jest.fn(() => chainableSelect([]))
+    }
+  };
+});
 
 jest.mock("mongoose", () => ({
   Types: {
@@ -51,20 +56,20 @@ describe("services/user.service", () => {
 
   test("getUserProfile delegates to repository", async () => {
     findUserById.mockResolvedValue({ id: "1" });
-    const user = await getUserProfile("1");
+    const user = (await getUserProfile("1")) as any;
     expect(user.id).toBe("1");
   });
 
   test("updateProfile hashes password when provided", async () => {
     updateUser.mockResolvedValue({ id: "1", password: "hashed-new" });
-    const user = await updateProfile("1", { password: "new" } as any);
+    const user = (await updateProfile("1", { password: "new" } as any)) as any;
     expect(bcrypt.hash).toHaveBeenCalledWith("new", 10);
     expect(user.password).toBe("hashed-new");
   });
 
   test("deleteAccount calls repository", async () => {
     deleteUser.mockResolvedValue({ id: "gone" });
-    const result = await deleteAccount("1");
+    const result = (await deleteAccount("1")) as any;
     expect(result.id).toBe("gone");
   });
 
@@ -76,14 +81,18 @@ describe("services/user.service", () => {
   test("saveUniversityService saves canonical id", async () => {
     const save = jest.fn();
     User.findById.mockResolvedValue({ savedUniversities: [], save });
-    University.findOne.mockResolvedValue({ sourceId: "src", _id: "id" });
+    University.findOne.mockReturnValue({
+      select: jest.fn().mockResolvedValue({ sourceId: "src", _id: "id" })
+    });
     await saveUniversityService("u1", "src");
     expect(save).toHaveBeenCalled();
   });
 
   test("getSavedUniversitiesService returns normalized list", async () => {
     User.findById.mockResolvedValue({ savedUniversities: ["one"] });
-    University.find.mockResolvedValue([{ _id: "507f1f77bcf86cd799439011", sourceId: "one" }]);
+    University.find.mockReturnValue({
+      select: jest.fn().mockResolvedValue([{ _id: "507f1f77bcf86cd799439011", sourceId: "one" }])
+    });
     const list = await getSavedUniversitiesService("u1");
     expect(list).toContain("one");
   });
@@ -91,7 +100,9 @@ describe("services/user.service", () => {
   test("removeSavedUniversityService removes aliases", async () => {
     const save = jest.fn();
     User.findById.mockResolvedValue({ savedUniversities: ["a", "b"], save });
-    University.findOne.mockResolvedValue({ _id: "b", sourceId: "alias" });
+    University.findOne.mockReturnValue({
+      select: jest.fn().mockResolvedValue({ _id: "b", sourceId: "alias" })
+    });
     await removeSavedUniversityService("u1", "b");
     expect(save).toHaveBeenCalled();
   });

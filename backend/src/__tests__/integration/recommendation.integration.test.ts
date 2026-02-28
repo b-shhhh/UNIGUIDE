@@ -4,10 +4,6 @@ jest.mock("../../database/mongodb", () => ({
   connectDatabase: jest.fn().mockResolvedValue(undefined),
 }));
 
-jest.mock("mongoose", () => ({
-  connection: { readyState: 1 },
-}));
-
 jest.mock("../../controllers/recommendation.controller", () => ({
   getRecommendations: (_req: any, res: any) =>
     res.status(200).json({ success: true, recommendations: ["uni-1"] }),

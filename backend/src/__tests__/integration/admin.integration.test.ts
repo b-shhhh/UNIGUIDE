@@ -4,10 +4,12 @@ jest.mock("../../database/mongodb", () => ({
   connectDatabase: jest.fn().mockResolvedValue(undefined),
 }));
 
-jest.mock("mongoose", () => ({
-  connection: { readyState: 1 },
-}));
-
+// Stub unrelated routers to avoid handler resolution issues
+jest.mock("../../routes/user.route", () => ({ __esModule: true, default: require("express").Router() }));
+jest.mock("../../routes/university.route", () => ({ __esModule: true, default: require("express").Router() }));
+jest.mock("../../routes/course.route", () => ({ __esModule: true, default: require("express").Router() }));
+jest.mock("../../routes/saved.routes", () => ({ __esModule: true, default: require("express").Router() }));
+jest.mock("../../routes/recommendation.route", () => ({ __esModule: true, default: require("express").Router() }));
 jest.mock("../../middlewares/auth.middleware", () => ({
   authMiddleware: (req: any, res: any, next: any) => {
     if (req.headers.authorization === "Bearer admin") {
@@ -25,11 +27,18 @@ jest.mock("../../controllers/admin/admin.controller", () => ({
 }));
 
 jest.mock("../../controllers/admin/university.controller", () => ({
-  createUniversity: (_req: any, res: any) => res.status(201).json({ success: true, created: true }),
+  adminListUniversities: (_req: any, res: any) => res.status(200).json({ success: true, universities: [] }),
+  adminGetUniversity: (_req: any, res: any) => res.status(200).json({ success: true, university: { id: "u1" } }),
+  adminCreateUniversity: (_req: any, res: any) => res.status(201).json({ success: true, created: true }),
+  adminUpdateUniversity: (_req: any, res: any) => res.status(200).json({ success: true, updated: true }),
+  adminDeleteUniversity: (_req: any, res: any) => res.status(200).json({ success: true, deleted: true }),
 }));
 
 jest.mock("../../controllers/admin/user.controller", () => ({
-  listUsers: (_req: any, res: any) => res.status(200).json({ success: true, users: [] }),
+  adminListUsers: (_req: any, res: any) => res.status(200).json({ success: true, users: [] }),
+  adminGetUser: (_req: any, res: any) => res.status(200).json({ success: true, user: { id: "u1" } }),
+  adminUpdateUser: (_req: any, res: any) => res.status(200).json({ success: true, updated: true }),
+  adminDeleteUser: (_req: any, res: any) => res.status(200).json({ success: true, deleted: true }),
 }));
 
 import app from "../../app";
@@ -58,6 +67,21 @@ describe("admin integration", () => {
       .set("Authorization", "Bearer admin")
       .send({ name: "Test" });
     expect(res.status).toBe(201);
+  });
+
+  test("admin update university route works", async () => {
+    const res = await request(app)
+      .put("/api/admin/universities/123")
+      .set("Authorization", "Bearer admin")
+      .send({ name: "Updated" });
+    expect(res.status).toBe(200);
+  });
+
+  test("admin delete university route works", async () => {
+    const res = await request(app)
+      .delete("/api/admin/universities/123")
+      .set("Authorization", "Bearer admin");
+    expect(res.status).toBe(200);
   });
 
   test("admin list users route works", async () => {

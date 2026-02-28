@@ -40,12 +40,13 @@ describe("middlewares/security.middleware", () => {
 
   test("rateLimitMiddleware blocks over limit", () => {
     jest.isolateModules(() => {
-      jest.doMock("../../config", () => ({ RATE_LIMIT_MAX: 1, RATE_LIMIT_WINDOW_MS: 1000 }), { virtual: true });
       const { rateLimitMiddleware } = require("../../middlewares/security.middleware");
       const res = mockRes();
       const req = { path: "/api/auth/login", ip: "2.2.2.2" } as any;
-      rateLimitMiddleware(req, res as any, jest.fn());
-      rateLimitMiddleware(req, res as any, jest.fn());
+      const next = jest.fn();
+      for (let i = 0; i < 260; i += 1) {
+        rateLimitMiddleware(req, res as any, next);
+      }
       expect(res.status).toHaveBeenCalledWith(429);
     });
   });
