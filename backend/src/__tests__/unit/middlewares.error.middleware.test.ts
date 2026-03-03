@@ -8,6 +8,16 @@ const mockRes = () => {
   return res;
 };
 
+let errorSpy: jest.SpyInstance;
+
+beforeAll(() => {
+  errorSpy = jest.spyOn(console, "error").mockImplementation(() => {});
+});
+
+afterAll(() => {
+  errorSpy.mockRestore();
+});
+
 describe("middlewares/error.middleware", () => {
   test("formats HttpError", () => {
     const res = mockRes();
