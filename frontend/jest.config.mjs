@@ -8,5 +8,8 @@ export default {
   transform: {
     "^.+\\.(ts|tsx)$": ["ts-jest", { tsconfig: "<rootDir>/tsconfig.json" }]
   },
-  testMatch: ["**/__tests__/**/*.(test|spec).(ts|tsx)"]
+  testMatch: [
+    "<rootDir>/**/__tests__/**/*.(test|spec).(ts|tsx)",
+    "<rootDir>/tests/**/*.(test|spec).(ts|tsx)"
+  ]
 };
