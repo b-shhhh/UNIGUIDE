@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import SaveUniversityButton from "./SaveUniversityButton";
 
 type University = {
@@ -25,6 +26,7 @@ type Props = {
 const countryToFlag = (alpha2?: string) => (alpha2 ? `https://flagcdn.com/${alpha2.toLowerCase()}.svg` : undefined);
 
 export default function UniversityCard({ university }: Props) {
+  const router = useRouter();
   const { id, dbId, name, country, state, city, courses = [], flag_url, logo_url, alpha2, web_pages } = university;
   const location = [city, state, country].filter(Boolean).join(", ");
   const flag = flag_url?.trim() || countryToFlag(alpha2);
@@ -46,8 +48,21 @@ export default function UniversityCard({ university }: Props) {
   const logo = cleanedLogo || derivedLogo || logoFallback;
   const initials = name ? name.slice(0, 2).toUpperCase() : "UN";
 
+  const goToDetail = () => router.push(`/homepage/universities/${encodeURIComponent(id)}`);
+
   return (
-    <div className="group flex h-full flex-col overflow-hidden rounded-2xl border border-slate-100 bg-white shadow-sm transition hover:-translate-y-1 hover:shadow-md">
+    <div
+      className="group flex h-full cursor-pointer flex-col overflow-hidden rounded-2xl border border-slate-100 bg-white shadow-sm transition hover:-translate-y-1 hover:shadow-md"
+      onClick={goToDetail}
+      role="button"
+      tabIndex={0}
+      onKeyDown={(e) => {
+        if (e.key === "Enter" || e.key === " ") {
+          e.preventDefault();
+          goToDetail();
+        }
+      }}
+    >
       <div className="flex items-center gap-3 border-b border-slate-100 px-4 py-3">
         {logo ? (
           // eslint-disable-next-line @next/next/no-img-element
@@ -90,10 +105,16 @@ export default function UniversityCard({ university }: Props) {
           <Link
             href={`/homepage/universities/${encodeURIComponent(id)}`}
             className="text-sm font-semibold text-sky-700 transition hover:text-sky-900"
-          >
+            >
             View details →
           </Link>
-          <SaveUniversityButton universityId={id} universityDbId={dbId} />
+          <div
+            onClick={(e) => e.stopPropagation()}
+            onKeyDown={(e) => e.stopPropagation()}
+            role="presentation"
+          >
+            <SaveUniversityButton universityId={id} universityDbId={dbId} />
+          </div>
         </div>
       </div>
     </div>

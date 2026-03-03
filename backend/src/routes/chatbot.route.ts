@@ -1,9 +1,7 @@
-import { NextRequest, NextResponse } from "next/server";
-import { MongoClient } from "mongodb";
-// Using Gemini via REST to avoid extra dependencies
+import { Router, Request, Response, NextFunction } from "express";
+import { University } from "../models/university.model";
 
-// Ensure env var matches .env.local (MONGODB_URI)
-const client = new MongoClient(process.env.MONGODB_URI ?? "");
+const router = Router();
 
 const isQuotaError = (err: any) =>
   err?.status === 429 ||
@@ -48,11 +46,9 @@ const callGemini = async (prompt: string) => {
     const errorBody = await resp.text();
     const err = new Error(`Gemini error: ${resp.status} ${resp.statusText} - ${errorBody}`);
     // mimic quota detection for UI
-    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
     // @ts-ignore
     err.status = resp.status;
     // mark 404 to let caller fall back
-    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
     // @ts-ignore
     err.notFound = resp.status === 404;
     throw err;
@@ -63,38 +59,31 @@ const callGemini = async (prompt: string) => {
 };
 
 async function fetchUniversities(filters: any) {
-  try {
-    await client.connect();
-    const db = client.db("university_guide");
-    const collection = db.collection("universities");
+  const query: any = {};
 
-    const query: any = {};
+  if (filters.country) query.country = { $regex: new RegExp(filters.country, "i") };
+  if (filters.course) query.courses = { $regex: new RegExp(filters.course, "i") };
+  if (filters.university) query.name = { $regex: new RegExp(filters.university, "i") };
+  if (filters.degree_level)
+    query.degreeLevels = { $regex: new RegExp(filters.degree_level, "i") };
+  if (filters.ielts_min !== null && filters.ielts_min !== undefined)
+    query.ieltsMin = { $lte: Number(filters.ielts_min) };
+  if (filters.sat_min !== null && filters.sat_min !== undefined)
+    query.satMin = { $lte: Number(filters.sat_min) };
 
-    if (filters.country) query.country = { $regex: new RegExp(filters.country, "i") };
-    if (filters.course)
-      query.courses = { $elemMatch: { $regex: new RegExp(filters.course, "i") } };
-    if (filters.university)
-      query.name = { $regex: new RegExp(filters.university, "i") };
-    if (filters.degree_level)
-      query.degreeLevels = { $elemMatch: { $regex: new RegExp(filters.degree_level, "i") } };
-    if (filters.ielts_min) query.ieltsMin = { $lte: parseFloat(filters.ielts_min) };
-    if (filters.sat_min) query.satMin = { $lte: parseFloat(filters.sat_min) };
-
-    const results = await collection.find(query).limit(10).toArray();
-    return results;
-  } catch (err) {
-    console.error("Mongo error:", err);
-    return [];
-  } finally {
-    await client.close();
-  }
+  return University.find(query).limit(10).lean();
 }
 
-export async function POST(req: NextRequest) {
+router.post("/", async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const { message } = await req.json();
+    const { message } = req.body;
 
-    // 1️⃣ Call Gemini to extract intent & entities
+    if (!message || typeof message !== "string") {
+      return res
+        .status(400)
+        .json({ reply: "A 'message' string is required.", universities: [] });
+    }
+
     const prompt = `
 You are a university search assistant.
 Extract the user's intent and filters from their message.
@@ -114,7 +103,7 @@ If information is not provided, return empty string for text fields and null for
 User: "${message}"
     `;
 
-    let filters = {};
+    let filters: any = {};
     try {
       const geminiResp = await callGemini(prompt);
       const aiText = geminiResp?.candidates?.[0]?.content?.parts?.[0]?.text ?? "{}";
@@ -131,9 +120,9 @@ User: "${message}"
       const possibleDegrees = ["bachelor", "master", "phd", "mba", "msc", "bsc"];
       const degree_level = possibleDegrees.find((d) => lower.includes(d)) || "";
       const countryMatch = message.match(/\b(?:in|for)\s+([A-Z][a-zA-Z]+)/);
-      const uniMatch = message.match(/\b(university|college|uni)\s+of\s+([A-Z][\w\s]+)/i);
-      const ieltsMatch = message.match(/ielts\s*([0-9.]+)/i);
-      const satMatch = message.match(/sat\s*([0-9]+)/i);
+      const uniMatch = message.match(/\b(university|college|uni)\s+of\s+([A-Z][\\w\\s]+)/i);
+      const ieltsMatch = message.match(/ielts\\s*([0-9.]+)/i);
+      const satMatch = message.match(/sat\\s*([0-9]+)/i);
 
       filters = {
         intent: "search_universities",
@@ -147,48 +136,56 @@ User: "${message}"
     }
 
     const hasFilters =
-      (filters as any).country ||
-      (filters as any).course ||
-      (filters as any).degree_level ||
-      (filters as any).university;
+      filters.country || filters.course || filters.degree_level || filters.university;
     if (!hasFilters) {
-      return NextResponse.json({
+      return res.json({
         reply:
           "Please tell me at least a country, course/major, or degree level so I can search universities.",
         universities: [],
       });
     }
 
-    // 2️⃣ Fetch from MongoDB
     const universities = await fetchUniversities(filters);
 
-    // 3️⃣ Format response for frontend
+    // Normalize minimal shape for frontend consumption
+    const normalized = universities.map((uni: any) => ({
+      id: uni._id?.toString?.() ?? "",
+      name: uni.name ?? "Unnamed",
+      country: uni.country ?? "N/A",
+      degreeLevels: Array.isArray(uni.degreeLevels) ? uni.degreeLevels : [],
+      ieltsMin: uni.ieltsMin ?? uni.ielts_min ?? null,
+      satRequired:
+        uni.satRequired === true || uni.sat_required === true
+          ? true
+          : uni.satRequired === false || uni.sat_required === false
+          ? false
+          : null,
+      satMin: uni.satMin ?? uni.sat_min ?? null
+    }));
+
     let reply = "";
     if (universities.length === 0) {
       reply =
         "No universities found with those filters. Try specifying a country, course, and degree level.";
     } else {
-      reply = "Here are some universities I found:\n\n";
-      universities.forEach((uni: any, idx: number) => {
-        const name = uni.name ?? "Unnamed";
-        const country = uni.country ?? "Country N/A";
-        const degree = Array.isArray(uni.degreeLevels)
-          ? uni.degreeLevels.join(", ")
-          : uni.degree_level ?? "N/A";
-        const ielts = uni.ieltsMin ?? uni.ielts_min ?? "N/A";
+      reply = "Here are some universities I found:\\n\\n";
+      normalized.forEach((uni: any, idx: number) => {
+        const degree = uni.degreeLevels.length ? uni.degreeLevels.join(", ") : "N/A";
+        const ielts = uni.ieltsMin ?? "N/A";
         const sat =
-          uni.satRequired === true || uni.sat_required === true
-            ? uni.satMin ?? uni.sat_min ?? "N/A"
-            : uni.satRequired === false || uni.sat_required === false
+          uni.satRequired === true
+            ? uni.satMin ?? "N/A"
+            : uni.satRequired === false
             ? "optional"
             : "N/A";
-        reply += `${idx + 1}. ${name} — ${country} (${degree}) · IELTS ${ielts} · SAT ${sat}\n`;
+        reply += `${idx + 1}. ${uni.name} - ${uni.country} (${degree}) | IELTS ${ielts} | SAT ${sat}\\n`;
       });
     }
 
-    return NextResponse.json({ reply, universities });
+    return res.json({ reply, universities: normalized });
   } catch (err) {
-    console.error("Error:", err);
-    return NextResponse.json({ reply: "Something went wrong.", universities: [] });
+    return next(err);
   }
-}
+});
+
+export default router;

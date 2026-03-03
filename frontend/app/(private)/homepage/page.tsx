@@ -119,10 +119,10 @@ export default function Homepage() {
   ];
 
   return (
-    <div className="min-h-screen bg-slate-50">
+    <div className="min-h-screen">
       <Header />
       <main className="mx-auto max-w-7xl space-y-8 px-4 py-6 sm:px-6 lg:px-8">
-        <section className="overflow-hidden rounded-3xl bg-gradient-to-br from-[#0f9ad8] via-[#0c7fb9] to-[#0a5c8f] p-6 text-white shadow-xl sm:p-8">
+        <section className="overflow-hidden rounded-3xl bg-gradient-to-r from-[#0E6F86] to-[#1F6F8B] p-6 text-white shadow-xl sm:p-8">
         <h1 className="text-3xl font-black leading-tight sm:text-4xl">Search universities with clarity.</h1>
           <p className="mt-2 max-w-3xl text-sm text-white/85">
            Top Countries. Top 50 Universities. One Smart Choice
@@ -175,12 +175,12 @@ export default function Homepage() {
                   <h2 className="text-lg font-bold text-slate-900">{courseCounts.length} total</h2>
                 </div>
               </div>
-              <div className="flex gap-3 overflow-x-auto pb-1">
+              <div className="flex gap-3 overflow-x-auto overflow-y-hidden pb-1">
                 {courseCounts.map((item) => (
                   <div key={item.name} className="min-w-[240px] shrink-0">
                     <CourseCard
                       name={item.name}
-                      uniCount={item.count}
+                    
                     />
                   </div>
                 ))}
