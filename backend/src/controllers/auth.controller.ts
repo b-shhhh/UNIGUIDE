@@ -121,8 +121,11 @@ export const updateProfile = async (req: AuthRequest, res: Response) => {
 export const changePassword = async (req: AuthRequest, res: Response) => {
   try {
     const userId = req.user?.id;
-    const oldPassword = req.body?.oldPassword || req.body?.currentPassword;
-    const newPassword = req.body?.newPassword;
+    const extract = (value: unknown) => (Array.isArray(value) ? value[0] : value);
+    const rawOld = extract(req.body?.oldPassword ?? req.body?.currentPassword);
+    const rawNew = extract(req.body?.newPassword ?? req.body?.password);
+    const oldPassword = typeof rawOld === "string" ? rawOld.trim() : "";
+    const newPassword = typeof rawNew === "string" ? rawNew.trim() : "";
 
     if (!userId) throw new Error("Unauthorized");
     if (!oldPassword || !newPassword) throw new Error("Old and new passwords required");

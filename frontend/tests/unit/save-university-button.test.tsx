@@ -4,7 +4,7 @@ import SaveUniversityButton from "@/app/(private)/_component/SaveUniversityButto
 
 jest.mock("@/lib/saved-universities", () => ({
   fetchSavedUniversityIds: jest.fn(async () => []),
-  toggleUniversitySaved: jest.fn(async (_id: string) => ({ ids: ["u-1"] })),
+  toggleUniversitySaved: jest.fn(async (_id: string, _aliases?: string[]) => ({ ids: ["u-1"] })),
   SAVED_UNIVERSITIES_UPDATE_EVENT: "saved-update"
 }));
 
@@ -18,7 +18,7 @@ describe("SaveUniversityButton", () => {
     await userEvent.click(screen.getByRole("button"));
 
     await waitFor(() => {
-      expect(savedModule.toggleUniversitySaved).toHaveBeenCalledWith("u-1");
+      expect(savedModule.toggleUniversitySaved).toHaveBeenCalledWith("u-1", ["u-1"]);
       expect(screen.getByRole("button")).toHaveTextContent(/Unsave University/i);
     });
   });
