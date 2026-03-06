@@ -36,7 +36,7 @@ export default function SaveUniversityButton({ universityId, universityDbId }: P
 
   const onToggle = async () => {
     setLoading(true);
-    const result = await toggleUniversitySaved(requestId);
+    const result = await toggleUniversitySaved(requestId, aliases);
     setSavedIds(result.ids);
     setLoading(false);
   };

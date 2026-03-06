@@ -28,12 +28,14 @@ export const fetchSavedUniversityIds = async (): Promise<string[]> => {
   return ids;
 };
 
-export const toggleUniversitySaved = async (id: string) => {
+export const toggleUniversitySaved = async (id: string, aliases: string[] = [id]) => {
   const current = await fetchSavedUniversityIds();
-  const isSaved = current.includes(id);
+  const normalizedAliases = Array.from(new Set(aliases.filter(Boolean)));
+  const matchedSavedId = current.find((savedId) => normalizedAliases.includes(savedId));
+  const isSaved = Boolean(matchedSavedId);
   let nextIds = current;
   if (isSaved) {
-    const res = await removeSavedUniversity(id);
+    const res = await removeSavedUniversity(matchedSavedId || id);
     nextIds = res.data || [];
   } else {
     const res = await saveUniversity(id);

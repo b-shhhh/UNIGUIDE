@@ -114,9 +114,9 @@ const DashboardChatbot = () => {
             </button>
           </header>
 
-          <div className="flex-1 overflow-y-auto px-4 py-3 space-y-2 bg-gradient-to-br from-[#0E6F86] via-[#18809a] to-[#1F6F8B]">
+          <div className="flex-1 overflow-y-auto px-4 py-3 space-y-2 bg-white text-slate-900">
             {messages.length === 0 && (
-              <div className="text-sm text-white/85">
+              <div className="text-sm text-slate-600">
                 Try: “Universities in Canada that accept IELTS 6.5” or “MBA in Germany with SAT optional”.
               </div>
             )}
@@ -125,8 +125,8 @@ const DashboardChatbot = () => {
                 key={idx}
                 className={`max-w-[95%] rounded-2xl px-3 py-2 text-sm shadow-sm ${
                   msg.sender === "user"
-                    ? "ml-auto bg-gradient-to-r from-[#0E6F86] to-[#1F6F8B] text-white"
-                    : "mr-auto bg-white/90 border border-white/60 text-slate-900 backdrop-blur"
+                    ? "ml-auto bg-white border border-slate-200 text-slate-900"
+                    : "mr-auto bg-white border border-slate-200 text-slate-900"
                 }`}
               >
                 {msg.text.split("\n").map((line, i) => (
@@ -169,11 +169,11 @@ const DashboardChatbot = () => {
             <div ref={chatEndRef} />
           </div>
 
-          <div className="border-t border-white/40 bg-gradient-to-r from-[#0E6F86] to-[#1F6F8B] px-3 py-3">
+          <div className="border-t border-slate-200 bg-white px-3 py-3">
             <div className="flex gap-2 items-center">
               <input
                 type="text"
-                className="flex-1 border border-white/60 rounded-lg px-3 py-2 text-sm text-slate-900 placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-white focus:border-white/80"
+                className="flex-1 border border-slate-300 rounded-lg px-3 py-2 text-sm text-slate-900 placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-[#0E6F86] focus:border-[#0E6F86]"
                 placeholder="Ask about country, course, IELTS/SAT…"
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
@@ -181,7 +181,7 @@ const DashboardChatbot = () => {
                 disabled={loading}
               />
               <button
-                className="bg-gradient-to-r from-[#0E6F86] to-[#1F6F8B] text-white px-4 py-2 rounded-lg text-sm font-semibold disabled:opacity-60 disabled:cursor-not-allowed"
+                className="bg-white border border-slate-300 text-slate-900 px-4 py-2 rounded-lg text-sm font-semibold hover:border-slate-400 disabled:opacity-60 disabled:cursor-not-allowed"
                 onClick={handleSend}
                 disabled={loading}
               >

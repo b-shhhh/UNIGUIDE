@@ -101,6 +101,7 @@ export const getSavedUniversitiesService = async (userId: string) => {
 export const removeSavedUniversityService = async (userId: string, universityId: string) => {
   const user = await User.findById(userId);
   if (!user) throw new Error("User not found");
+  if (!universityId) throw new Error("University ID is required");
 
   const removeLookup: Array<Record<string, unknown>> = [{ sourceId: universityId }];
   if (mongoose.Types.ObjectId.isValid(universityId)) {

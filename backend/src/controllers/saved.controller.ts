@@ -53,9 +53,14 @@ export const removeSavedUniversity = async (req: AuthRequest, res: Response) => 
     const userId = req.user?.id;
     if (!userId) return res.status(401).json({ success: false, message: "Unauthorized" });
 
+    // Accept university id from either the route param or request body
     const universityId = Array.isArray(req.params.universityId)
       ? req.params.universityId[0]
-      : req.params.universityId;
+      : req.params.universityId || (Array.isArray(req.body.universityId) ? req.body.universityId[0] : req.body.universityId);
+
+    if (!universityId) {
+      return res.status(400).json({ success: false, message: "universityId is required" });
+    }
 
     const user = await removeSavedUniversityService(userId, universityId);
 
