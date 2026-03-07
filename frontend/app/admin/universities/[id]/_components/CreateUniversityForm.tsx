@@ -12,7 +12,8 @@ export default function CreateUniversityForm() {
 
   const onSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    const formData = new FormData(event.currentTarget);
+    const form = event.currentTarget;
+    const formData = new FormData(form);
     const payload = {
       name: String(formData.get("name") || ""),
       country: String(formData.get("country") || ""),
@@ -35,7 +36,7 @@ export default function CreateUniversityForm() {
     }
 
     setMessage("University created successfully.");
-    event.currentTarget.reset();
+    form.reset();
     router.push("/admin/universities");
   };
 

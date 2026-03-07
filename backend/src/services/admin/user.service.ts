@@ -62,7 +62,7 @@ export const updateAdminUserByIdService = async (
     updates.password = await bcrypt.hash(payload.password.trim(), 10);
   }
 
-  const user = await User.findByIdAndUpdate(id, updates, { new: true }).select(
+  const user = await User.findByIdAndUpdate(id, updates, { returnDocument: "after" }).select(
     "-password -resetPasswordToken -resetPasswordExpires",
   );
   if (!user) throw new Error("User not found");
@@ -74,4 +74,3 @@ export const deleteAdminUserByIdService = async (id: string) => {
   if (!deleted) throw new Error("User not found");
   return deleted;
 };
-

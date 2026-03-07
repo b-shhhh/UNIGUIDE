@@ -3,6 +3,35 @@ import { University } from "../models/university.model";
 
 const router = Router();
 
+const BASIC_GREETING_PATTERNS = [
+  /^(hi|hello|hey|heya|hiya)\b[!. ]*$/i,
+  /^(good\s(morning|afternoon|evening))\b[!. ]*$/i,
+  /^(how are you)\b[?.! ]*$/i,
+  /^(thanks|thank you)\b[!. ]*$/i,
+];
+
+const getSmallTalkReply = (message: string) => {
+  const trimmed = message.trim();
+
+  if (/^(hi|hello|hey|heya|hiya)\b/i.test(trimmed)) {
+    return "Hello. I can help you find universities by country, course, degree level, IELTS, or SAT requirements.";
+  }
+
+  if (/^(good\s(morning|afternoon|evening))\b/i.test(trimmed)) {
+    return "Hello. Tell me what you want to study or where you want to apply, and I will look for matching universities.";
+  }
+
+  if (/^(how are you)\b/i.test(trimmed)) {
+    return "I am ready to help. Ask me about universities, courses, countries, IELTS scores, or SAT requirements.";
+  }
+
+  if (/^(thanks|thank you)\b/i.test(trimmed)) {
+    return "You can ask for another university search any time.";
+  }
+
+  return null;
+};
+
 const isQuotaError = (err: any) =>
   err?.status === 429 ||
   err?.code === "insufficient_quota" ||
@@ -82,6 +111,10 @@ router.post("/", async (req: Request, res: Response, next: NextFunction) => {
       return res
         .status(400)
         .json({ reply: "A 'message' string is required.", universities: [] });
+    }
+
+    if (BASIC_GREETING_PATTERNS.some((pattern) => pattern.test(message.trim()))) {
+      return res.json({ reply: getSmallTalkReply(message)!, universities: [] });
     }
 
     const prompt = `

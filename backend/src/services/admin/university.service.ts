@@ -82,7 +82,7 @@ export const updateAdminUniversityService = async (
     updates.courses = payload.courses.split(",").map((item) => item.trim()).filter(Boolean);
   }
 
-  const item = await University.findByIdAndUpdate(id, updates, { new: true });
+  const item = await University.findByIdAndUpdate(id, updates, { returnDocument: "after" });
   if (!item) throw new Error("University not found");
   return item;
 };
