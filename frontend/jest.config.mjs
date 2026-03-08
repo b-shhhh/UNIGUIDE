@@ -11,5 +11,13 @@ export default {
   testMatch: [
     "<rootDir>/**/__tests__/**/*.(test|spec).(ts|tsx)",
     "<rootDir>/tests/**/*.(test|spec).(ts|tsx)"
-  ]
+  ],
+  coverageThreshold: {
+    global: {
+      statements: 85,
+      branches: 70,
+      functions: 85,
+      lines: 85
+    }
+  }
 };

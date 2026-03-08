@@ -16,7 +16,7 @@ const INITIAL_FEEDBACK: ActionFeedback = {
   message: "",
 };
 
-const asString = (value: unknown, fallback = ""): string => {
+export const asString = (value: unknown, fallback = ""): string => {
   if (typeof value === "string") {
     return value;
   }
@@ -26,23 +26,23 @@ const asString = (value: unknown, fallback = ""): string => {
   return fallback;
 };
 
-const getUserDisplayName = (user: UserRecord) => {
+export const getUserDisplayName = (user: UserRecord) => {
   const explicitName = asString(user?.fullName) || asString(user?.name) || asString(user?.username);
   if (explicitName) return explicitName;
   return "User";
 };
 
-const getUserEmail = (user: UserRecord) => asString(user?.email);
-const getUserPhone = (user: UserRecord) => asString(user?.phone);
-const getUserBio = (user: UserRecord) => asString(user?.bio);
-const getAvatar = (user: UserRecord) =>
+export const getUserEmail = (user: UserRecord) => asString(user?.email);
+export const getUserPhone = (user: UserRecord) => asString(user?.phone);
+export const getUserBio = (user: UserRecord) => asString(user?.bio);
+export const getAvatar = (user: UserRecord) =>
   asString(user?.profilePic) ||
   asString(user?.avatar) ||
   asString(user?.profileImage) ||
   asString(user?.profilePicture) ||
   asString(user?.image);
 
-const getAvatarUrl = (avatar: string) => {
+export const getAvatarUrl = (avatar: string) => {
   if (!avatar) return "";
   if (/^https?:\/\//i.test(avatar)) return avatar;
 
@@ -54,7 +54,7 @@ const getAvatarUrl = (avatar: string) => {
   return `${baseUrl}${path}`;
 };
 
-const updateProfileAction = async (_prev: ActionFeedback, formData: FormData): Promise<ActionFeedback> => {
+export const updateProfileAction = async (_prev: ActionFeedback, formData: FormData): Promise<ActionFeedback> => {
   const result = await handleUpdateProfile(formData);
   return {
     success: result.success,
@@ -62,7 +62,7 @@ const updateProfileAction = async (_prev: ActionFeedback, formData: FormData): P
   };
 };
 
-const changePasswordAction = async (_prev: ActionFeedback, formData: FormData): Promise<ActionFeedback> => {
+export const changePasswordAction = async (_prev: ActionFeedback, formData: FormData): Promise<ActionFeedback> => {
   const currentPassword = asString(formData.get("currentPassword"));
   const newPassword = asString(formData.get("newPassword"));
   const confirmPassword = asString(formData.get("confirmPassword"));
@@ -86,7 +86,7 @@ const changePasswordAction = async (_prev: ActionFeedback, formData: FormData): 
   };
 };
 
-const deleteAccountAction = async (): Promise<ActionFeedback> => {
+export const deleteAccountAction = async (): Promise<ActionFeedback> => {
   const result = await handleDeleteAccount({});
   return {
     success: result.success,

@@ -9,6 +9,16 @@ jest.mock("@/lib/actions/auth-action", () => ({
 const mockedActions = require("@/lib/actions/auth-action");
 
 describe("ForgotPasswordForm", () => {
+  test("shows error message when request fails", async () => {
+    mockedActions.handleRequestPasswordReset.mockRejectedValue(new Error("Reset failed"));
+    render(<ForgotPasswordForm />);
+
+    await userEvent.type(screen.getByPlaceholderText(/example@gmail.com/i), "user@example.com");
+    await userEvent.click(screen.getByRole("button", { name: /Send Reset Link/i }));
+
+    expect(await screen.findByText(/Reset failed/i)).toBeInTheDocument();
+  });
+
   test("shows success message when request succeeds", async () => {
     mockedActions.handleRequestPasswordReset.mockResolvedValue({ success: true, message: "sent" });
     render(<ForgotPasswordForm />);

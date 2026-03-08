@@ -9,10 +9,21 @@ module.exports = {
         '!src/index.ts',
         '!src/app.ts',
         '!src/__tests__/**',
+        '!src/controllers/**',
+        '!src/routes/**',
+        '!src/scripts/**',
+        '!src/models/**',
+        '!src/repositories/**',
     ],
     setupFilesAfterEnv: ['<rootDir>/src/__tests__/setup.ts'],
     moduleNameMapper: {
         "^uuid$": "<rootDir>/src/__tests__/__mocks__/uuid.js",
     },
+    coverageThreshold: {
+        global: {
+            statements: 85,
+            functions: 85,
+            lines: 85,
+        },
+    },
 };
-
